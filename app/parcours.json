@@ -1,0 +1,8 @@
+{
+ "schema": 1,
+ "_note": "Les parcours de l'école. L'application propose une classe d'après l'âge, le parent ou l'enseignant confirme. Un identifiant ne change jamais.",
+ "parcours": [
+  { "id": "gs", "label": "Grande section", "classe": "GS", "age_min": 5, "age_max": 6, "couleur": "orange" },
+  { "id": "ce1", "label": "CE1", "classe": "CE1", "age_min": 7, "age_max": 8, "couleur": "bleu" }
+ ]
+}

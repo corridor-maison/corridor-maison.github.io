@@ -1,6 +1,6 @@
 {
  "id": "bleu-s0-dizaine",
- "child": "bleu",
+ "parcours": "ce1",
  "order": 0,
  "week": "S0",
  "title": "Passer par la dizaine",
@@ -10,7 +10,7 @@
  "steps": [
   {
    "type": "maman",
-   "clip": "bonjour_bleu"
+   "clip": "bonjour"
   },
   {
    "type": "say",
@@ -472,7 +472,7 @@
   },
   {
    "type": "paper",
-   "text": "Prends ta fiche bleue « Passer par la dizaine ». Fais une étoile, puis deux étoiles, puis trois étoiles si tu peux. Quand tu as fini, tape tes réponses ici."
+   "text": "Prends ta fiche « Passer par la dizaine ». Fais une étoile, puis deux étoiles, puis trois étoiles si tu peux. Quand tu as fini, tape tes réponses ici."
   },
   {
    "type": "part",
@@ -509,7 +509,7 @@
   },
   {
    "type": "end",
-   "clip": "fin_bleu"
+   "clip": "fin"
   }
  ],
  "paper": {

@@ -1,9 +1,9 @@
-/* L'école de Kono — moteur de séances guidées par la voix (v0.2).
+/* Corridor à la maison — moteur de séances guidées par la voix (v0.3).
    Une séance = un fichier JSON (lessons/*.json), en quatre temps : automatismes, leçon, lecture ou histoire, méthode.
    Le même fichier produit les fiches imprimables (tools/build_print.py) et la liste des phrases à enregistrer (tools/build_audio.py). */
 'use strict';
 (() => {
-const VERSION = '0.2.0';
+const VERSION = '0.3.0';
 const FAST = location.hash === '#test';
 const app = document.getElementById('app');
 const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
@@ -16,13 +16,35 @@ const $ = s => app.querySelector(s);
 
 /* ============================ données ============================ */
 const KEY = 'kono-v1';
+const THEMES = ['bleu', 'orange', 'vert', 'violet'];
 const kid = () => ({ runs: [], review: [], done: {}, records: {}, drillMisses: {}, skills: {}, measures: [] });
-const blank = () => ({ setup: false, pin: '', names: { bleu: '', orange: '' }, girl: { bleu: false, orange: false }, voice: { name: '', rate: 0.9 }, progress: { bleu: kid(), orange: kid() } });
+/* Un profil par enfant : prénom, garçon ou fille, date de naissance, classe et parcours (confirmés par un parent), couleur, suivi.
+   Tout reste dans la tablette. Un identifiant de profil ne change jamais : il nomme les enregistrements et les phrases de Maman. */
+const blank = () => ({ schema: 2, setup: false, pin: '', voice: { name: '', rate: 0.9 }, profiles: [] });
+function newId(list) {
+  const a = 'abcdefghjkmnpqrstuvwxyz23456789', b = new Uint8Array(4);
+  try { crypto.getRandomValues(b); } catch (e) { for (let i = 0; i < 4; i++) b[i] = Math.floor(Math.random() * 256); }
+  const id = Array.from(b, x => a[x % a.length]).join('');
+  return (list || []).some(p => p.id === id) ? newId(list) : id;
+}
 function loadStore() {
   const b = blank();
   try {
     const s = JSON.parse(localStorage.getItem(KEY) || 'null');
-    if (s && s.progress) { Object.assign(b, s); ['bleu', 'orange'].forEach(c => { b.progress[c] = Object.assign(kid(), s.progress[c] || {}); }); }
+    if (s && Array.isArray(s.profiles)) {
+      Object.assign(b, s);
+      b.profiles.forEach(p => { p.progress = Object.assign(kid(), p.progress || {}); });
+    } else if (s && s.progress) {
+      /* Données de la v0.2 : les deux cases fixes (bleu, orange) deviennent deux profils. Le suivi est gardé tel quel. */
+      Object.assign(b, { setup: !!s.setup, pin: s.pin || '', voice: Object.assign(b.voice, s.voice || {}) });
+      const LEG = { bleu: 'ce1', orange: 'gs' };
+      ['bleu', 'orange'].forEach(c => {
+        const pr = Object.assign(kid(), (s.progress || {})[c] || {}), nm = String((s.names || {})[c] || '').trim();
+        if (!nm && !pr.runs.length && !Object.keys(pr.done).length) return;
+        b.profiles.push({ id: newId(b.profiles), name: nm, girl: !!(s.girl || {})[c], dob: '', classe: '', parcours: LEG[c], couleur: c, legacy: c, progress: pr });
+      });
+      b.migrate = true;
+    }
   } catch (e) {}
   return b;
 }
@@ -45,6 +67,7 @@ const DB = (() => {
     delClip: safe(id => run('clips', 'readwrite', s => s.delete(id))),
     clipKeys: safe(() => run('clips', 'readonly', s => s.getAllKeys())),
     addRec: safe(r => run('recs', 'readwrite', s => s.add(r))),
+    putRec: safe(r => run('recs', 'readwrite', s => s.put(r))),
     recs: safe(() => run('recs', 'readonly', s => s.getAll())),
     delRec: safe(id => run('recs', 'readwrite', s => s.delete(id))),
   };
@@ -53,12 +76,21 @@ const DB = (() => {
 /* Phrases que Maman enregistre elle-même. Sans enregistrement, Kono dit une phrase neutre (jamais « c'est Maman »). */
 let CLIPS = [];
 
-let LESSONS = {}, INDEX = [], ESCALES = [], PH = {}, AUDIO = { files: {} };
+let LESSONS = {}, INDEX = [], ESCALES = {}, PARCOURS = [], PH = {}, AUDIO = { files: {} };
 async function getJSON(u) { const r = await fetch(u, { cache: 'no-cache' }); if (!r.ok) throw new Error(u); return r.json(); }
+const parcoursOf = id => PARCOURS.find(p => p.id === id) || null;
+const escalesOf = pid => ESCALES[pid] || [];
 async function loadAll() {
+  PARCOURS = (await getJSON('parcours.json')).parcours || [];
   const idx = await getJSON('lessons/index.json');
+  if (idx.schema === undefined) {
+    /* Index de la v0.2 (clé child) : accepté le temps d'une mise à jour, jamais au-delà. */
+    const LEG = { bleu: 'ce1', orange: 'gs' };
+    idx.lessons.forEach(l => { if (!l.parcours) l.parcours = LEG[l.child] || l.child; });
+    idx.escales = Object.fromEntries(PARCOURS.map(p => [p.id, Array.isArray(idx.escales) ? idx.escales : []]));
+  } else if (idx.schema !== 2) throw new Error('schema ' + idx.schema);
   INDEX = idx.lessons.slice().sort((a, b) => a.order - b.order);
-  ESCALES = idx.escales || [];
+  ESCALES = idx.escales || {};
   await Promise.all(INDEX.map(async l => { LESSONS[l.id] = await getJSON(`lessons/${l.id}.json`); }));
   PH = await getJSON('phrases.json');
   CLIPS = PH.clips || [];
@@ -66,13 +98,21 @@ async function loadAll() {
 }
 
 /* ============================ voix ============================ */
-let child = null;
-const name = c => S.names[c || child] || '';
+let child = null; /* le profil de l'enfant en cours */
+const name = p => ((p || child) && (p || child).name) || '';
+const profileOf = id => S.profiles.find(p => p.id === id) || null;
+const progressOfRec = r => (profileOf(r.profile) || {}).progress;
+function ageOf(dob) {
+  if (!dob) return null;
+  const d = new Date(dob + 'T00:00:00'), t = new Date(); if (isNaN(d)) return null;
+  let a = t.getFullYear() - d.getFullYear(); if (t.getMonth() < d.getMonth() || (t.getMonth() === d.getMonth() && t.getDate() < d.getDate())) a--;
+  return a;
+}
 function fill(t) {
   if (!t) return '';
   const n = name();
   let s = n ? t.replace(/\{prenom\}/g, n) : t.replace(/ ?\{prenom\}/g, '');
-  return s.replace(/\{e\}/g, S.girl[child] ? 'e' : '');
+  return s.replace(/\{e\}/g, child && child.girl ? 'e' : '');
 }
 /* Même découpage et même clé que tools/build_audio.py : une phrase = un fichier audio. */
 const normSpeech = t => String(t || '').replace(/[«»]/g, '').replace(/★/g, ' étoile ');
@@ -137,10 +177,12 @@ async function speak(text, onSentence) {
   if (my === token) setTalking(false);
   return my === token;
 }
-async function hasClip(id) { return !!(await DB.getClip(id)); }
+/* Une phrase « par enfant » (bonjour, fin) est enregistrée une fois par profil, sous la clé <phrase>@<profil>. */
+function clipKey(id, p) { const def = CLIPS.find(c => c.id === id); return def && def.perChild && (p || child) ? `${id}@${(p || child).id}` : id; }
+async function hasClip(id) { return !!(await DB.getClip(clipKey(id))); }
 async function playClip(id, onMaman) {
   const def = CLIPS.find(c => c.id === id);
-  const blob = await DB.getClip(id);
+  const blob = await DB.getClip(clipKey(id));
   if (blob && !FAST) {
     stopSpeech(); if (onMaman) onMaman(true);
     await playFile(URL.createObjectURL(blob)); curAudio = null; return true;
@@ -234,32 +276,33 @@ const FISH = gold => `<svg width="40" height="25" viewBox="0 0 40 25" aria-hidde
 
 /* ============================ carte du voyage ============================ */
 const RIVER = 'M40 290 C 110 285, 150 262, 205 250 S 290 238, 318 205 S 360 110, 420 88 S 520 92, 575 160';
-const ESC_AT = [0, 0.24, 0.45, 0.73, 1];
-function journey(c) {
-  const done = INDEX.filter(l => l.child === c && S.progress[c].done[l.id]);
+const escAt = list => list.length === 5 ? [0, 0.24, 0.45, 0.73, 1] : list.map((e, i) => list.length < 2 ? 0 : i / (list.length - 1));
+function journey(p) {
+  const E = escalesOf(p.parcours), AT = escAt(E);
+  const done = INDEX.filter(l => l.parcours === p.parcours && p.progress.done[l.id]);
   let f = 0, stamps = [];
-  ESCALES.forEach((e, i) => {
+  E.forEach((e, i) => {
     const n = done.filter(l => (l.escale || 1) === e.n).length;
     if (n >= e.sessions) stamps.push(e.n);
-    if (n > 0 && i < ESC_AT.length - 1) f = Math.max(f, ESC_AT[i] + (ESC_AT[i + 1] - ESC_AT[i]) * Math.min(1, n / e.sessions));
+    if (n > 0 && i < AT.length - 1) f = Math.max(f, AT[i] + (AT[i + 1] - AT[i]) * Math.min(1, n / e.sessions));
   });
   return { f, stamps, count: done.length };
 }
-function mapHTML(c) {
-  const j = journey(c);
+function mapHTML(p) {
+  const j = journey(p), E = escalesOf(p.parcours);
   return `<div class="map"><svg viewBox="0 0 620 330" role="img" aria-label="Carte du voyage sur le fleuve Niger">
   <rect x="0" y="0" width="620" height="330" rx="18" fill="#f3ead6"/>
   <path d="M300 30 q60 -10 120 10 q70 20 150 0" fill="none" stroke="#e2cfa6" stroke-width="30" stroke-linecap="round" opacity=".7"/>
   <path d="${RIVER}" fill="none" stroke="#7fb4cf" stroke-width="16" stroke-linecap="round"/>
   <path class="river" d="${RIVER}" fill="none" stroke="#3d7fa3" stroke-width="3" stroke-dasharray="2 10" stroke-linecap="round"/>
   <g class="escales"></g><g class="boat-pos">${BOAT}</g></svg>
-  <div class="passport">${ESCALES.map(e => `<span class="stamp ${j.stamps.includes(e.n) ? 'on' : ''}" title="${esc(e.name)}">${esc(e.name.split(' ')[0])}</span>`).join('')}</div></div>`;
+  <div class="passport">${E.map(e => `<span class="stamp ${j.stamps.includes(e.n) ? 'on' : ''}" title="${esc(e.name)}">${esc(e.name.split(' ')[0])}</span>`).join('')}</div></div>`;
 }
-function drawMap(root, c, from) {
+function drawMap(root, prof, from) {
   const svg = root.querySelector('.map svg'); if (!svg) return;
-  const path = svg.querySelector('.river'), L = path.getTotalLength(), g = svg.querySelector('.escales');
-  g.innerHTML = ESCALES.map((e, i) => { const p = path.getPointAtLength(L * ESC_AT[i]); return `<circle cx="${p.x}" cy="${p.y}" r="7" fill="#fff" stroke="#1b2430" stroke-width="3"/><text x="${p.x}" y="${p.y + (i === 3 ? -18 : 30)}" text-anchor="middle" font-family="Nunito, Andika, sans-serif" font-weight="800" font-size="17" fill="#1b2430">${esc(e.name)}</text>`; }).join('');
-  const boat = svg.querySelector('.boat-pos'), to = journey(c).f;
+  const path = svg.querySelector('.river'), L = path.getTotalLength(), g = svg.querySelector('.escales'), E = escalesOf(prof.parcours), AT = escAt(E);
+  g.innerHTML = E.map((e, i) => { const p = path.getPointAtLength(L * AT[i]); return `<circle cx="${p.x}" cy="${p.y}" r="7" fill="#fff" stroke="#1b2430" stroke-width="3"/><text x="${p.x}" y="${p.y + (i === 3 ? -18 : 30)}" text-anchor="middle" font-family="Nunito, Andika, sans-serif" font-weight="800" font-size="17" fill="#1b2430">${esc(e.name)}</text>`; }).join('');
+  const boat = svg.querySelector('.boat-pos'), to = journey(prof).f;
   const place = f => { const p = path.getPointAtLength(L * f); boat.setAttribute('transform', `translate(${p.x} ${p.y - 18}) scale(1.6)`); };
   if (from == null || from === to || FAST) { place(to); return; }
   const t0 = performance.now();
@@ -268,28 +311,72 @@ function drawMap(root, c, from) {
 }
 
 /* ============================ écrans ============================ */
-function setChild(c) { child = c; document.body.dataset.child = c || ''; }
-function kidLabel(c) { return name(c) || (c === 'bleu' ? 'Bleu' : 'Orange'); }
+function setChild(p) { child = p || null; document.body.dataset.child = p ? p.couleur : ''; }
+function kidLabel(p) { const pr = p && parcoursOf(p.parcours); return name(p) || (pr ? pr.label : 'Enfant'); }
+function parcoursLabel(p) { const pr = parcoursOf(p.parcours); return pr ? `Parcours ${pr.label}` : `Parcours ${p.parcours}`; }
 
 function screenSetup() {
   setChild(null); stopSpeech();
+  const first = !S.setup;
   app.innerHTML = `<div class="stack">
-  <div class="brand">${KONO.replace('class="kono"', 'class="kono" style="width:90px"')}<div><h1>Corridor à la maison</h1><p class="muted">Réglage de départ, à faire une seule fois par un parent.</p></div></div>
-  <div class="card stack"><h3>Les enfants</h3>
-    ${['bleu', 'orange'].map(c => `<div class="row"><label class="f" style="flex:1 1 220px">Prénom de l'enfant ${c === 'bleu' ? 'Bleu (7 ans)' : 'Orange (5 ans ½)'}<input type="text" id="n-${c}" value="${esc(S.names[c])}" autocomplete="off"></label>
-      <div class="seg" role="group" aria-label="Fille ou garçon"><button data-g="${c}:0" class="${S.girl[c] ? '' : 'on'}">Garçon</button><button data-g="${c}:1" class="${S.girl[c] ? 'on' : ''}">Fille</button></div></div>`).join('')}
-    <p class="small muted">Le prénom sert à saluer l'enfant. Garçon ou fille sert à accorder les phrases (« tu t'es trompée »).</p></div>
-  <div class="card stack"><h3>Code parent (4 chiffres)</h3><input type="password" id="pin" inputmode="numeric" maxlength="4" value="${esc(S.pin)}" placeholder="ex. 2468"><p class="small muted">Il protège l'espace parent : suivi, enregistrements, voix de Maman.</p></div>
+  <div class="brand">${KONO.replace('class="kono"', 'class="kono" style="width:90px"')}<div><h1>Corridor à la maison</h1><p class="muted">${first ? 'Réglage de départ, à faire une seule fois par un parent.' : 'Code parent et voix de Kono.'}</p></div></div>
+  <div class="card stack"><h3>Code parent (4 chiffres)</h3><input type="password" id="pin" inputmode="numeric" maxlength="4" value="${esc(S.pin)}" placeholder="ex. 2468"><p class="small muted">Il protège l'espace parent : suivi, enregistrements, voix de Maman, et l'ajout d'un enfant.</p></div>
   <div class="card stack"><h3>La voix de Kono</h3>${voiceControls()}</div>
-  <div class="row"><button class="btn big" id="go" style="--c:var(--river)">Enregistrer et commencer</button><span id="err" class="small" style="color:var(--try)"></span></div></div>`;
+  <div class="row"><button class="btn big" id="go" style="--c:var(--river)">${first ? 'Enregistrer et ajouter un enfant' : 'Enregistrer'}</button>${first ? '' : '<button class="btn ghost" id="cancel">Annuler</button>'}<span id="err" class="small" style="color:var(--try)"></span></div></div>`;
   bindVoiceControls();
-  app.querySelectorAll('[data-g]').forEach(b => b.onclick = () => { const [c, g] = b.dataset.g.split(':'); S.girl[c] = g === '1'; b.parentElement.querySelectorAll('button').forEach(x => x.classList.toggle('on', x === b)); });
+  const c = $('#cancel'); if (c) c.onclick = () => screenParent('reglages');
   $('#go').onclick = () => {
     const pin = $('#pin').value.trim();
     if (!/^\d{4}$/.test(pin)) { $('#err').textContent = 'Le code doit faire 4 chiffres.'; return; }
-    S.pin = pin; S.names.bleu = $('#n-bleu').value.trim(); S.names.orange = $('#n-orange').value.trim();
-    S.setup = true; save(); screenHome();
+    S.pin = pin; S.setup = true; save();
+    if (first || !S.profiles.length) screenProfile(null); else screenParent('reglages');
   };
+}
+/* Créer ou modifier le profil d'un enfant. La classe est proposée d'après l'âge, puis confirmée par le parent : c'est la classe réelle qui compte. */
+function screenProfile(p) {
+  setChild(null); stopSpeech();
+  const edit = !!p; const f = p ? Object.assign({}, p) : { name: '', girl: false, dob: '', parcours: '', couleur: '' };
+  const draw = () => {
+    const age = ageOf(f.dob), prop = age == null ? null : PARCOURS.find(x => age >= x.age_min && age <= x.age_max);
+    if (!f.parcours && prop) f.parcours = prop.id;
+    const used = S.profiles.filter(x => !p || x.id !== p.id).map(x => x.couleur), pr = parcoursOf(f.parcours);
+    if (!f.couleur) f.couleur = THEMES.find(t => !used.includes(t) && pr && t === pr.couleur) || THEMES.find(t => !used.includes(t)) || (pr ? pr.couleur : THEMES[0]);
+    app.innerHTML = `<div class="stack">
+    <div class="brand">${KONO.replace('class="kono"', 'class="kono" style="width:90px"')}<div><h1>${edit ? 'Modifier le profil' : 'Un enfant de plus'}</h1><p class="muted">${edit ? esc(p.name) : 'Le parent remplit, l\'enfant choisit sa couleur.'}</p></div></div>
+    <div class="card stack"><h3>L'enfant</h3>
+      <div class="row"><label class="f" style="flex:1 1 220px">Prénom<input type="text" id="p-name" value="${esc(f.name)}" autocomplete="off"></label>
+      <div class="seg" role="group" aria-label="Fille ou garçon"><button data-g="0" class="${f.girl ? '' : 'on'}">Garçon</button><button data-g="1" class="${f.girl ? 'on' : ''}">Fille</button></div></div>
+      <label class="f" style="max-width:260px">Date de naissance<input type="date" id="p-dob" value="${esc(f.dob)}" max="${today()}"></label>
+      <p class="small muted" style="margin:0">Le prénom sert à saluer l'enfant. Garçon ou fille sert à accorder les phrases. L'âge sert à proposer la classe.</p></div>
+    <div class="card stack"><h3>La classe</h3>
+      <div class="seg wrap" role="group" aria-label="Classe">${PARCOURS.map(x => `<button data-p="${esc(x.id)}" class="${f.parcours === x.id ? 'on' : ''}">${esc(x.label)}</button>`).join('')}</div>
+      <p class="small muted" style="margin:0">${age == null ? 'Indiquez la date de naissance pour une proposition.' : prop ? `À ${age} ans, la classe proposée est ${esc(prop.label)}. C'est la classe réelle de l'enfant qui compte : changez-la si besoin.` : `${age} ans : aucune classe prévue pour cet âge. Choisissez la classe réelle de l'enfant.`}</p></div>
+    <div class="card stack"><h3>Sa couleur</h3><div class="swatches">${THEMES.map(t => `<button class="swatch ${t} ${f.couleur === t ? 'on' : ''}" data-t="${t}" aria-label="${t}"></button>`).join('')}</div></div>
+    <div class="row"><button class="btn big" id="go" style="--c:var(--river)">${edit ? 'Enregistrer' : 'Créer le profil'}</button><button class="btn ghost" id="cancel">Annuler</button><span id="err" class="small" style="color:var(--try)"></span></div></div>`;
+    $('#p-name').oninput = e => { f.name = e.target.value; };
+    $('#p-dob').onchange = e => { f.dob = e.target.value; if (!edit) f.parcours = ''; draw(); };
+    app.querySelectorAll('[data-g]').forEach(b => b.onclick = () => { f.girl = b.dataset.g === '1'; draw(); });
+    app.querySelectorAll('[data-p]').forEach(b => b.onclick = () => { f.parcours = b.dataset.p; draw(); });
+    app.querySelectorAll('[data-t]').forEach(b => b.onclick = () => { f.couleur = b.dataset.t; draw(); });
+    $('#cancel').onclick = () => edit ? screenParent('reglages') : (S.profiles.length ? screenHome() : screenSetup());
+    $('#go').onclick = () => {
+      f.name = $('#p-name').value.trim(); f.dob = $('#p-dob').value;
+      if (!f.name) { $('#err').textContent = 'Le prénom manque.'; return; }
+      if (!f.dob || ageOf(f.dob) == null) { $('#err').textContent = 'La date de naissance manque.'; return; }
+      if (!parcoursOf(f.parcours)) { $('#err').textContent = 'Choisissez la classe.'; return; }
+      f.classe = parcoursOf(f.parcours).classe;
+      if (edit) Object.assign(p, { name: f.name, girl: f.girl, dob: f.dob, classe: f.classe, parcours: f.parcours, couleur: f.couleur });
+      else S.profiles.push({ id: newId(S.profiles), name: f.name, girl: f.girl, dob: f.dob, classe: f.classe, parcours: f.parcours, couleur: f.couleur, created: today(), progress: kid() });
+      save(); edit ? screenParent('reglages') : screenHome();
+    };
+  };
+  draw();
+}
+async function removeProfile(id) {
+  const k = S.profiles.findIndex(p => p.id === id); if (k < 0) return;
+  const recs = (await DB.recs()) || []; for (const r of recs) if (r.profile === id) await DB.delRec(r.id);
+  const keys = (await DB.clipKeys()) || []; for (const key of keys) if (String(key).endsWith('@' + id)) await DB.delClip(key);
+  S.profiles.splice(k, 1); save();
 }
 function voiceControls() {
   loadVoices();
@@ -310,33 +397,35 @@ function bindVoiceControls() {
 function screenHome() {
   setChild(null); stopSpeech();
   app.innerHTML = `<div class="stack">
-  <div class="brand">${KONO.replace('class="kono"', 'class="kono" style="width:96px"')}<div><h1>Corridor à la maison</h1><p class="muted">Qui voyage avec Kono aujourd'hui ?</p></div></div>
+  <div class="brand">${KONO.replace('class="kono"', 'class="kono" style="width:96px"')}<div><h1>Corridor à la maison</h1><p class="muted">${S.profiles.length ? 'Qui voyage avec Kono aujourd\'hui ?' : 'Aucun enfant pour l\'instant.'}</p></div></div>
   <div class="kids">
-    <button class="kid bleu" data-c="bleu"><b>${esc(kidLabel('bleu'))}</b><span>Parcours bleu · 7 ans</span></button>
-    <button class="kid orange" data-c="orange"><b>${esc(kidLabel('orange'))}</b><span>Parcours orange · 5 ans ½</span></button>
+    ${S.profiles.map(p => `<button class="kid ${esc(p.couleur)}" data-c="${esc(p.id)}"><b>${esc(kidLabel(p))}</b><span>${esc(parcoursLabel(p))}</span></button>`).join('')}
+    <button class="kid add" id="add"><b>+</b><span>Ajouter un enfant</span></button>
   </div>
   <div class="row" style="justify-content:space-between"><button class="link" id="parent">Espace parent</button><span class="small muted">v${VERSION}</span></div></div>`;
-  app.querySelectorAll('[data-c]').forEach(b => b.onclick = () => screenChild(b.dataset.c));
-  $('#parent').onclick = screenPin;
+  app.querySelectorAll('[data-c]').forEach(b => b.onclick = () => { const p = profileOf(b.dataset.c); if (p) screenChild(p); });
+  $('#add').onclick = () => screenPin(() => screenProfile(null));
+  $('#parent').onclick = () => screenPin(() => screenParent('suivi'));
 }
-function nextLesson(c) { return INDEX.filter(l => l.child === c).find(l => !S.progress[c].done[l.id]) || null; }
-function screenChild(c) {
-  setChild(c); stopSpeech();
-  const list = INDEX.filter(l => l.child === c), nx = nextLesson(c);
+function nextLesson(p) { return INDEX.filter(l => l.parcours === p.parcours).find(l => !p.progress.done[l.id]) || null; }
+function screenChild(p) {
+  setChild(p); stopSpeech();
+  const list = INDEX.filter(l => l.parcours === p.parcours), nx = nextLesson(p), pr = p.progress;
   app.innerHTML = `<div class="stack">
-  <div class="row" style="justify-content:space-between"><button class="btn ghost" id="back">Retour</button><h2 style="color:var(--c)">${esc(kidLabel(c))}</h2></div>
+  <div class="row" style="justify-content:space-between"><button class="btn ghost" id="back">Retour</button><h2 style="color:var(--c)">${esc(kidLabel(p))}</h2></div>
   <div class="home-grid">
     <div class="card stack center">
       ${nx ? `<p class="muted" style="margin:0">Séance du jour</p><h2 style="font-size:2rem">${esc(nx.title)}</h2><div><button class="btn big" id="start">Monter dans la pinasse</button></div>
-        <p class="small muted" style="margin:0">Prépare ton crayon et ta fiche ${c === 'bleu' ? 'bleue' : 'orange'}.</p>`
-      : `<h2>Toutes les séances sont faites</h2><p class="muted">La prochaine séance arrive dimanche. Tu peux refaire une séance ci-dessous.</p>`}
+        <p class="small muted" style="margin:0">Prépare ton crayon et ta fiche « ${esc(nx.title)} ».</p>`
+      : list.length ? `<h2>Toutes les séances sont faites</h2><p class="muted">La prochaine séance arrive dimanche. Tu peux refaire une séance ci-dessous.</p>`
+      : `<h2>Pas encore de séance</h2><p class="muted">Les séances de ce parcours arrivent avec la prochaine publication.</p>`}
     </div>
-    <div class="card">${mapHTML(c)}</div>
+    <div class="card">${mapHTML(p)}</div>
   </div>
   <div class="card"><h3 style="margin-bottom:6px">Mes séances</h3>
-    ${list.map(l => `<div class="lesson-row"><span class="tick ${S.progress[c].done[l.id] ? 'done' : ''}">${S.progress[c].done[l.id] ? '✓' : ''}</span><span style="flex:1">${esc(l.title)} <span class="small muted">· ${esc(l.week)}</span></span><button class="btn soft sm" data-l="${l.id}">${S.progress[c].done[l.id] ? 'Refaire' : 'Ouvrir'}</button></div>`).join('')}
+    ${list.map(l => `<div class="lesson-row"><span class="tick ${pr.done[l.id] ? 'done' : ''}">${pr.done[l.id] ? '✓' : ''}</span><span style="flex:1">${esc(l.title)} <span class="small muted">· ${esc(l.week)}</span></span><button class="btn soft sm" data-l="${l.id}">${pr.done[l.id] ? 'Refaire' : 'Ouvrir'}</button></div>`).join('') || '<p class="muted small">Aucune séance publiée pour ce parcours.</p>'}
   </div></div>`;
-  drawMap(app, c);
+  drawMap(app, p);
   $('#back').onclick = screenHome;
   const st = $('#start'); if (st) st.onclick = () => startLesson(nx.id);
   app.querySelectorAll('[data-l]').forEach(b => b.onclick = () => startLesson(b.dataset.l));
@@ -348,7 +437,7 @@ function expandSteps(lesson) {
   const out = [];
   lesson.steps.forEach(st => {
     if (st.type === 'review') {
-      const q = S.progress[child].review.slice(0, 2).map(r => {
+      const q = child.progress.review.slice(0, 2).map(r => {
         const L = LESSONS[r.lesson]; if (!L) return null;
         const pool = L.steps.concat(...L.steps.filter(x => x.type === 'review').map(x => x.fallback || []), ...L.steps.filter(x => x.type === 'story').map(x => x.questions || []));
         const s = pool.find(x => x.id === r.id);
@@ -453,8 +542,8 @@ async function runStep() {
   }
 }
 
-function addReview(st) { if (!st.id) return; const r = { lesson: st.fromReview ? st.fromReview.lesson : P.lesson.id, id: st.id }; const q = S.progress[child].review; if (!q.some(x => x.lesson === r.lesson && x.id === r.id)) q.push(r); }
-function dropReview(st) { if (!st.fromReview) return; const q = S.progress[child].review; const k = q.findIndex(x => x.lesson === st.fromReview.lesson && x.id === st.fromReview.id); if (k >= 0) q.splice(k, 1); }
+function addReview(st) { if (!st.id) return; const r = { lesson: st.fromReview ? st.fromReview.lesson : P.lesson.id, id: st.id }; const q = child.progress.review; if (!q.some(x => x.lesson === r.lesson && x.id === r.id)) q.push(r); }
+function dropReview(st) { if (!st.fromReview) return; const q = child.progress.review; const k = q.findIndex(x => x.lesson === st.fromReview.lesson && x.id === st.fromReview.id); if (k >= 0) q.splice(k, 1); }
 function keypadHTML(okLabel = 'OK') { return `<div class="keypad">${[1, 2, 3, 4, 5, 6, 7, 8, 9].map(n => `<button class="key" data-k="${n}">${n}</button>`).join('')}<button class="key del" data-k="del">Effacer</button><button class="key" data-k="0">0</button><button class="key ok" data-k="ok">${okLabel}</button></div>`; }
 
 function askStep(st, alive) {
@@ -531,14 +620,14 @@ function genItem(k) {
   }
 }
 function weightedKind(kinds) {
-  const sk = S.progress[child].skills;
+  const sk = child.progress.skills;
   const ws = kinds.map(k => { const s = sk[k.kind]; const err = s && s.n >= 3 ? s.ko / s.n : 0; return (k.w || 1) * (1 + 2 * err); });
   let r = Math.random() * ws.reduce((a, b) => a + b, 0);
   for (let i = 0; i < kinds.length; i++) { r -= ws[i]; if (r <= 0) return kinds[i]; }
   return kinds[kinds.length - 1];
 }
 function drillStep(st, alive) {
-  const prog = S.progress[child], rec = prog.records[st.id];
+  const prog = child.progress, rec = prog.records[st.id];
   stage([{ kind: 'title', text: st.title }]);
   bubble(st.text);
   const intro = st.text + ' ' + PH.drillGo;
@@ -570,7 +659,7 @@ function drillStep(st, alive) {
     };
     const answer = async val => {
       const it = items[i], ok = String(val) === String(it.answer);
-      const sk = S.progress[child].skills[it.kind] || (S.progress[child].skills[it.kind] = { n: 0, ko: 0 }); sk.n++; if (!ok) sk.ko++;
+      const sk = child.progress.skills[it.kind] || (child.progress.skills[it.kind] = { n: 0, ko: 0 }); sk.n++; if (!ok) sk.ko++;
       if (ok) score++; else missed.push({ q: it.q, answer: it.answer, show: it.show, options: it.options, kind: it.kind });
       value = ''; over = true;
       draw(ok ? '<div class="flash ok">✓</div>' : `<div class="flash ko">La réponse : ${esc(it.answer)}</div>`);
@@ -637,7 +726,7 @@ function paperItems() {
   return out;
 }
 function paperStep(st, alive) {
-  stage([{ kind: 'title', text: 'Ta fiche ' + (child === 'bleu' ? 'bleue' : 'orange') }, { kind: 'text', text: `« ${P.lesson.paper.title} »` }]);
+  stage([{ kind: 'title', text: 'Ta fiche' }, { kind: 'text', text: `« ${P.lesson.paper.title} »` }]);
   bubble(fill(st.text));
   P.repeat = () => speak(fill(st.say || st.text)); speak(fill(st.say || st.text));
   $('#answer').innerHTML = `<div class="center"><button class="btn big" id="fini">J'ai fini ma fiche</button></div>`;
@@ -710,7 +799,7 @@ function recorder(onKeep, onSkip) {
   draw('idle');
 }
 async function saveRecording(kind, q, blob, dur, extra) {
-  await DB.addRec(Object.assign({ child, lesson: P.lesson.id, title: P.lesson.title, kind, q, ts: Date.now(), dur, mime: blob.type, blob }, extra || {}));
+  await DB.addRec(Object.assign({ profile: child.id, lesson: P.lesson.id, title: P.lesson.title, kind, q, ts: Date.now(), dur, mime: blob.type, blob }, extra || {}));
   P.run.recs++; save();
 }
 function recordStep(st, alive) {
@@ -763,8 +852,8 @@ function listenStep(st, alive) {
 function saveRun(done) {
   if (!P || P.run.end) return;
   P.run.end = Date.now(); P.run.done = done; P.run.fish = P.fish; P.run.gold = P.gold;
-  S.progress[child].runs.push(P.run);
-  if (done) S.progress[child].done[P.lesson.id] = today();
+  child.progress.runs.push(P.run);
+  if (done) child.progress.done[P.lesson.id] = today();
   save();
 }
 async function endStep(st, alive) {
@@ -783,7 +872,7 @@ async function endStep(st, alive) {
 }
 
 /* ============================ espace parent ============================ */
-function screenPin() {
+function screenPin(onOk) {
   setChild(null); stopSpeech();
   let v = '';
   const draw = () => {
@@ -795,7 +884,7 @@ function screenPin() {
     $('#back').onclick = screenHome;
     app.querySelectorAll('[data-k]').forEach(b => b.onclick = () => {
       const k = b.dataset.k; if (k === 'del') v = v.slice(0, -1); else if (v.length < 4) v += k;
-      if (v.length === 4) { if (v === S.pin) return screenParent('suivi'); v = ''; draw(); $('#msg').textContent = 'Code incorrect.'; return; }
+      if (v.length === 4) { if (v === S.pin) return onOk(); v = ''; draw(); $('#msg').textContent = 'Code incorrect.'; return; }
       draw();
     });
   };
@@ -815,10 +904,10 @@ async function screenParent(tab) {
   const pane = $('#pane');
   if (tab === 'suivi') {
     const recs = (await DB.recs()) || [];
-    pane.innerHTML = ['bleu', 'orange'].map(c => {
-      const pr = S.progress[c], runs = pr.runs.slice().reverse(), rr = recs.filter(r => r.child === c).sort((a, b) => b.ts - a.ts);
+    pane.innerHTML = S.profiles.map(p => {
+      const pr = p.progress, runs = pr.runs.slice().reverse(), rr = recs.filter(r => r.profile === p.id).sort((a, b) => b.ts - a.ts);
       const recsDrill = Object.entries(pr.records).map(([k, r]) => `${esc(k)} : ${r.best} (${r.secs} s, ${esc(r.date)})`).join(' · ');
-      return `<div class="card stack"><h3 style="color:${c === 'bleu' ? 'var(--bleu)' : 'var(--orange)'}">${esc(kidLabel(c))}</h3>
+      return `<div class="card stack"><h3 style="color:var(--${esc(p.couleur)})">${esc(kidLabel(p))} <span class="small muted">· ${esc(parcoursLabel(p))}</span></h3>
       ${pr.measures.length ? `<div><h3 style="font-size:1rem">Mesures</h3>${pr.measures.slice().reverse().map(m => `<p class="small" style="margin:2px 0">${esc(m.date)} · ${measureLine(m)}</p>`).join('')}</div>` : ''}
       ${recsDrill ? `<p class="small" style="margin:0"><b>Records d'automatismes :</b> ${recsDrill}</p>` : ''}
       ${runs.length ? runs.map(r => `<div><p style="margin:0 0 4px"><b>${esc(r.title)}</b> · ${fmtDate(r.start)} · ${Math.max(1, Math.round(((r.end || r.start) - r.start) / 60000))} min ${r.done ? '' : '· <span class="pill shown">arrêtée avant la fin</span>'}${r.drill ? ` · automatismes ${r.drill.score}/${r.drill.count} en ${r.drill.secs} s` : ''}</p>
@@ -826,7 +915,7 @@ async function screenParent(tab) {
       <h3 style="font-size:1rem">Enregistrements</h3>
       ${rr.length ? rr.map(r => `<div class="clip"><span class="txt"><b>${r.kind === 'lecture' ? 'Lecture' : r.kind === 'recit' ? 'Récit' : 'Méthode'}</b> · ${esc(r.title)} · ${fmtDate(r.ts)} · ${r.dur || '?'} s<br><span class="small muted">${esc(r.q)}</span></span><button class="btn soft sm" data-play="${r.id}">Écouter</button>${r.kind === 'lecture' ? `<button class="btn sm" data-measure="${r.id}" style="--c:var(--river)">Mesurer</button>` : r.kind === 'recit' ? `<button class="btn sm" data-grade="${r.id}" style="--c:var(--river)">Noter le récit</button>` : ''}<button class="link" data-del="${r.id}">Supprimer</button></div>`).join('') : '<p class="muted small">Aucun enregistrement.</p>'}
       <p class="small muted">À revoir automatiquement : ${pr.review.length} défi${pr.review.length > 1 ? 's' : ''} de leçon, ${Object.values(pr.drillMisses).reduce((a, b) => a + b.length, 0)} calcul${Object.values(pr.drillMisses).reduce((a, b) => a + b.length, 0) > 1 ? 's' : ''} d'automatismes.</p></div>`;
-    }).join('');
+    }).join('') || '<p class="muted">Aucun enfant pour l\'instant.</p>';
     pane.querySelectorAll('[data-play]').forEach(b => b.onclick = () => { const r = recs.find(x => String(x.id) === b.dataset.play); if (r) { stopSpeech(); playFile(URL.createObjectURL(r.blob)); } });
     pane.querySelectorAll('[data-del]').forEach(b => { let armed = false; b.onclick = async () => { if (!armed) { armed = true; b.textContent = 'Confirmer la suppression'; return; } await DB.delRec(Number(b.dataset.del)); screenParent('suivi'); }; });
     pane.querySelectorAll('[data-measure]').forEach(b => b.onclick = () => screenMeasure(recs.find(x => String(x.id) === b.dataset.measure)));
@@ -835,10 +924,10 @@ async function screenParent(tab) {
   if (tab === 'maman') {
     const keys = new Set((await DB.clipKeys()) || []);
     pane.innerHTML = `<div class="card"><p style="margin-top:0">Maman enregistre ces phrases une fois, avec ses mots à elle. Kono les fait entendre au bon moment. Une phrase non enregistrée est remplacée par une phrase neutre de Kono, qui ne se fait jamais passer pour Maman.</p>
-      ${CLIPS.map(c => `<div class="clip" data-id="${c.id}"><span class="txt">${c.who ? `<span class="pill ${c.who === 'bleu' ? 'first' : 'after'}">${esc(kidLabel(c.who))}</span> ` : ''}${esc(c.maman.replace('[prénom]', c.who ? kidLabel(c.who) : '…'))}</span>
-        <span class="state" style="color:${keys.has(c.id) ? 'var(--good)' : 'var(--muted)'}">${keys.has(c.id) ? 'Enregistrée' : 'À enregistrer'}</span>
-        <button class="btn sm" data-rec style="--c:var(--maman)">${keys.has(c.id) ? 'Refaire' : 'Enregistrer'}</button>
-        ${keys.has(c.id) ? `<button class="btn soft sm" data-play>Écouter</button><button class="link" data-del>Effacer</button>` : ''}</div>`).join('')}</div>`;
+      ${CLIPS.flatMap(c => c.perChild ? S.profiles.map(p => ({ c, p, key: `${c.id}@${p.id}` })) : [{ c, p: null, key: c.id }]).map(({ c, p, key }) => `<div class="clip" data-id="${esc(key)}"><span class="txt">${p ? `<span class="pill" style="background:var(--${esc(p.couleur)}-soft)">${esc(kidLabel(p))}</span> ` : ''}${esc(c.maman.replace('[prénom]', p ? kidLabel(p) : '…'))}</span>
+        <span class="state" style="color:${keys.has(key) ? 'var(--good)' : 'var(--muted)'}">${keys.has(key) ? 'Enregistrée' : 'À enregistrer'}</span>
+        <button class="btn sm" data-rec style="--c:var(--maman)">${keys.has(key) ? 'Refaire' : 'Enregistrer'}</button>
+        ${keys.has(key) ? `<button class="btn soft sm" data-play>Écouter</button><button class="link" data-del>Effacer</button>` : ''}</div>`).join('')}</div>`;
     pane.querySelectorAll('.clip').forEach(row => {
       const id = row.dataset.id; let rec = null, stream = null, chunks = [];
       const rb = row.querySelector('[data-rec]');
@@ -850,7 +939,7 @@ async function screenParent(tab) {
         rec.onstop = async () => { stream.getTracks().forEach(t => t.stop()); await DB.putClip(id, new Blob(chunks, { type: rec.mimeType || 'audio/webm' })); screenParent('maman'); };
         rec.start(); rb.textContent = 'Arrêter'; rb.style.setProperty('--c', '#a31226');
       };
-      const pb = row.querySelector('[data-play]'); if (pb) pb.onclick = () => playClip(id);
+      const pb = row.querySelector('[data-play]'); if (pb) pb.onclick = async () => { stopSpeech(); const b = await DB.getClip(id); if (b) playFile(URL.createObjectURL(b)); };
       const db = row.querySelector('[data-del]'); if (db) db.onclick = async () => { await DB.delClip(id); screenParent('maman'); };
     });
   }
@@ -861,11 +950,17 @@ async function screenParent(tab) {
     $('#copy').onclick = async () => { try { await navigator.clipboard.writeText(txt); $('#cp').textContent = 'Copié.'; } catch (e) { const t = $('#rep'); t.focus(); t.select(); $('#cp').textContent = 'Sélectionné : utilisez Copier.'; } };
   }
   if (tab === 'reglages') {
-    pane.innerHTML = `<div class="card stack"><p style="margin:0">Prénoms, garçon ou fille, et code parent.</p><div><button class="btn" id="setup" style="--c:var(--river)">Modifier les réglages</button></div></div>
+    pane.innerHTML = `<div class="card stack"><h3>Les enfants</h3>
+      ${S.profiles.map(p => `<div class="row" style="justify-content:space-between"><span><b style="color:var(--${esc(p.couleur)})">${esc(kidLabel(p))}</b> <span class="small muted">· ${esc(parcoursLabel(p))}${ageOf(p.dob) != null ? ` · ${ageOf(p.dob)} ans` : ''}</span></span><span class="row"><button class="btn soft sm" data-edit="${esc(p.id)}">Modifier</button><button class="link" data-rm="${esc(p.id)}">Supprimer</button></span></div>`).join('') || '<p class="muted small" style="margin:0">Aucun enfant.</p>'}
+      <div><button class="btn" id="addp" style="--c:var(--river)">Ajouter un enfant</button></div></div>
+    <div class="card stack"><p style="margin:0">Code parent et voix de Kono.</p><div><button class="btn" id="setup" style="--c:var(--river)">Modifier</button></div></div>
     <div class="card stack"><h3>Bloquer la tablette sur l'application</h3><p class="small" style="margin:0">Android : Paramètres › Sécurité › Épinglage d'écran. Ouvrez Corridor à la maison, affichez les applications récentes, touchez l'icône de l'application puis « Épingler ».</p></div>
     <div class="card stack"><h3>Remettre le suivi à zéro</h3><p class="small muted" style="margin:0">Efface les séances, les records et les mesures (pas les enregistrements de Maman).</p><div class="row"><input type="text" id="conf" placeholder="Tapez EFFACER"><button class="btn ghost" id="wipe">Effacer le suivi</button></div></div>`;
     $('#setup').onclick = screenSetup;
-    $('#wipe').onclick = () => { if ($('#conf').value.trim().toUpperCase() !== 'EFFACER') return; S.progress = blank().progress; save(); screenParent('suivi'); };
+    $('#addp').onclick = () => screenProfile(null);
+    pane.querySelectorAll('[data-edit]').forEach(b => b.onclick = () => screenProfile(profileOf(b.dataset.edit)));
+    pane.querySelectorAll('[data-rm]').forEach(b => { let armed = false; b.onclick = async () => { if (!armed) { armed = true; b.textContent = 'Confirmer : son suivi et ses enregistrements seront effacés'; return; } await removeProfile(b.dataset.rm); screenParent('reglages'); }; });
+    $('#wipe').onclick = () => { if ($('#conf').value.trim().toUpperCase() !== 'EFFACER') return; S.profiles.forEach(p => { p.progress = kid(); }); save(); screenParent('suivi'); };
   }
 }
 /* Mesure de fluence : le parent écoute, touche les mots mal lus, et au besoin le dernier mot lu. */
@@ -888,7 +983,7 @@ function screenMeasure(r) {
     $('#secs').onchange = e => { secs = Math.max(1, Number(e.target.value) || secs); draw(); };
     app.querySelectorAll('[data-m]').forEach(b => b.onclick = () => { mode = b.dataset.m; draw(); });
     app.querySelectorAll('[data-w]').forEach(b => b.onclick = () => { const k = Number(b.dataset.w); if (mode === 'last') last = k; else if (err.has(k)) err.delete(k); else err.add(k); draw(); });
-    $('#save').onclick = () => { S.progress[r.child].measures.push({ type: 'fluence', date: today(), lesson: r.lesson, recId: r.id, read, errors: nErr, secs, wcpm }); save(); screenParent('suivi'); };
+    $('#save').onclick = () => { (progressOfRec(r) || kid()).measures.push({ type: 'fluence', date: today(), lesson: r.lesson, recId: r.id, read, errors: nErr, secs, wcpm }); save(); screenParent('suivi'); };
   };
   draw();
 }
@@ -904,15 +999,16 @@ function screenGrade(r) {
     $('#back').onclick = () => screenParent('suivi');
     $('#play').onclick = () => { stopSpeech(); playFile(URL.createObjectURL(r.blob)); };
     app.querySelectorAll('[data-k]').forEach(b => b.onchange = () => { const k = Number(b.dataset.k); if (b.checked) chk.add(k); else chk.delete(k); draw(); });
-    $('#save').onclick = () => { S.progress[r.child].measures.push({ type: 'recit', date: today(), lesson: r.lesson, recId: r.id, score: chk.size, items: [...chk] }); save(); screenParent('suivi'); };
+    $('#save').onclick = () => { (progressOfRec(r) || kid()).measures.push({ type: 'recit', date: today(), lesson: r.lesson, recId: r.id, score: chk.size, items: [...chk] }); save(); screenParent('suivi'); };
   };
   draw();
 }
 function report() {
   const L = [`Rapport Corridor à la maison · ${today()} · v${VERSION}`];
-  ['bleu', 'orange'].forEach(c => {
-    const pr = S.progress[c];
-    L.push('', `== ${c === 'bleu' ? 'BLEU (7 ans)' : 'ORANGE (5 ans ½)'} : ${kidLabel(c)} ==`);
+  if (!S.profiles.length) L.push('', 'Aucun enfant.');
+  S.profiles.forEach(p => {
+    const pr = p.progress, age = ageOf(p.dob);
+    L.push('', `== Profil ${p.id} · ${kidLabel(p)} · parcours ${p.parcours} · classe ${p.classe || (parcoursOf(p.parcours) || {}).classe || '?'} · ${age == null ? 'âge inconnu' : age + ' ans'} ==`);
     if (!pr.runs.length) L.push('Aucune séance.');
     pr.runs.forEach(r => {
       L.push(`- ${r.date} · ${r.title} · ${Math.max(1, Math.round(((r.end || r.start) - r.start) / 60000))} min · ${r.done ? 'terminée' : 'arrêtée avant la fin'} · enregistrements : ${r.recs || 0}${r.drill ? ` · automatismes ${r.drill.score}/${r.drill.count} en ${r.drill.secs} s${r.drill.record ? ' (record)' : ''}` : ''}`);
@@ -927,9 +1023,25 @@ function report() {
 }
 
 /* ============================ démarrage ============================ */
+/* Après une mise à jour depuis la v0.2 : les enregistrements et les phrases de Maman passent sous l'identifiant du profil. */
+async function migrateDB() {
+  if (!S.migrate) return;
+  const byLeg = {}; S.profiles.forEach(p => { if (p.legacy) byLeg[p.legacy] = p.id; });
+  const recs = (await DB.recs()) || [];
+  for (const r of recs) if (r.child && !r.profile && byLeg[r.child]) { r.profile = byLeg[r.child]; delete r.child; await DB.putRec(r); }
+  const keys = (await DB.clipKeys()) || [];
+  for (const k of keys) { const m = /^(bonjour|fin)_(bleu|orange)$/.exec(String(k)); if (m && byLeg[m[2]]) { const b = await DB.getClip(k); if (b) await DB.putClip(`${m[1]}@${byLeg[m[2]]}`, b); await DB.delClip(k); } }
+  delete S.migrate; save();
+}
 async function boot() {
-  try { await loadAll(); } catch (e) { app.innerHTML = `<div class="card"><h2>Leçons introuvables</h2><p>Connectez la tablette à internet une fois pour télécharger les leçons, puis rouvrez l'application.</p></div>`; return; }
-  if (!S.setup) screenSetup(); else screenHome();
+  try { await loadAll(); } catch (e) {
+    app.innerHTML = /^schema/.test(String(e && e.message)) ? `<div class="card"><h2>Leçons dans un format inconnu</h2><p>Les leçons publiées demandent une application plus récente. Ouvrez l'application avec internet pour la mettre à jour.</p></div>`
+      : `<div class="card"><h2>Leçons introuvables</h2><p>Connectez la tablette à internet une fois pour télécharger les leçons, puis rouvrez l'application.</p></div>`;
+    return;
+  }
+  S.profiles.forEach(p => { if (!p.classe) { const pr = parcoursOf(p.parcours); if (pr) p.classe = pr.classe; } });
+  await migrateDB();
+  if (!S.setup) screenSetup(); else if (!S.profiles.length) screenProfile(null); else screenHome();
 }
 if ('serviceWorker' in navigator && location.protocol === 'https:') { try { navigator.serviceWorker.register('sw.js').catch(() => {}); } catch (e) {} }
 document.addEventListener('visibilitychange', () => { if (document.hidden) stopSpeech(); });

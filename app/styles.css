@@ -21,6 +21,10 @@
   --try-soft: #fbece0;
   --maman: #7a4ea3;
   --maman-soft: #f1eaf8;
+  --vert: #2c8554;
+  --vert-soft: #def1e6;
+  --violet: #7a4ea3;
+  --violet-soft: #f1eaf8;
   --hl: #fff1b8;
   --c: var(--river);
   --c-soft: var(--river-soft);
@@ -30,6 +34,8 @@
 }
 body[data-child="bleu"] { --c: var(--bleu); --c-soft: var(--bleu-soft); }
 body[data-child="orange"] { --c: var(--orange); --c-soft: var(--orange-soft); }
+body[data-child="vert"] { --c: var(--vert); --c-soft: var(--vert-soft); }
+body[data-child="violet"] { --c: var(--violet); --c-soft: var(--violet-soft); }
 html, body { background: var(--bg); color: var(--ink); margin: 0; }
 body { font-family: var(--text); font-size: 18px; line-height: 1.45; -webkit-tap-highlight-color: transparent; }
 * { box-sizing: border-box; }
@@ -58,6 +64,15 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
 .kid { border: 0; border-radius: 24px; padding: 22px 20px 18px; color: #fff; text-align: left; min-height: 170px; display: flex; flex-direction: column; justify-content: flex-end; gap: 4px; }
 .kid.bleu { background: var(--bleu); }
 .kid.orange { background: var(--orange); }
+.kid.vert { background: var(--vert); }
+.kid.violet { background: var(--violet); }
+.kid.add { background: var(--paper); color: var(--muted); border: 3px dashed var(--line); min-height: 120px; }
+.kid.add b { color: var(--river); }
+.seg.wrap { flex-wrap: wrap; }
+.swatches { display: flex; gap: 12px; flex-wrap: wrap; }
+.swatch { width: 56px; height: 56px; border-radius: 50%; border: 4px solid transparent; cursor: pointer; }
+.swatch.on { border-color: var(--ink); box-shadow: 0 0 0 3px #fff inset; }
+.swatch.bleu { background: var(--bleu); } .swatch.orange { background: var(--orange); } .swatch.vert { background: var(--vert); } .swatch.violet { background: var(--violet); }
 .kid b { font-family: var(--display); font-size: 2.2rem; line-height: 1; }
 .card { background: var(--paper); border: 1px solid var(--line); border-radius: 20px; padding: 18px; }
 .lesson-row { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-top: 1px solid var(--line); }

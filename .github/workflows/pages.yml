@@ -24,6 +24,9 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Contrôle des leçons (CONTRAT_LECONS.md § 7)
+        run: python3 tools/check_lessons.py app
+
       - name: Configure Pages
         uses: actions/configure-pages@v5
 

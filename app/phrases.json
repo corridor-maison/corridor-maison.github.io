@@ -34,16 +34,10 @@
  "micOff": "Le micro n'est pas disponible. Explique à Maman à voix haute.",
  "clips": [
   {
-   "id": "bonjour_bleu",
-   "who": "bleu",
+   "id": "bonjour",
    "maman": "Bonjour [prénom], c'est Maman. Travaille bien avec Kono, je suis juste à côté.",
-   "kono": ""
-  },
-  {
-   "id": "bonjour_orange",
-   "who": "orange",
-   "maman": "Bonjour [prénom], c'est Maman. Travaille bien avec Kono, je suis juste à côté.",
-   "kono": ""
+   "kono": "",
+   "perChild": true
   },
   {
    "id": "bravo_effort",
@@ -61,16 +55,10 @@
    "kono": "Maman écoutera ton explication ce soir."
   },
   {
-   "id": "fin_bleu",
-   "who": "bleu",
+   "id": "fin",
    "maman": "C'est fini pour aujourd'hui. Viens me montrer ta fiche !",
-   "kono": "C'est fini pour aujourd'hui. Va montrer ta fiche à Maman !"
-  },
-  {
-   "id": "fin_orange",
-   "who": "orange",
-   "maman": "C'est fini pour aujourd'hui. Viens me montrer ta fiche !",
-   "kono": "C'est fini pour aujourd'hui. Va montrer ta fiche à Maman !"
+   "kono": "C'est fini pour aujourd'hui. Va montrer ta fiche à Maman !",
+   "perChild": true
   },
   {
    "id": "bravo_escale",

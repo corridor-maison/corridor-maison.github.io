@@ -1,48 +1,78 @@
 {
- "version": "S0-v0.2",
+ "schema": 2,
+ "version": "S0-2026-10-11",
+ "escales": {
+  "gs": [
+   {
+    "n": 1,
+    "name": "Bamako",
+    "sessions": 28
+   },
+   {
+    "n": 2,
+    "name": "Ségou",
+    "sessions": 28
+   },
+   {
+    "n": 3,
+    "name": "Djenné et Mopti",
+    "sessions": 28
+   },
+   {
+    "n": 4,
+    "name": "Tombouctou",
+    "sessions": 28
+   },
+   {
+    "n": 5,
+    "name": "Gao",
+    "sessions": 28
+   }
+  ],
+  "ce1": [
+   {
+    "n": 1,
+    "name": "Bamako",
+    "sessions": 28
+   },
+   {
+    "n": 2,
+    "name": "Ségou",
+    "sessions": 28
+   },
+   {
+    "n": 3,
+    "name": "Djenné et Mopti",
+    "sessions": 28
+   },
+   {
+    "n": 4,
+    "name": "Tombouctou",
+    "sessions": 28
+   },
+   {
+    "n": 5,
+    "name": "Gao",
+    "sessions": 28
+   }
+  ]
+ },
  "lessons": [
   {
    "id": "bleu-s0-dizaine",
-   "child": "bleu",
+   "parcours": "ce1",
    "order": 0,
-   "title": "Passer par la dizaine",
    "week": "S0",
+   "title": "Passer par la dizaine",
    "escale": 1
   },
   {
    "id": "orange-s0-amis10",
-   "child": "orange",
+   "parcours": "gs",
    "order": 0,
-   "title": "Les amis de 10",
    "week": "S0",
+   "title": "Les amis de 10",
    "escale": 1
-  }
- ],
- "escales": [
-  {
-   "n": 1,
-   "name": "Bamako",
-   "sessions": 28
-  },
-  {
-   "n": 2,
-   "name": "Ségou",
-   "sessions": 28
-  },
-  {
-   "n": 3,
-   "name": "Djenné et Mopti",
-   "sessions": 28
-  },
-  {
-   "n": 4,
-   "name": "Tombouctou",
-   "sessions": 28
-  },
-  {
-   "n": 5,
-   "name": "Gao",
-   "sessions": 28
   }
  ]
 }

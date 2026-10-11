@@ -1,6 +1,6 @@
 {
  "id": "orange-s0-amis10",
- "child": "orange",
+ "parcours": "gs",
  "order": 0,
  "week": "S0",
  "title": "Les amis de 10",
@@ -10,7 +10,7 @@
  "steps": [
   {
    "type": "maman",
-   "clip": "bonjour_orange"
+   "clip": "bonjour"
   },
   {
    "type": "say",
@@ -278,7 +278,7 @@
   },
   {
    "type": "paper",
-   "text": "Prends ta fiche orange « Les amis de 10 ». Compte les cases vides et écris le nombre. Quand tu as fini, tape tes réponses ici."
+   "text": "Prends ta fiche « Les amis de 10 ». Compte les cases vides et écris le nombre. Quand tu as fini, tape tes réponses ici."
   },
   {
    "type": "part",
@@ -402,7 +402,7 @@
   },
   {
    "type": "end",
-   "clip": "fin_orange"
+   "clip": "fin"
   }
  ],
  "paper": {

@@ -22,13 +22,16 @@ Le papier et la tablette ne peuvent donc pas se contredire.
 | Chemin | Rôle |
 |---|---|
 | `app/` | L'application à mettre en ligne (site statique, fonctionne hors ligne une fois installée) |
-| `app/lessons/index.json` | Liste des leçons publiées |
+| `app/parcours.json` | Les parcours de l'école : classe, âges, couleur par défaut (propriété de l'école, voir `CONTRAT_LECONS.md`) |
+| `app/lessons/index.json` | Liste des leçons publiées, par parcours |
 | `app/lessons/<id>.json` | Une séance : voix, étapes, exercices, erreurs typiques, fiche papier |
 | `app/phrases.json` | Les phrases que le moteur dit lui-même, et les phrases de Maman |
 | `app/audio/` | Les voix enregistrées (`rec/`) ou générées (`gen/`), et leur manifeste |
 | `tools/build_audio.py` | Liste les phrases à enregistrer, importe les enregistrements, génère la voix de Kono, écrit le manifeste |
 | `voix/` | Dépôt des enregistrements humains (`conteur/`, `kono/`) et registre des numéros de phrases |
 | `tools/build_print.py` | Génère `print/Fiches_<semaine>.pdf` depuis les leçons |
+| `tools/check_lessons.py` | Contrôle les leçons selon `CONTRAT_LECONS.md` ; le déploiement s'arrête s'il échoue |
+| `CONTRAT_LECONS.md` | Ce que le générateur de leçons doit produire |
 | `print/` | Fiches et cartes Maman prêtes à imprimer |
 
 ## 1. Mettre l'application en ligne (une fois, environ 10 minutes)
@@ -46,25 +49,27 @@ Le dépôt ne contient que les leçons. Si le dépôt est public, les leçons so
 ## 2. Installer sur chaque tablette Android
 
 1. Ouvrir l'adresse dans **Chrome**, avec internet.
-2. Menu ⋮ › **Installer l'application** (ou « Ajouter à l'écran d'accueil »). L'icône Kono apparaît.
+2. Menu ⋮ › **Installer l'application** (ou « Ajouter à l'écran d'accueil »). L'icône « Corridor » apparaît.
 3. Ouvrir l'application une première fois avec internet : les leçons sont gardées pour le hors ligne.
 4. **Voix française hors ligne** : Paramètres › Gestion globale (ou Accessibilité) › Synthèse vocale › Moteur Google › Installer les données vocales › Français (France). Puis dans l'application : Espace parent › Voix de Kono › choisir une voix marquée « hors ligne » › Écouter Kono.
-5. Premier lancement : prénoms, garçon ou fille (pour accorder les phrases), code parent à 4 chiffres.
-6. **Voix de Maman** : Espace parent › Voix de Maman › 8 phrases à enregistrer, avec ses mots à elle.
-7. **Bloquer la tablette sur l'application** : Paramètres › Sécurité › Épinglage d'écran. Ouvrir Kono › applications récentes › icône de Kono › Épingler.
+5. Premier lancement, par un parent : code parent à 4 chiffres et voix de Kono, puis le profil de chaque enfant : prénom, garçon ou fille, date de naissance, classe (proposée d'après l'âge, c'est la classe réelle qui compte), couleur. Plusieurs enfants peuvent partager une tablette : chacun a son profil, son suivi et ses enregistrements. Ajouter un enfant plus tard : bouton « Ajouter un enfant » sur l'accueil, protégé par le code parent.
+6. **Voix de Maman** : Espace parent › Voix de Maman › les phrases à enregistrer, avec ses mots à elle. « Bonjour » et « C'est fini » s'enregistrent une fois par enfant.
+7. **Bloquer la tablette sur l'application** : Paramètres › Sécurité › Épinglage d'écran. Ouvrir Corridor à la maison › applications récentes › icône « Corridor » › Épingler.
 
 ## 3. Le cycle de chaque semaine
 
-1. Du lundi au jeudi : une séance par jour. L'enfant ouvre Kono, suit la séance, fait sa fiche, tape ses réponses, enregistre son explication.
+1. Du lundi au jeudi : une séance par jour. L'enfant touche son prénom, suit la séance avec Kono, fait sa fiche, tape ses réponses, enregistre son explication.
 2. Le soir : un parent écoute l'explication (Espace parent › Suivi).
-3. **Dimanche** : Espace parent › Rapport › Copier, sur chaque tablette. Coller le rapport dans la conversation avec Claude.
+3. **Dimanche** : Espace parent › Rapport › Copier, sur chaque tablette. Le rapport est découpé par profil, avec le parcours et la classe de chaque enfant. Coller le rapport dans la conversation avec Claude.
 4. Claude produit les leçons de la semaine suivante (fichiers JSON) et le PDF des fiches, réglés sur les erreurs réelles.
-5. Déposer les nouveaux fichiers dans `lessons/` et mettre à jour `lessons/index.json`. Les tablettes les reçoivent à la prochaine ouverture avec internet.
+5. Déposer les nouveaux fichiers dans `lessons/` et mettre à jour `lessons/index.json`, au format de `CONTRAT_LECONS.md`. `python3 tools/check_lessons.py` doit rendre 0 ; le déploiement le vérifie aussi. Les tablettes reçoivent les leçons à la prochaine ouverture avec internet.
 6. Imprimer les fiches : `python3 tools/build_print.py S1` (ou utiliser le PDF fourni).
 
 Les défis ratés reviennent automatiquement au début des séances suivantes (file de révision).
 
 ## 4. Format d'une leçon (pour Claude Code ou Codex)
+
+Le contrat complet est dans `CONTRAT_LECONS.md` : chaque leçon porte un `parcours` (un identifiant de `app/parcours.json`), l'index est au schéma 2 avec les escales par parcours, et les identifiants ne changent jamais.
 
 Étapes possibles, dans l'ordre de l'enseignement explicite :
 
@@ -101,5 +106,5 @@ Jetons de texte : `{prenom}` (prénom de l'enfant), `{e}` (accord au féminin).
 - Tant qu'aucune voix n'est enregistrée ou générée, c'est la synthèse d'Android qui parle ; sa qualité dépend de la tablette.
 - Les images des histoires sont des dessins simples, en attendant un illustrateur.
 - Pas de reconnaissance vocale : la lecture à voix haute est enregistrée, un adulte l'écoute.
-- Le suivi est propre à chaque tablette. Si la tablette est réinitialisée, le suivi et les enregistrements sont perdus.
+- Le suivi est propre à chaque tablette. Si la tablette est réinitialisée, le suivi et les enregistrements sont perdus. Un profil ne se transfère pas encore d'une tablette à une autre.
 - Tester localement : `python3 -m http.server 8765 --directory app`, puis `http://localhost:8765/#test` (le mode `#test` accélère la voix pour les tests).
