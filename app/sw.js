@@ -6,7 +6,13 @@ const CORE = ['./', 'index.html', 'styles.css', 'app.js', 'manifest.webmanifest'
   'icons/icon-192.png', 'icons/icon-512.png', 'lessons/index.json', 'phrases.json', 'audio/manifest.json'];
 
 self.addEventListener('install', e => {
-  e.waitUntil(caches.open(CACHE).then(c => c.addAll(CORE)).then(() => self.skipWaiting()));
+  e.waitUntil(caches.open(CACHE).then(async c => {
+    await c.addAll(CORE);
+    /* Les leçons aussi, dès l'installation : à la première ouverture, la page n'est pas encore contrôlée par ce
+       service worker, donc les leçons qu'elle demande elle-même ne seraient pas gardées pour le hors ligne. */
+    const idx = await (await c.match('lessons/index.json')).json();
+    await c.addAll((idx.lessons || []).map(l => `lessons/${l.id}.json`));
+  }).then(() => self.skipWaiting()));
 });
 self.addEventListener('activate', e => {
   e.waitUntil(caches.keys().then(keys => Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k)))).then(() => self.clients.claim()));
