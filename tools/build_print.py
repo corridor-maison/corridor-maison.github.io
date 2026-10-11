@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
-"""Fiches imprimables générées depuis les MÊMES fichiers de leçon que la tablette.
-Usage : python3 tools/build_print.py S0   -> print/Fiches_S0.pdf
+"""Fiches imprimables de Corridor à la maison, générées depuis les MÊMES fichiers de leçon que la tablette.
+Usage : python3 tools/build_print.py S1   -> print/Fiches_S1.pdf
 """
 import asyncio, base64, json, pathlib, sys, html
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 APP = ROOT / "app"
-WEEK = sys.argv[1] if len(sys.argv) > 1 else "S0"
+WEEK = sys.argv[1] if len(sys.argv) > 1 else "S1"
 esc = lambda s: html.escape(str(s))
 
 def face(fam, f, w):
@@ -31,10 +31,10 @@ h1 {{ font-size: 20pt; margin: 3.5mm 0 0 }}
 .it .k {{ font-weight: 700; color: #555; width: 6mm; flex: none }}
 .box {{ display: inline-block; width: 24mm; height: 11mm; border: 1.6px solid #555; border-radius: 7px; vertical-align: middle; background: #fff }}
 .wl {{ height: 10mm; border-bottom: 1.3px solid #9a9a95; position: relative }} .wl::before {{ content: ''; position: absolute; left: 0; right: 0; bottom: 4.2mm; border-bottom: 1px dotted #c4c4bf }}
-.grid3 {{ display: grid; grid-template-columns: repeat(3, 1fr); gap: 4mm }}
+.grid3 {{ display: grid; grid-template-columns: repeat(3, 1fr); gap: 4mm }} .grid3 .box {{ width: 17mm }}
 .cell {{ display: flex; flex-direction: column; align-items: center; gap: 2mm }}
 .foot {{ position: absolute; bottom: 6mm; left: 13mm; right: 13mm; display: flex; justify-content: space-between; font-size: 8.5pt; color: #8a8a85; font-family: Nunito }}
-.adult {{ font-size: 10pt; line-height: 1.45 }} .adult h1 {{ font-family: Nunito; font-size: 18pt }}
+.adult {{ font-size: 9.6pt; line-height: 1.4 }} .page.adult {{ height: auto; min-height: 297mm; overflow: visible }} .page.adult .foot {{ position: static; margin-top: 6mm }} .adult h1 {{ font-family: Nunito; font-size: 18pt }}
 .adult h2 {{ font-family: Nunito; font-size: 12pt; margin: 4mm 0 1.5mm }}
 .corr {{ border: 1.4px solid; border-radius: 10px; padding: 3mm 4mm; margin-top: 3mm }}
 table.a {{ border-collapse: collapse; width: 100% }} table.a td {{ border-top: 1px solid #deded8; padding: 1.2mm 2mm; vertical-align: top }}
@@ -64,8 +64,71 @@ def numberline(a, b, marks=(), jumps=(), w=520, top=0):
         if n % 10: s += f'<text x="{X(n)}" y="{y + 24}" text-anchor="middle" font-family="Nunito" font-weight="800" font-size="14" fill="{BLEU}">{n}</text>'
     return f'<svg width="{w}" height="{66 + top}" viewBox="0 0 {w} {66 + top}">{s}</svg>'
 
+def err_text(e): return e if isinstance(e, str) else (e or {}).get("text", "")
+def icon(name, px=70):
+    b = base64.b64encode((APP / "img" / f"{name}.svg").read_bytes()).decode()
+    return f'<img src="data:image/svg+xml;base64,{b}" width="{px}" height="{px}" style="display:block">'
+def blocks_svg(h=0, t=0, u=0, c=9, regroup=False):
+    """Dizaines (barres de 10), unités (carrés, rangées de 5), centaines (plaques). Avec regroup : avant → après."""
+    def one(h, t, u):
+        x, parts, H = 0, [], 10 * c
+        for _ in range(h):
+            g = "".join(f'<line x1="{x}" y1="{k * c}" x2="{x + H}" y2="{k * c}" stroke="#8a3b2a" stroke-width=".8"/><line x1="{x + k * c}" y1="0" x2="{x + k * c}" y2="{H}" stroke="#8a3b2a" stroke-width=".8"/>' for k in range(1, 10))
+            parts.append(f'<rect x="{x}" y="0" width="{H}" height="{H}" fill="#e7a08f" stroke="#1b2430" stroke-width="1.4"/>{g}'); x += H + 6
+        for _ in range(t):
+            g = "".join(f'<line x1="{x}" y1="{k * c}" x2="{x + c}" y2="{k * c}" stroke="#1b2430" stroke-width=".7"/>' for k in range(1, 10))
+            parts.append(f'<rect x="{x}" y="0" width="{c}" height="{H}" fill="#9cc8e3" stroke="#1b2430" stroke-width="1.4"/>{g}'); x += c + 4
+        if t or h: x += 6
+        for k in range(u):
+            parts.append(f'<rect x="{x + (k % 5) * (c + 2)}" y="{(k // 5) * (c + 2)}" width="{c}" height="{c}" fill="#f6cf7a" stroke="#1b2430" stroke-width="1.2"/>')
+        w = x + (min(u, 5) * (c + 2) if u else 0)
+        return "".join(parts), max(w, 1), H
+    a, wa, H = one(h, t, u)
+    if not regroup:
+        return f'<svg width="{wa}" height="{H}" viewBox="0 0 {wa} {H}">{a}</svg>'
+    h2, t2, u2 = h, t, u
+    while u2 >= 10: u2 -= 10; t2 += 1
+    if h: 
+        while t2 >= 10: t2 -= 10; h2 += 1
+    elif t2 >= 10 and t >= 10: t2 -= 10; h2 += 1
+    b, wb, _ = one(h2, t2, u2)
+    return f'<svg width="{wa + wb + 40}" height="{H}" viewBox="0 0 {wa + wb + 40} {H}">{a}<path d="M{wa + 8} {H / 2} h22 m-7 -6 l7 6 l-7 6" fill="none" stroke="#1b2430" stroke-width="2.2"/><g transform="translate({wa + 40} 0)">{b}</g></svg>'
+def bar_svg(v, w=330):
+    parts = v.get("parts", []); known = sum(p for p in parts if p is not None)
+    total = v["whole"] if v.get("whole") is not None else known
+    vals = [p if p is not None else max(total - known, total * .15) for p in parts]; S = sum(vals) or 1
+    x, out, unit = 4, "", (" " + v["unit"]) if v.get("unit") else ""
+    for i, val in enumerate(vals):
+        ww = (w - 8) * val / S; q = parts[i] is None; dash = 'stroke-dasharray="5 4"' if q else ""
+        out += f'<rect x="{x}" y="30" width="{ww}" height="30" fill="{"#fff" if q else ("#fbe9c8" if i % 2 == 0 else "#e2ebf7")}" stroke="#1b2430" stroke-width="1.6" {dash}/>'
+        out += f'<text x="{x + ww / 2}" y="51" text-anchor="middle" font-family="Nunito" font-weight="800" font-size="14">{"?" if q else str(parts[i]) + unit}</text>'
+        if v.get("labels") and i < len(v["labels"]): out += f'<text x="{x + ww / 2}" y="76" text-anchor="middle" font-family="Andika" font-size="11" fill="#55554f">{esc(v["labels"][i])}</text>'
+        x += ww
+    wq = v.get("whole") is None
+    out += f'<path d="M4 25 q0 -7 7 -7 H{w / 2 - 7} q7 0 7 -7 q0 7 7 7 H{w - 11} q7 0 7 7" fill="none" stroke="#1b2430" stroke-width="1.6"/><text x="{w / 2}" y="8" text-anchor="middle" font-family="Nunito" font-weight="800" font-size="14">{"?" if wq else str(v["whole"]) + unit}</text>'
+    return f'<svg width="{w}" height="82" viewBox="0 -4 {w} 86">{out}</svg>'
+def model_visual(L):
+    v = L["paper"].get("model_visual")
+    if v is None:
+        return numberline(30, 50, marks=(38, 40, 45), jumps=((38, 40, "+2"), (40, 45, "+5")), w=330, top=26) if L["child"] == "bleu" else tenframe(7, 26)
+    k = v.get("kind")
+    if k == "numberline": return numberline(v["from"], v["to"], marks=v.get("marks", ()), jumps=v.get("jumps", ()), w=330, top=26)
+    if k == "tenframe": return tenframe(v.get("filled", 0), 26)
+    if k == "blocks": return blocks_svg(v.get("h", 0), v.get("t", 0), v.get("u", 0), c=7 if v.get("regroup") else 8, regroup=v.get("regroup", False))
+    if k == "bar": return bar_svg(v)
+    if k == "items": return '<div style="display:grid;grid-template-columns:repeat(5,auto);gap:2px">' + icon(v.get("item", "mangue"), 30) * v["n"] + "</div>"
+    return ""
+
 def item_html(it, color):
     q = it["q"]
+    if "blocks" in it:
+        b = it["blocks"]
+        return f'<div class="cell">{blocks_svg(b.get("h", 0), b.get("t", 0), b.get("u", 0), c=6)}<span style="font-size:11pt;text-align:center">{esc(q)}</span><span class="box"></span></div>'
+    if "syll" in it:
+        circ = "".join('<svg width="22" height="22"><circle cx="11" cy="11" r="9" fill="#fff" stroke="#1b2430" stroke-width="1.8"/></svg>' for _ in range(3))
+        return f'<div class="cell">{icon(it["syll"]["name"], 74)}<div style="display:flex;gap:4px">{circ}</div><span class="box" style="width:16mm"></span></div>'
+    if "draw" in it:
+        return f'<div class="it" style="align-items:flex-start"><span class="k">{esc(it["id"])})</span><div style="flex:1;font-size:13pt">{esc(q)}<div style="height:30mm;border:1.6px dashed #9a9a95;border-radius:10px;margin-top:2mm"></div></div></div>' 
     if "tenframe" in it:
         if "answer" in it: return f'<div class="cell">{tenframe(it["tenframe"])}<span class="box"></span></div>'
         return f'<div class="it"><span class="k">{esc(it["id"])})</span><div>{esc(q)}<div style="margin-top:2mm">{tenframe(0, 34)}</div>{lines(it.get("lines", 1))}</div></div>'
@@ -82,14 +145,11 @@ def kid_page(L, n):
     c = L["child"]; color = BLEU if c == "bleu" else ORANGE; P = L["paper"]
     who = "BLEU · 7 ans" if c == "bleu" else "ORANGE · 5 ans ½"
     model = P.get("model", "")
-    if c == "bleu":
-        visual = numberline(30, 50, marks=(38, 40, 45), jumps=((38, 40, "+2"), (40, 45, "+5")), w=330, top=26)
-    else:
-        visual = tenframe(7, 26)
+    visual = model_visual(L)
     body = ""
     for lv in P["levels"]:
         items = lv["items"]
-        if all(("tenframe" in it and "answer" in it) or (len(it["q"]) < 12 and "?" not in it["q"] and "line" not in it and "tenframe" not in it) for it in items):
+        if all(("tenframe" in it and "answer" in it) or "blocks" in it or "syll" in it or (len(it["q"]) < 12 and "?" not in it["q"] and "line" not in it and "tenframe" not in it) for it in items):
             inner = '<div class="grid3">' + "".join(item_html(it, color) for it in items) + "</div>"
         else:
             inner = "".join(item_html(it, color) for it in items)
@@ -99,16 +159,18 @@ def kid_page(L, n):
 <h1 style="color:{color}">{esc(P["title"])}</h1>
 <div class="model"><div style="flex:1"><b>Ce que Kono m'a montré</b><br>{esc(model)}</div>{visual}</div>
 {body}
-<div class="foot"><span>Corridor à la maison · {esc(L["week"])} · même contenu que la tablette</span><span>{n}</span></div></section>'''
+<div class="foot"><span>Corridor à la maison · {esc(L["week"])} · {esc(L.get("day", ""))} · même contenu que la tablette</span><span>{n}</span></div></section>'''
 
 def reading_pages(L, n0):
     out = []
     for st in L["steps"]:
-        if st.get("type") != "reading": continue
+        if st.get("type") != "reading" or st.get("reread"): continue
         total, rows = 0, ""
+        nwords = sum(len([w for w in x.split() if any(ch.isalnum() for ch in w)]) for x in st["passage"])
+        fs = 17 if nwords <= 70 else 15.5 if nwords <= 85 else 14.5
         for sent in st["passage"]:
             total += len([w for w in sent.split() if any(ch.isalnum() for ch in w)])
-            rows += f'<tr><td style="font-size:17pt;line-height:1.7;padding:1.5mm 3mm">{esc(sent)}</td><td style="width:14mm;text-align:right;color:#8a8a85;font-family:Nunito;font-weight:800">{total}</td></tr>'
+            rows += f'<tr><td style="font-size:{fs}pt;line-height:1.65;padding:1.3mm 3mm">{esc(sent)}</td><td style="width:14mm;text-align:right;color:#8a8a85;font-family:Nunito;font-weight:800">{total}</td></tr>'
         mes = "".join(f'<tr><td>{k}</td><td></td><td></td><td></td><td></td></tr>' for k in range(1, 5))
         color = BLEU if L["child"] == "bleu" else ORANGE
         out.append(f'''<section class="page"><div class="band" style="background:{color}"><span><b>TEXTE À RELIRE</b> &nbsp;<span class="what">{esc(L["week"])} · Lecture</span></span><span class="pr">Prénom :</span></div>
@@ -128,11 +190,11 @@ def maman_page(lessons, n):
         rows = ""
         for lv in L["paper"]["levels"]:
             for it in lv["items"]:
-                errs = "; ".join(f"{k} : {v}" for k, v in (it.get("errors") or {}).items())
+                errs = "; ".join(f"{k} : {err_text(v)}" for k, v in (it.get("errors") or {}).items())
                 rows += f'<tr><td style="white-space:nowrap">{"★" * lv["stars"]} {esc(it["id"])})</td><td>{esc(it.get("short") or it["q"])}</td><td><b>{esc(it.get("answer", "réponse libre"))}</b></td><td class="small" style="color:#6b6b66">{esc(errs)}</td></tr>'
         notes = "".join(f"<li>{esc(t)}</li>" for t in L["paper"].get("maman", []))
         blocks += f'''<div class="corr" style="border-color:{color}"><h2 style="margin-top:0;color:{color}">{"Bleu" if L["child"] == "bleu" else "Orange"} · {esc(L["title"])}</h2>
-<p style="margin:0 0 2mm"><b>Objectif :</b> {esc(L["objective"])} <span style="color:#6b6b66">({esc(L["programme"])})</span></p>
+<p style="margin:0 0 2mm"><b>Objectif :</b> {esc(L["objective"])} <span style="color:#6b6b66">({esc(L.get("programme_label", L.get("programme", "")))})</span></p>
 <ul style="margin:0 0 2mm 4mm;padding-left:3mm">{notes}</ul>
 <table class="a"><tr><td><b>Niveau</b></td><td><b>Exercice</b></td><td><b>Réponse</b></td><td><b>Erreurs typiques et ce que dit la tablette</b></td></tr>{rows}</table></div>'''
     return f'''<section class="page adult"><div style="border-bottom:3px solid #2b2b28;padding-bottom:2mm"><div style="font-family:Nunito;font-weight:800;color:#7a4ea3;letter-spacing:1.5px;font-size:9pt">CARTE MAMAN · {esc(WEEK)}</div><h1 style="margin:1mm 0 0">Réponses et points à surveiller · {"Bleu" if lessons[0]["child"] == "bleu" else "Orange"}</h1></div>

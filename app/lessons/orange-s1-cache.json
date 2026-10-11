@@ -1,0 +1,632 @@
+{
+ "id": "orange-s1-cache",
+ "child": "orange",
+ "programme": "GS",
+ "order": 1,
+ "week": "S1",
+ "day": "mardi",
+ "title": "La calebasse magique",
+ "domain": "Nombres",
+ "programme_label": "Grande section · décomposer les nombres jusqu'à 10 (ici 5 et 6)",
+ "objective": "Trouver combien de mangues sont cachées quand on en voit une partie : 5, c'est 3 et 2.",
+ "skills": [
+  "GS.N.decomposer",
+  "GS.N.denombrer",
+  "GS.O.recit",
+  "GS.O.vocabulaire"
+ ],
+ "escale": 1,
+ "steps": [
+  {
+   "type": "maman",
+   "clip": "bonjour_orange"
+  },
+  {
+   "type": "say",
+   "text": "Coucou {prenom} ! C'est Kono. Aujourd'hui : le jeu rapide, une calebasse magique qui cache des mangues, et l'histoire de Bintou.",
+   "show": [
+    {
+     "kind": "title",
+     "text": "La calebasse magique"
+    }
+   ]
+  },
+  {
+   "type": "part",
+   "n": 1,
+   "title": "Jeu rapide",
+   "text": "Premier temps : le jeu rapide."
+  },
+  {
+   "type": "drill",
+   "id": "jeu-rapide-orange",
+   "title": "Jeu rapide",
+   "seconds": 120,
+   "count": 8,
+   "input": "choice",
+   "text": "Huit petites questions. Regarde bien, et touche la bonne réponse.",
+   "kinds": [
+    {
+     "kind": "count-tf",
+     "w": 1
+    },
+    {
+     "kind": "tf-complement",
+     "w": 1
+    },
+    {
+     "kind": "decomp",
+     "n": [
+      5
+     ],
+     "w": 2
+    }
+   ]
+  },
+  {
+   "type": "part",
+   "n": 2,
+   "title": "La leçon",
+   "text": "Deuxième temps : la calebasse magique."
+  },
+  {
+   "type": "review",
+   "fallback": [
+    {
+     "type": "choice",
+     "id": "rappel-amis-7",
+     "text": "Tu te souviens des amis de 10 ? 7 points. Combien de cases vides ?",
+     "say": "Tu te souviens des amis de dix ? Sept points. Combien de cases vides ?",
+     "show": [
+      {
+       "kind": "tenframe",
+       "filled": 7
+      }
+     ],
+     "options": [
+      7,
+      3,
+      4
+     ],
+     "optionKind": "dots",
+     "answer": 3,
+     "errors": {
+      "7": "Tu as compté les points. Moi, je cherche les cases vides, les cases blanches.",
+      "4": "Recompte les cases blanches, en les touchant une par une."
+     },
+     "hints": [
+      "Sept et combien font dix ? Compte les cases blanches."
+     ],
+     "sol": "Sept et trois font dix.",
+     "skill": "GS.N.amis10"
+    }
+   ]
+  },
+  {
+   "type": "demo",
+   "title": "Je te montre",
+   "lines": [
+    {
+     "text": "Voici 5 mangues. Comptons : 1, 2, 3, 4, 5.",
+     "say": "Voici cinq mangues. Comptons : un, deux, trois, quatre, cinq.",
+     "show": [
+      {
+       "kind": "items",
+       "n": 5,
+       "item": "mangue"
+      }
+     ]
+    },
+    {
+     "text": "Je pose ma calebasse magique sur des mangues. Hop !",
+     "show": [
+      {
+       "kind": "hidden",
+       "total": 5,
+       "visible": 3,
+       "item": "mangue"
+      }
+     ]
+    },
+    {
+     "text": "Je vois 3 mangues. Mais il y en a 5 en tout. Combien sont cachées ?",
+     "say": "Je vois trois mangues. Mais il y en a cinq en tout. Combien sont cachées ?",
+     "show": [
+      {
+       "kind": "hidden",
+       "total": 5,
+       "visible": 3,
+       "item": "mangue"
+      },
+      {
+       "kind": "text",
+       "text": "5 en tout"
+      }
+     ]
+    },
+    {
+     "text": "Je cherche avec mes doigts. Je montre 5 doigts : ce sont toutes les mangues.",
+     "say": "Je cherche avec mes doigts. Je montre cinq doigts : ce sont toutes les mangues.",
+     "show": [
+      {
+       "kind": "fingers",
+       "up": 5
+      }
+     ]
+    },
+    {
+     "text": "Je baisse 3 doigts, pour les 3 mangues que je vois. Il reste 2 doigts levés.",
+     "say": "Je baisse trois doigts, pour les trois mangues que je vois. Il reste deux doigts levés.",
+     "show": [
+      {
+       "kind": "fingers",
+       "up": 2
+      }
+     ]
+    },
+    {
+     "text": "Il y a 2 mangues cachées ! Je soulève la calebasse : 1, 2. Les voilà !",
+     "say": "Il y a deux mangues cachées ! Je soulève la calebasse : un, deux. Les voilà !",
+     "show": [
+      {
+       "kind": "items",
+       "n": 5,
+       "item": "mangue"
+      }
+     ]
+    },
+    {
+     "text": "5, c'est 3 et 2.",
+     "say": "Cinq, c'est trois et deux.",
+     "show": [
+      {
+       "kind": "hidden",
+       "total": 5,
+       "visible": 3,
+       "item": "mangue"
+      },
+      {
+       "kind": "expr",
+       "text": "5, c'est 3 et 2"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "type": "say",
+   "text": "À toi. On cherche ensemble les mangues cachées. Tes doigts vont t'aider.",
+   "show": [
+    {
+     "kind": "hidden",
+     "total": 5,
+     "visible": 2,
+     "item": "mangue"
+    }
+   ]
+  },
+  {
+   "type": "choice",
+   "id": "cache-guide-5-2",
+   "text": "5 mangues en tout. Tu en vois 2. Combien sont cachées ?",
+   "say": "Il y a cinq mangues en tout. Tu en vois deux. Montre cinq doigts, puis baisse deux doigts. Combien de doigts restent levés ? C'est le nombre de mangues cachées.",
+   "show": [
+    {
+     "kind": "hidden",
+     "total": 5,
+     "visible": 2,
+     "item": "mangue"
+    },
+    {
+     "kind": "text",
+     "text": "5 en tout"
+    }
+   ],
+   "options": [
+    2,
+    3,
+    5
+   ],
+   "optionKind": "dots",
+   "answer": 3,
+   "errors": {
+    "2": "Tu as compté les mangues que tu vois. Moi, je cherche celles qui sont sous la calebasse.",
+    "5": "Cinq, c'est toutes les mangues. Combien sont cachées sous la calebasse ?"
+   },
+   "hints": [
+    "Montre cinq doigts. Baisse deux doigts. Compte ceux qui restent levés."
+   ],
+   "sol": "Cinq, c'est deux et trois. Trois mangues sont cachées.",
+   "skill": "GS.N.decomposer"
+  },
+  {
+   "type": "choice",
+   "id": "cache-guide-6-3",
+   "text": "Maintenant, 6 mangues en tout. Tu en vois 3. Combien sont cachées ?",
+   "say": "Maintenant, six mangues en tout. Tu en vois trois. Montre six doigts : une main entière, et encore un doigt. Baisse trois doigts. Combien restent levés ?",
+   "show": [
+    {
+     "kind": "hidden",
+     "total": 6,
+     "visible": 3,
+     "item": "mangue"
+    },
+    {
+     "kind": "text",
+     "text": "6 en tout"
+    }
+   ],
+   "options": [
+    6,
+    2,
+    3
+   ],
+   "optionKind": "dots",
+   "answer": 3,
+   "errors": {
+    "6": "Six, c'est toutes les mangues. Combien sont cachées sous la calebasse ?",
+    "2": "Recompte avec tes doigts. Montre six doigts, baisse-en trois, et compte ceux qui restent."
+   },
+   "hints": [
+    "Six doigts levés. Baisse trois doigts. Compte les doigts encore levés."
+   ],
+   "sol": "Six, c'est trois et trois. Trois mangues sont cachées.",
+   "skill": "GS.N.decomposer"
+  },
+  {
+   "type": "say",
+   "text": "Maintenant, tu cherches tout{e} seul{e}. Tes doigts sont toujours là pour t'aider.",
+   "show": [
+    {
+     "kind": "hidden",
+     "total": 6,
+     "visible": 4,
+     "item": "mangue"
+    }
+   ]
+  },
+  {
+   "type": "choice",
+   "id": "cache-seul-6-4",
+   "text": "6 mangues en tout. Tu en vois 4. Combien sont cachées ?",
+   "say": "Six mangues en tout. Tu en vois quatre. Combien sont cachées ?",
+   "show": [
+    {
+     "kind": "hidden",
+     "total": 6,
+     "visible": 4,
+     "item": "mangue"
+    },
+    {
+     "kind": "text",
+     "text": "6 en tout"
+    }
+   ],
+   "options": [
+    2,
+    4,
+    6
+   ],
+   "optionKind": "dots",
+   "answer": 2,
+   "errors": {
+    "4": "Quatre, ce sont les mangues que tu vois. Combien sont sous la calebasse ?",
+    "6": "Six, c'est toutes les mangues. Cherche seulement celles qui sont cachées."
+   },
+   "hints": [
+    "Montre six doigts. Baisse quatre doigts. Compte ceux qui restent."
+   ],
+   "sol": "Six, c'est quatre et deux. Deux mangues sont cachées.",
+   "skill": "GS.N.decomposer"
+  },
+  {
+   "type": "choice",
+   "id": "cache-seul-6-1",
+   "text": "Et là ? 6 mangues en tout. Tu en vois 1. Combien sont cachées ?",
+   "say": "Et là ? Six mangues en tout. Tu en vois une seule. Combien sont cachées ?",
+   "show": [
+    {
+     "kind": "hidden",
+     "total": 6,
+     "visible": 1,
+     "item": "mangue"
+    },
+    {
+     "kind": "text",
+     "text": "6 en tout"
+    }
+   ],
+   "options": [
+    1,
+    5,
+    6
+   ],
+   "optionKind": "dots",
+   "answer": 5,
+   "errors": {
+    "1": "Une, c'est la mangue que tu vois. Combien sont sous la calebasse ?",
+    "6": "Six, c'est toutes les mangues. Mais une mangue n'est pas cachée : tu la vois."
+   },
+   "hints": [
+    "Montre six doigts. Baisse un seul doigt. Compte ceux qui restent levés."
+   ],
+   "sol": "Six, c'est un et cinq. Cinq mangues sont cachées.",
+   "skill": "GS.N.decomposer"
+  },
+  {
+   "type": "manip",
+   "mode": "tenframe",
+   "id": "pose-6-total",
+   "start": 4,
+   "goal": "total",
+   "item": "mangue",
+   "answer": 6,
+   "text": "Il y a 4 mangues. Pose des mangues pour en avoir 6 en tout.",
+   "say": "Il y a déjà quatre mangues dans la boîte. Pose des mangues pour en avoir six en tout. Puis valide.",
+   "errors": {
+    "10": "La boîte est pleine : ça fait dix mangues. Il en faut six. Enlève des mangues.",
+    "8": "Tu as posé six mangues de plus. Mais il en faut six en tout. Compte toutes les mangues, et enlève celles en trop.",
+    "7": "Il y en a une de trop. Compte toutes les mangues, puis enlève-en une.",
+    "5": "Il en manque une. Compte toutes les mangues, une par une."
+   },
+   "hints": [
+    "Compte les mangues déjà là : un, deux, trois, quatre. Continue en posant : cinq, six. Stop !"
+   ],
+   "sol": "Quatre et deux font six.",
+   "skill": "GS.N.decomposer"
+  },
+  {
+   "type": "maman",
+   "clip": "fiche"
+  },
+  {
+   "type": "paper",
+   "text": "Prends ta fiche orange « La calebasse magique ».",
+   "say": "Prends ta fiche orange « La calebasse magique ». Une étoile : il en faut cinq, une ligne pleine. Compte ce qui manque, et écris le nombre. Deux étoiles : trouve le nombre caché. Quand tu as fini, tape tes réponses ici."
+  },
+  {
+   "type": "part",
+   "n": 3,
+   "title": "Histoire",
+   "text": "Troisième temps : l'histoire."
+  },
+  {
+   "type": "story",
+   "id": "panier-bintou",
+   "title": "Le panier de Bintou",
+   "pass": 2,
+   "sentences": [
+    "Au marché de Ségou, Bintou vend des mangues avec sa grand-mère.",
+    "Un matin, le vent se met à souffler très fort.",
+    "Le panier de mangues tombe et roule jusqu'au fleuve !",
+    "Bintou a peur : ses mangues vont partir sur l'eau.",
+    "Un vieux pêcheur voit le panier qui flotte.",
+    "Il rame vite avec sa pirogue et attrape le panier.",
+    "Bintou est très contente. Elle dit merci au pêcheur.",
+    "Pour le remercier, elle lui donne la plus belle mangue."
+   ],
+   "vocab": [
+    {
+     "word": "souffler",
+     "say": "Souffler, c'est pousser de l'air très fort. Souffle très fort, comme le vent !"
+    },
+    {
+     "word": "flotter",
+     "say": "Flotter, c'est rester sur l'eau sans couler. Mets ta main à plat et fais-la glisser doucement, comme sur l'eau."
+    },
+    {
+     "word": "ramer",
+     "say": "Ramer, c'est pousser l'eau avec une rame pour faire avancer la pirogue. Fais comme si tu ramais !"
+    }
+   ],
+   "questions": [
+    {
+     "type": "choice",
+     "id": "bintou-rame-vite",
+     "text": "Pourquoi le pêcheur rame-t-il vite ?",
+     "say": "Pourquoi le pêcheur rame-t-il vite ? Pour aller pêcher ? Pour attraper le panier ? Ou pour faire la course ?",
+     "options": [
+      "Pour aller pêcher",
+      "Pour attraper le panier",
+      "Pour faire la course"
+     ],
+     "answer": "Pour attraper le panier",
+     "errors": {
+      "Pour aller pêcher": "C'est vrai, c'est un pêcheur. Mais là, il voit quelque chose qui flotte sur l'eau. Quoi ?",
+      "Pour faire la course": "Il n'y a pas de course dans l'histoire. Que voit-il sur le fleuve ?"
+     },
+     "hints": [
+      "Le panier part sur l'eau. Il faut aller vite, avant qu'il soit trop loin !"
+     ],
+     "sol": "Il rame vite pour attraper le panier avant qu'il parte loin.",
+     "skill": "GS.O.recit"
+    },
+    {
+     "type": "choice",
+     "id": "bintou-panier-tombe",
+     "text": "Que ressent Bintou quand le panier tombe ?",
+     "say": "Que ressent Bintou quand le panier tombe ? Elle rit ? Elle est contente ? Ou elle a peur ?",
+     "options": [
+      "Elle rit",
+      "Elle est contente",
+      "Elle a peur"
+     ],
+     "answer": "Elle a peur",
+     "errors": {
+      "Elle rit": "On rit quand c'est drôle. Ses mangues roulent vers le fleuve : est-ce drôle pour elle ?",
+      "Elle est contente": "Elle sera contente à la fin, avec le pêcheur. Mais quand le panier tombe ?"
+     },
+     "hints": [
+      "Imagine : tes mangues roulent vers l'eau. Comment tu te sens ?"
+     ],
+     "sol": "Elle a peur : ses mangues vont partir sur l'eau.",
+     "skill": "GS.O.recit"
+    },
+    {
+     "type": "choice",
+     "id": "bintou-aide-merci",
+     "text": "Le pêcheur a aidé Bintou. Que fait-on quand quelqu'un nous aide ?",
+     "say": "Le pêcheur a aidé Bintou. Et toi, que fais-tu quand quelqu'un t'aide ? On se fâche ? On dit merci ? Ou on ne dit rien ?",
+     "options": [
+      "On se fâche",
+      "On dit merci",
+      "On ne dit rien"
+     ],
+     "answer": "On dit merci",
+     "errors": {
+      "On se fâche": "On ne se fâche pas contre quelqu'un de gentil. Que dit Bintou au pêcheur ?",
+      "On ne dit rien": "Bintou ne reste pas sans rien dire. Elle dit un mot gentil. Lequel ?"
+     },
+     "hints": [
+      "Écoute la fin de l'histoire : Bintou dit… ?"
+     ],
+     "sol": "On dit merci. Bintou dit merci, et elle donne sa plus belle mangue.",
+     "skill": "GS.O.recit"
+    }
+   ],
+   "scenes": [
+    "marche",
+    "vent",
+    "pecheur",
+    "merci"
+   ],
+   "retell": "Raconte l'histoire avec les images. Dis aussi ce que ressent Bintou : quand elle a peur, et quand elle est contente. Appuie sur le rond rouge, raconte tout, puis appuie encore une fois."
+  },
+  {
+   "type": "part",
+   "n": 4,
+   "title": "Ce que j'ai appris",
+   "text": "Dernier temps : ce que tu as appris."
+  },
+  {
+   "type": "say",
+   "text": "Aujourd'hui, tu as appris que 5, c'est 3 et 2. Même cachées, les mangues sont toujours là ! Ce soir, cache des cailloux sous ta main et fais deviner à Maman combien il y en a.",
+   "say": "Aujourd'hui, tu as appris que cinq, c'est trois et deux. Même cachées, les mangues sont toujours là ! Ce soir, cache des cailloux sous ta main et fais deviner à Maman combien il y en a.",
+   "show": [
+    {
+     "kind": "hidden",
+     "total": 5,
+     "visible": 3,
+     "item": "mangue"
+    },
+    {
+     "kind": "expr",
+     "text": "5, c'est 3 et 2"
+    }
+   ]
+  },
+  {
+   "type": "end",
+   "clip": "fin_orange"
+  }
+ ],
+ "paper": {
+  "title": "La calebasse magique",
+  "model": "5 mangues : j'en vois 3, il y en a 2 cachées. 5, c'est 3 et 2.",
+  "model_visual": {
+   "kind": "items",
+   "n": 5,
+   "item": "mangue"
+  },
+  "levels": [
+   {
+    "stars": 1,
+    "ins": "Il en faut 5 : une ligne pleine. Combien en manque-t-il ?",
+    "who": "seul",
+    "items": [
+     {
+      "id": "a",
+      "q": "boîte avec 3 points, il en faut 5",
+      "tenframe": 3,
+      "answer": 2,
+      "errors": {
+       "7": "Tu as compté toutes les cases vides. Il en faut cinq : regarde seulement la ligne du haut.",
+       "3": "Trois, ce sont les points. Combien de cases vides sur la ligne du haut ?"
+      }
+     },
+     {
+      "id": "b",
+      "q": "boîte avec 4 points, il en faut 5",
+      "tenframe": 4,
+      "answer": 1,
+      "errors": {
+       "6": "Tu as compté toutes les cases vides. Il en faut cinq : regarde seulement la ligne du haut.",
+       "4": "Quatre, ce sont les points. Combien de cases vides sur la ligne du haut ?"
+      }
+     },
+     {
+      "id": "c",
+      "q": "boîte avec 1 point, il en faut 5",
+      "tenframe": 1,
+      "answer": 4,
+      "errors": {
+       "9": "Tu as compté toutes les cases vides. Il en faut cinq : regarde seulement la ligne du haut.",
+       "1": "Un, c'est le point. Combien de cases vides sur la ligne du haut ?"
+      }
+     }
+    ]
+   },
+   {
+    "stars": 2,
+    "ins": "Trouve le nombre caché.",
+    "who": "seul",
+    "items": [
+     {
+      "id": "d",
+      "q": "3 + ? = 5",
+      "answer": 2,
+      "errors": {
+       "8": "Tu as ajouté trois et cinq. Mais il faut cinq en tout : trois et combien ?"
+      }
+     },
+     {
+      "id": "e",
+      "q": "2 + ? = 6",
+      "answer": 4,
+      "errors": {
+       "8": "Tu as ajouté deux et six. Mais il faut six en tout : deux et combien ?"
+      }
+     },
+     {
+      "id": "f",
+      "q": "5 + ? = 6",
+      "answer": 1,
+      "errors": {
+       "11": "Tu as ajouté cinq et six. Mais il faut six en tout : cinq et combien ?"
+      }
+     }
+    ]
+   },
+   {
+    "stars": 3,
+    "ins": "Maman lit. Tu cherches.",
+    "who": "maman",
+    "items": [
+     {
+      "id": "g",
+      "q": "J'ai 6 mangues. J'en cache 2 sous la calebasse. Combien de mangues je vois ?",
+      "short": "6 mangues, 2 cachées",
+      "answer": 4,
+      "errors": {
+       "8": "Tu as ajouté. Quand on cache des mangues, on en voit moins.",
+       "2": "Deux, ce sont les mangues cachées. Combien en vois-tu ?"
+      }
+     },
+     {
+      "id": "h",
+      "q": "Dessine 5 mangues, puis une calebasse qui cache 2 mangues.",
+      "draw": {
+       "n": 5,
+       "item": "mangue"
+      }
+     }
+    ]
+   }
+  ],
+  "maman": [
+   "La tablette cache des mangues sous une calebasse : l'enfant voit une partie et cherche la partie cachée. C'est décomposer un nombre : 5, c'est 3 et 2 ; 6, c'est 4 et 2.",
+   "Erreur typique : donner le nombre de mangues visibles, ou le total. Faites montrer le total avec les doigts, puis baisser un doigt par mangue visible : les doigts levés sont les mangues cachées.",
+   "Au ★, il faut compléter la ligne du haut (5), pas toute la boîte (10) : c'est le piège de lundi. Ce soir, jouez aux cailloux cachés sous la main, avec 5 puis 6 cailloux, à tour de rôle."
+  ]
+ }
+}

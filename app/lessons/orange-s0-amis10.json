@@ -1,12 +1,20 @@
 {
  "id": "orange-s0-amis10",
  "child": "orange",
+ "programme": "GS",
  "order": 0,
- "week": "S0",
+ "week": "S1",
  "title": "Les amis de 10",
  "domain": "Nombres",
- "programme": "Grande section · décomposer les nombres jusqu'à 10",
+ "programme_label": "Grande section · décomposer les nombres jusqu'à 10",
  "objective": "Trouver ce qui manque pour faire 10, avec la boîte à dix et avec les doigts.",
+ "skills": [
+  "GS.N.amis10",
+  "GS.N.decomposer",
+  "GS.O.recit",
+  "GS.O.vocabulaire"
+ ],
+ "day": "lundi",
  "steps": [
   {
    "type": "maman",

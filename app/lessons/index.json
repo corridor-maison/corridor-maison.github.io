@@ -1,20 +1,98 @@
 {
- "version": "S0-v0.2",
+ "version": "S1-v0.3.1",
+ "programmes": [
+  {
+   "code": "GS",
+   "label": "Grande section",
+   "progression": "progression/gs.json",
+   "theme": "orange"
+  },
+  {
+   "code": "CE1",
+   "label": "CE1",
+   "progression": "progression/ce1.json",
+   "theme": "bleu"
+  }
+ ],
  "lessons": [
   {
    "id": "bleu-s0-dizaine",
    "child": "bleu",
+   "programme": "CE1",
    "order": 0,
    "title": "Passer par la dizaine",
-   "week": "S0",
+   "week": "S1",
+   "day": "lundi",
+   "escale": 1
+  },
+  {
+   "id": "bleu-s1-echange",
+   "child": "bleu",
+   "programme": "CE1",
+   "order": 1,
+   "title": "La dizaine qui se forme",
+   "week": "S1",
+   "day": "mardi",
+   "escale": 1
+  },
+  {
+   "id": "bleu-s1-centaine",
+   "child": "bleu",
+   "programme": "CE1",
+   "order": 2,
+   "title": "Dix dizaines, une centaine",
+   "week": "S1",
+   "day": "mercredi",
+   "escale": 1
+  },
+  {
+   "id": "bleu-s1-marche",
+   "child": "bleu",
+   "programme": "CE1",
+   "order": 3,
+   "title": "Problèmes au marché",
+   "week": "S1",
+   "day": "jeudi",
    "escale": 1
   },
   {
    "id": "orange-s0-amis10",
    "child": "orange",
+   "programme": "GS",
    "order": 0,
    "title": "Les amis de 10",
-   "week": "S0",
+   "week": "S1",
+   "day": "lundi",
+   "escale": 1
+  },
+  {
+   "id": "orange-s1-cache",
+   "child": "orange",
+   "programme": "GS",
+   "order": 1,
+   "title": "La calebasse magique",
+   "week": "S1",
+   "day": "mardi",
+   "escale": 1
+  },
+  {
+   "id": "orange-s1-collection",
+   "child": "orange",
+   "programme": "GS",
+   "order": 2,
+   "title": "Le panier de mangues",
+   "week": "S1",
+   "day": "mercredi",
+   "escale": 1
+  },
+  {
+   "id": "orange-s1-syllabes",
+   "child": "orange",
+   "programme": "GS",
+   "order": 3,
+   "title": "Les syllabes",
+   "week": "S1",
+   "day": "jeudi",
    "escale": 1
   }
  ],
@@ -22,27 +100,27 @@
   {
    "n": 1,
    "name": "Bamako",
-   "sessions": 28
+   "sessions": 4
   },
   {
    "n": 2,
    "name": "Ségou",
-   "sessions": 28
+   "sessions": 32
   },
   {
    "n": 3,
    "name": "Djenné et Mopti",
-   "sessions": 28
+   "sessions": 36
   },
   {
    "n": 4,
    "name": "Tombouctou",
-   "sessions": 28
+   "sessions": 40
   },
   {
    "n": 5,
    "name": "Gao",
-   "sessions": 28
+   "sessions": 0
   }
  ]
 }

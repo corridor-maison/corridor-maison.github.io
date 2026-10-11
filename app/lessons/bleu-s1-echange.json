@@ -1,0 +1,712 @@
+{
+ "id": "bleu-s1-echange",
+ "child": "bleu",
+ "programme": "CE1",
+ "order": 1,
+ "week": "S1",
+ "day": "mardi",
+ "title": "La dizaine qui se forme",
+ "domain": "Nombres",
+ "programme_label": "CE1 · numération : échanger 10 unités contre 1 dizaine",
+ "objective": "Comprendre pourquoi 29 + 4 fait 33 et pas 213 : 10 unités s'échangent contre 1 dizaine, et 3 dizaines et 13 unités, c'est 43.",
+ "skills": [
+  "N.echange",
+  "C.dizaine",
+  "L.fluence",
+  "O.expliquer"
+ ],
+ "escale": 1,
+ "steps": [
+  {
+   "type": "maman",
+   "clip": "bonjour_bleu"
+  },
+  {
+   "type": "say",
+   "text": "Salut {prenom} ! La dernière fois, tu as passé la dizaine sur la ligne des nombres. Aujourd'hui, tu vas voir une dizaine se former. D'abord le calcul express, puis la leçon, puis une nouvelle lecture.",
+   "show": [
+    {
+     "kind": "title",
+     "text": "La dizaine qui se forme"
+    }
+   ]
+  },
+  {
+   "type": "part",
+   "n": 1,
+   "title": "Calcul express",
+   "text": "Premier temps : le calcul express."
+  },
+  {
+   "type": "drill",
+   "id": "calcul-express-bleu",
+   "title": "Calcul express",
+   "seconds": 150,
+   "count": 10,
+   "input": "keypad",
+   "text": "Dix calculs, comme la dernière fois. Tu joues contre toi-même, pas contre le chronomètre.",
+   "kinds": [
+    {
+     "kind": "complement-next-ten",
+     "w": 2
+    },
+    {
+     "kind": "through10",
+     "w": 2
+    },
+    {
+     "kind": "complement10",
+     "w": 1
+    },
+    {
+     "kind": "double",
+     "min": 5,
+     "max": 15,
+     "w": 1
+    }
+   ]
+  },
+  {
+   "type": "part",
+   "n": 2,
+   "title": "La leçon",
+   "text": "Deuxième temps : la leçon du jour."
+  },
+  {
+   "type": "review",
+   "fallback": [
+    {
+     "type": "number",
+     "id": "rappel-48-5",
+     "skill": "C.dizaine",
+     "text": "Échauffement avec l'astuce de la dernière fois : 48 + 5 = ? Passe par 50.",
+     "say": "Échauffement avec l'astuce de la dernière fois : quarante-huit plus cinq ? Passe par cinquante.",
+     "show": [
+      {
+       "kind": "expr",
+       "text": "48 + 5"
+      },
+      {
+       "kind": "numberline",
+       "from": 40,
+       "to": 60,
+       "marks": [
+        48,
+        50
+       ]
+      }
+     ],
+     "answer": 53,
+     "errors": {
+      "413": "Tu as écrit 13 à côté du 4. Passe plutôt par 50 : 48 + 2 = 50, puis il reste 3.",
+      "43": "Tu as oublié une dizaine : 8 + 5 = 13, on passe à la dizaine suivante. Passe par 50.",
+      "52": "Presque ! Le 5, c'est 2 pour aller à 50, et il reste 3."
+     },
+     "hints": [
+      "Combien manque-t-il à 48 pour arriver à 50 ?",
+      "48 + 2 = 50. Il reste 3 à ajouter."
+     ],
+     "sol": "48 + 2 = 50, puis 50 + 3 = 53.",
+     "after": [
+      {
+       "kind": "expr",
+       "text": "48 + 5 = 53"
+      },
+      {
+       "kind": "numberline",
+       "from": 40,
+       "to": 60,
+       "marks": [
+        48,
+        50,
+        53
+       ],
+       "jumps": [
+        [
+         48,
+         50,
+         "+2"
+        ],
+        [
+         50,
+         53,
+         "+3"
+        ]
+       ]
+      }
+     ]
+    },
+    {
+     "type": "number",
+     "id": "rappel-67-70",
+     "skill": "C.dizaine",
+     "text": "Combien manque-t-il à 67 pour arriver à 70 ?",
+     "say": "Combien manque-t-il à soixante-sept pour arriver à soixante-dix ?",
+     "show": [
+      {
+       "kind": "expr",
+       "text": "67 + ? = 70"
+      }
+     ],
+     "answer": 3,
+     "errors": {
+      "137": "Tu as additionné 67 et 70. Je te demande seulement ce qui manque pour aller de 67 à 70.",
+      "4": "Tu as compté 67 dans tes pas. Pars de 67 sans le compter : 68, 69, 70.",
+      "7": "7, c'est le chiffre des unités de 67. Je te demande combien il faut ajouter pour arriver à 70."
+     },
+     "hints": [
+      "Pense seulement au 7 : combien faut-il pour faire 10 ?"
+     ],
+     "sol": "67 + 3 = 70, parce que 7 + 3 = 10."
+    }
+   ]
+  },
+  {
+   "type": "demo",
+   "title": "Je te montre",
+   "lines": [
+    {
+     "text": "La dernière fois, tu as vu 29 + 4 = 33. Certains enfants écrivent 213. Regardons pourquoi c'est faux.",
+     "say": "La dernière fois, tu as vu vingt-neuf plus quatre, trente-trois. Certains enfants écrivent deux cent treize. Regardons pourquoi c'est faux.",
+     "show": [
+      {
+       "kind": "expr",
+       "text": "29 + 4"
+      }
+     ]
+    },
+    {
+     "text": "Voici 29 : 2 dizaines et 9 unités.",
+     "say": "Voici vingt-neuf : deux dizaines et neuf unités.",
+     "show": [
+      {
+       "kind": "expr",
+       "text": "29"
+      },
+      {
+       "kind": "blocks",
+       "t": 2,
+       "u": 9
+      }
+     ]
+    },
+    {
+     "text": "J'ajoute 4 unités. J'ai maintenant 2 dizaines et 13 unités.",
+     "say": "J'ajoute quatre unités. J'ai maintenant deux dizaines et treize unités.",
+     "show": [
+      {
+       "kind": "expr",
+       "text": "29 + 4"
+      },
+      {
+       "kind": "blocks",
+       "t": 2,
+       "u": 13
+      }
+     ]
+    },
+    {
+     "text": "13 unités, c'est trop ! Dans 13 unités, il y a 10 unités : je les ferme en 1 dizaine.",
+     "say": "Treize unités, c'est trop ! Dans treize unités, il y a dix unités : je les ferme en une dizaine.",
+     "show": [
+      {
+       "kind": "expr",
+       "text": "29 + 4"
+      },
+      {
+       "kind": "blocks",
+       "t": 2,
+       "u": 13,
+       "regroup": true
+      }
+     ]
+    },
+    {
+     "text": "La nouvelle dizaine rejoint les 2 autres. J'ai 3 dizaines et 3 unités : 33.",
+     "say": "La nouvelle dizaine rejoint les deux autres. J'ai trois dizaines et trois unités : trente-trois.",
+     "show": [
+      {
+       "kind": "expr",
+       "text": "29 + 4 = 33"
+      },
+      {
+       "kind": "blocks",
+       "t": 3,
+       "u": 3
+      }
+     ]
+    },
+    {
+     "text": "On n'écrit jamais 13 à la place des unités. Dès qu'il y a 10 unités, on fait 1 dizaine.",
+     "say": "On n'écrit jamais treize à la place des unités. Dès qu'il y a dix unités, on fait une dizaine.",
+     "show": [
+      {
+       "kind": "text",
+       "text": "10 unités = 1 dizaine"
+      },
+      {
+       "kind": "blocks",
+       "t": 3,
+       "u": 3
+      }
+     ]
+    },
+    {
+     "text": "Donc 2 dizaines et 13 unités, c'est le même nombre que 3 dizaines et 3 unités.",
+     "say": "Donc deux dizaines et treize unités, c'est le même nombre que trois dizaines et trois unités.",
+     "show": [
+      {
+       "kind": "text",
+       "text": "2 dizaines et 13 unités = 3 dizaines et 3 unités = 33"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "type": "say",
+   "text": "À nous deux maintenant : 27 + 5. Tu poses les unités, je t'aide.",
+   "say": "À nous deux maintenant : vingt-sept plus cinq. Tu poses les unités, je t'aide.",
+   "show": [
+    {
+     "kind": "expr",
+     "text": "27 + 5"
+    },
+    {
+     "kind": "blocks",
+     "t": 2,
+     "u": 7
+    }
+   ]
+  },
+  {
+   "type": "manip",
+   "mode": "blocks",
+   "id": "b-27-5",
+   "skill": "N.echange",
+   "t": 2,
+   "u": 7,
+   "add": 5,
+   "hundreds": false,
+   "answer": 32,
+   "text": "27 + 5. Pose les 5 unités, une par une. Quand 10 unités brillent, touche-les pour fermer la dizaine.",
+   "say": "Vingt-sept plus cinq. Pose les cinq unités, une par une. Quand dix unités brillent, touche-les pour fermer la dizaine.",
+   "ask": "Combien ça fait maintenant ?",
+   "errors": {
+    "212": {
+     "text": "Tu as écrit 12 à côté du 2. Mais 12 unités, c'est 1 dizaine et 2 unités. La dizaine rejoint les 2 autres.",
+     "show": [
+      {
+       "kind": "blocks",
+       "t": 2,
+       "u": 12,
+       "regroup": true
+      }
+     ]
+    },
+    "22": {
+     "text": "Tu as oublié la dizaine qui s'est formée : 7 + 5 = 12, c'est 1 dizaine de plus.",
+     "show": [
+      {
+       "kind": "blocks",
+       "t": 2,
+       "u": 12,
+       "regroup": true
+      }
+     ]
+    },
+    "31": "Presque ! Compte les unités qui restent après la fermeture : il en reste 2."
+   },
+   "hints": [
+    "Combien d'unités en tout ? 7 + 5 = ?",
+    "12 unités, c'est 1 dizaine et 2 unités. Combien de dizaines en tout ?"
+   ],
+   "sol": "7 + 5 = 12 unités, c'est 1 dizaine et 2 unités. 3 dizaines et 2 unités, c'est 32."
+  },
+  {
+   "type": "manip",
+   "mode": "blocks",
+   "id": "b-46-7",
+   "skill": "C.dizaine",
+   "t": 4,
+   "u": 6,
+   "add": 7,
+   "hundreds": false,
+   "answer": 53,
+   "text": "À toi de manipuler : 46 + 7. Pose les 7 unités. N'oublie pas de fermer la dizaine.",
+   "say": "À toi de manipuler : quarante-six plus sept. Pose les sept unités. N'oublie pas de fermer la dizaine.",
+   "ask": "Et maintenant, combien ça fait ?",
+   "errors": {
+    "413": {
+     "text": "Tu as écrit 13 à côté du 4. Mais 13 unités, c'est 1 dizaine et 3 unités. Avec les 4 dizaines, ça fait 5 dizaines.",
+     "show": [
+      {
+       "kind": "blocks",
+       "t": 4,
+       "u": 13,
+       "regroup": true
+      }
+     ]
+    },
+    "43": {
+     "text": "Tu as oublié la nouvelle dizaine : 6 + 7 = 13, c'est 1 dizaine de plus.",
+     "show": [
+      {
+       "kind": "blocks",
+       "t": 4,
+       "u": 13,
+       "regroup": true
+      }
+     ]
+    },
+    "52": "Presque ! 6 + 7 = 13 : après la fermeture, il reste 3 unités."
+   },
+   "hints": [
+    "6 + 7 = ? Compte les unités sur la planche.",
+    "13 unités, c'est 1 dizaine et 3 unités."
+   ],
+   "sol": "6 + 7 = 13 unités, c'est 1 dizaine et 3 unités. 5 dizaines et 3 unités, c'est 53."
+  },
+  {
+   "type": "say",
+   "text": "À toi tout{e} seul{e}. Cherche toujours la dizaine cachée dans les unités.",
+   "show": [
+    {
+     "kind": "title",
+     "text": "À toi !"
+    }
+   ]
+  },
+  {
+   "type": "number",
+   "id": "seul-3d-13u",
+   "skill": "N.echange",
+   "text": "3 dizaines et 13 unités, c'est combien ?",
+   "say": "Trois dizaines et treize unités, c'est combien ?",
+   "show": [
+    {
+     "kind": "text",
+     "text": "3 dizaines et 13 unités"
+    }
+   ],
+   "answer": 43,
+   "errors": {
+    "313": {
+     "text": "Tu as écrit 13 à côté du 3. Mais 13 unités, c'est 1 dizaine et 3 unités. La dizaine rejoint les 3 autres.",
+     "show": [
+      {
+       "kind": "blocks",
+       "t": 3,
+       "u": 13,
+       "regroup": true
+      }
+     ]
+    },
+    "33": {
+     "text": "Tu as gardé les 3 unités, mais tu as oublié la dizaine cachée dans les 13 unités.",
+     "show": [
+      {
+       "kind": "blocks",
+       "t": 3,
+       "u": 13,
+       "regroup": true
+      }
+     ]
+    },
+    "16": "Tu as ajouté 3 et 13. Mais les 3, ce sont des dizaines : 3 dizaines, c'est 30. Calcule 30 + 13."
+   },
+   "hints": [
+    "13 unités, c'est 1 dizaine et 3 unités.",
+    "3 dizaines et 1 dizaine, ça fait combien de dizaines ?"
+   ],
+   "sol": "13 unités, c'est 1 dizaine et 3 unités. 4 dizaines et 3 unités, c'est 43."
+  },
+  {
+   "type": "number",
+   "id": "seul-58-6",
+   "skill": "C.dizaine",
+   "text": "58 + 6 = ?",
+   "say": "Cinquante-huit plus six ?",
+   "show": [
+    {
+     "kind": "expr",
+     "text": "58 + 6"
+    }
+   ],
+   "answer": 64,
+   "errors": {
+    "514": {
+     "text": "Tu as écrit 14 à côté du 5. Mais 8 + 6 = 14, c'est 1 dizaine et 4 unités. La dizaine rejoint les 5 autres.",
+     "show": [
+      {
+       "kind": "blocks",
+       "t": 5,
+       "u": 14,
+       "regroup": true
+      }
+     ]
+    },
+    "54": {
+     "text": "Tu as oublié la dizaine qui se forme : 8 + 6 = 14, c'est 1 dizaine de plus.",
+     "show": [
+      {
+       "kind": "blocks",
+       "t": 5,
+       "u": 14,
+       "regroup": true
+      }
+     ]
+    },
+    "63": "Presque ! 8 + 6 = 14 : il reste 4 unités, pas 3."
+   },
+   "hints": [
+    "8 + 6 = ? Est-ce que ça fait une dizaine ?",
+    "14 unités, c'est 1 dizaine et 4 unités."
+   ],
+   "sol": "8 + 6 = 14, c'est 1 dizaine et 4 unités. 6 dizaines et 4 unités, c'est 64."
+  },
+  {
+   "type": "number",
+   "id": "seul-2d-17u",
+   "skill": "N.echange",
+   "text": "2 dizaines et 17 unités, c'est combien ?",
+   "say": "Deux dizaines et dix-sept unités, c'est combien ?",
+   "show": [
+    {
+     "kind": "text",
+     "text": "2 dizaines et 17 unités"
+    }
+   ],
+   "answer": 37,
+   "errors": {
+    "217": {
+     "text": "Tu as écrit 17 à côté du 2. Mais 17 unités, c'est 1 dizaine et 7 unités. La dizaine rejoint les 2 autres.",
+     "show": [
+      {
+       "kind": "blocks",
+       "t": 2,
+       "u": 17,
+       "regroup": true
+      }
+     ]
+    },
+    "27": {
+     "text": "Tu as gardé les 7 unités, mais tu as oublié la dizaine cachée dans les 17 unités.",
+     "show": [
+      {
+       "kind": "blocks",
+       "t": 2,
+       "u": 17,
+       "regroup": true
+      }
+     ]
+    },
+    "19": "Tu as ajouté 2 et 17. Mais les 2, ce sont des dizaines : 2 dizaines, c'est 20. Calcule 20 + 17."
+   },
+   "hints": [
+    "17 unités, c'est 1 dizaine et 7 unités.",
+    "2 dizaines et 1 dizaine, ça fait combien de dizaines ?"
+   ],
+   "sol": "17 unités, c'est 1 dizaine et 7 unités. 3 dizaines et 7 unités, c'est 37."
+  },
+  {
+   "type": "maman",
+   "clip": "fiche"
+  },
+  {
+   "type": "paper",
+   "text": "Prends ta fiche bleue « La dizaine qui se forme ». Fais une étoile, puis deux, puis trois si tu peux. Quand tu as fini, tape tes réponses ici."
+  },
+  {
+   "type": "part",
+   "n": 3,
+   "title": "Lecture",
+   "text": "Troisième temps : la lecture."
+  },
+  {
+   "type": "reading",
+   "id": "lecture-pinasse",
+   "title": "Sur la pinasse",
+   "passage": [
+    "La pinasse glisse sur le fleuve Niger.",
+    "Kono est perché à l'avant, près d'une petite fille qui s'appelle Awa.",
+    "Son grand-père est le pinassier : c'est lui qui conduit la pinasse.",
+    "Awa compte les sacs de riz : trois piles de dix sacs.",
+    "« Trois dizaines, ça fait trente sacs ! » dit-elle.",
+    "Sur la rive, des pêcheurs lancent leurs filets dans l'eau.",
+    "Des oiseaux blancs volent au-dessus des vagues.",
+    "Kono plonge et attrape un petit poisson tout brillant.",
+    "Le soir, le grand-père dit : « Demain, nous serons à Ségou. »"
+   ]
+  },
+  {
+   "type": "part",
+   "n": 4,
+   "title": "Ta méthode",
+   "text": "Dernier temps : explique ta méthode."
+  },
+  {
+   "type": "record",
+   "kind": "methode",
+   "clip": "explique",
+   "text": "Explique avec ta voix pourquoi 29 + 4 ne fait pas 213. Parle des unités et de la dizaine. Appuie sur le rond rouge pour commencer, et encore une fois pour finir.",
+   "say": "Explique avec ta voix pourquoi vingt-neuf plus quatre ne fait pas deux cent treize. Parle des unités et de la dizaine. Appuie sur le rond rouge pour commencer, et encore une fois pour finir.",
+   "show": [
+    {
+     "kind": "title",
+     "text": "Explique avec ta voix"
+    },
+    {
+     "kind": "expr",
+     "text": "29 + 4"
+    },
+    {
+     "kind": "blocks",
+     "t": 2,
+     "u": 13
+    }
+   ]
+  },
+  {
+   "type": "end",
+   "clip": "fin_bleu"
+  }
+ ],
+ "paper": {
+  "title": "La dizaine qui se forme",
+  "model": "29 + 4 : 2 dizaines et 13 unités = 3 dizaines et 3 unités = 33",
+  "model_visual": {
+   "kind": "blocks",
+   "t": 2,
+   "u": 13,
+   "regroup": true
+  },
+  "levels": [
+   {
+    "stars": 1,
+    "ins": "Entoure 10 unités pour faire une dizaine. Écris le nombre.",
+    "who": "seul",
+    "items": [
+     {
+      "id": "a",
+      "q": "2 dizaines et 12 unités",
+      "blocks": {
+       "t": 2,
+       "u": 12
+      },
+      "answer": 32,
+      "errors": {
+       "212": "Tu as écrit 12 à côté du 2. Entoure 10 unités : c'est 1 dizaine de plus.",
+       "22": "Tu as oublié la dizaine cachée dans les 12 unités.",
+       "14": "Tu as ajouté 2 et 12. Mais 2 dizaines, c'est 20."
+      }
+     },
+     {
+      "id": "b",
+      "q": "4 dizaines et 15 unités",
+      "blocks": {
+       "t": 4,
+       "u": 15
+      },
+      "answer": 55,
+      "errors": {
+       "415": "Tu as écrit 15 à côté du 4. Entoure 10 unités : c'est 1 dizaine de plus.",
+       "45": "Tu as oublié la dizaine cachée dans les 15 unités."
+      }
+     },
+     {
+      "id": "c",
+      "q": "1 dizaine et 18 unités",
+      "blocks": {
+       "t": 1,
+       "u": 18
+      },
+      "answer": 28,
+      "errors": {
+       "118": "Tu as écrit 18 à côté du 1. Entoure 10 unités : c'est 1 dizaine de plus.",
+       "18": "Tu as oublié la dizaine cachée dans les 18 unités.",
+       "19": "Tu as ajouté 1 et 18. Mais 1 dizaine, c'est 10."
+      }
+     }
+    ]
+   },
+   {
+    "stars": 2,
+    "ins": "Calcule. Pense à la dizaine qui se forme.",
+    "who": "seul",
+    "items": [
+     {
+      "id": "d",
+      "q": "37 + 6",
+      "line": [
+       30,
+       50
+      ],
+      "answer": 43,
+      "errors": {
+       "313": "Tu as écrit 13 à côté du 3. 7 + 6 = 13 : c'est 1 dizaine de plus.",
+       "33": "Tu as oublié la dizaine : 7 + 6 = 13."
+      }
+     },
+     {
+      "id": "e",
+      "q": "65 + 8",
+      "answer": 73,
+      "errors": {
+       "613": "Tu as écrit 13 à côté du 6. 5 + 8 = 13 : c'est 1 dizaine de plus.",
+       "63": "Tu as oublié la dizaine : 5 + 8 = 13."
+      }
+     },
+     {
+      "id": "f",
+      "q": "5 dizaines et 14 unités",
+      "answer": 64,
+      "errors": {
+       "514": "Tu as écrit 14 à côté du 5. 14 unités, c'est 1 dizaine et 4 unités.",
+       "54": "Tu as oublié la dizaine cachée dans les 14 unités.",
+       "19": "Tu as ajouté 5 et 14. Mais 5 dizaines, c'est 50."
+      }
+     }
+    ]
+   },
+   {
+    "stars": 3,
+    "ins": "Défis. Tu peux dessiner pour chercher.",
+    "who": "seul",
+    "items": [
+     {
+      "id": "g",
+      "q": "3 paniers de 10 mangues et 16 mangues. Combien de mangues en tout ?",
+      "short": "3 paniers de 10 et 16 mangues",
+      "answer": 46,
+      "errors": {
+       "316": "Tu as écrit 16 à côté du 3. Les 16 mangues font 1 dizaine de plus.",
+       "36": "Tu as oublié la dizaine cachée dans les 16 mangues.",
+       "19": "Tu as ajouté 3 et 16. Mais 3 paniers de 10, c'est 30 mangues."
+      }
+     },
+     {
+      "id": "h",
+      "q": "6 dizaines et 23 unités",
+      "answer": 83,
+      "errors": {
+       "623": "Tu as écrit 23 à côté du 6. Dans 23 unités, il y a 2 dizaines.",
+       "63": "Tu as oublié les dizaines cachées dans les 23 unités.",
+       "73": "Presque ! Dans 23 unités, il y a 2 dizaines, pas 1."
+      }
+     },
+     {
+      "id": "i",
+      "q": "Écris 52 de deux façons : … dizaines et … unités.",
+      "lines": 1
+     }
+    ]
+   }
+  ],
+  "maman": [
+   "La tablette montre 10 unités qui se ferment en 1 dizaine, fait manipuler deux calculs (27 + 5 et 46 + 7), puis demande de taper les réponses de la fiche.",
+   "Erreur typique à surveiller : écrire 213 pour 29 + 4, ou 33 pour « 3 dizaines et 13 unités ». Demandez : « Combien d'unités ? Peux-tu en faire une dizaine ? »",
+   "Défi h) : 23 unités contiennent 2 dizaines, donc 8 dizaines et 3 unités = 83. Défi i) : plusieurs bonnes réponses, par exemple 5 dizaines et 2 unités, 4 dizaines et 12 unités, 3 dizaines et 22 unités."
+  ]
+ }
+}

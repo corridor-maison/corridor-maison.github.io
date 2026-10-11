@@ -1,0 +1,700 @@
+{
+ "id": "bleu-s1-centaine",
+ "child": "bleu",
+ "programme": "CE1",
+ "order": 2,
+ "week": "S1",
+ "day": "mercredi",
+ "title": "Dix dizaines, une centaine",
+ "domain": "Nombres",
+ "programme_label": "CE1 · numération : 10 dizaines = 1 centaine ; lire et écrire les nombres de 100 à 150",
+ "objective": "Savoir que 10 dizaines font 1 centaine, calculer 96 + 7 = 103 en passant par 100, compter de 10 en 10 après 100.",
+ "skills": [
+  "N.num1000",
+  "N.echange",
+  "N.ligne",
+  "L.fluence",
+  "O.expliquer"
+ ],
+ "escale": 1,
+ "steps": [
+  {
+   "type": "maman",
+   "clip": "bonjour_bleu"
+  },
+  {
+   "type": "say",
+   "text": "Salut {prenom} ! La dernière fois, 10 unités ont formé une dizaine. Aujourd'hui, 10 dizaines vont former quelque chose de plus grand. Au programme : le calcul express, la leçon, puis tu relis « Sur la pinasse ».",
+   "say": "Salut {prenom} ! La dernière fois, dix unités ont formé une dizaine. Aujourd'hui, dix dizaines vont former quelque chose de plus grand. Au programme : le calcul express, la leçon, puis tu relis « Sur la pinasse ».",
+   "show": [
+    {
+     "kind": "title",
+     "text": "Dix dizaines, une centaine"
+    }
+   ]
+  },
+  {
+   "type": "part",
+   "n": 1,
+   "title": "Calcul express",
+   "text": "Premier temps : le calcul express."
+  },
+  {
+   "type": "drill",
+   "id": "calcul-express-bleu",
+   "title": "Calcul express",
+   "seconds": 150,
+   "count": 10,
+   "input": "keypad",
+   "text": "Dix calculs. Lis bien chaque calcul avant de répondre.",
+   "kinds": [
+    {
+     "kind": "complement-next-ten",
+     "w": 2
+    },
+    {
+     "kind": "through10",
+     "w": 2
+    },
+    {
+     "kind": "double",
+     "min": 10,
+     "max": 25,
+     "w": 1
+    }
+   ]
+  },
+  {
+   "type": "part",
+   "n": 2,
+   "title": "La leçon",
+   "text": "Deuxième temps : la leçon du jour."
+  },
+  {
+   "type": "review",
+   "fallback": [
+    {
+     "type": "number",
+     "id": "rappel-4d-12u",
+     "skill": "N.echange",
+     "text": "Échauffement. 4 dizaines et 12 unités, c'est combien ?",
+     "say": "Échauffement. Quatre dizaines et douze unités, c'est combien ?",
+     "show": [
+      {
+       "kind": "text",
+       "text": "4 dizaines et 12 unités"
+      }
+     ],
+     "answer": 52,
+     "errors": {
+      "412": {
+       "text": "Tu as écrit 12 à côté du 4. Mais 12 unités, c'est 1 dizaine et 2 unités : 1 dizaine de plus.",
+       "show": [
+        {
+         "kind": "blocks",
+         "t": 4,
+         "u": 12,
+         "regroup": true
+        }
+       ]
+      },
+      "42": {
+       "text": "Tu as oublié la dizaine cachée dans les 12 unités.",
+       "show": [
+        {
+         "kind": "blocks",
+         "t": 4,
+         "u": 12,
+         "regroup": true
+        }
+       ]
+      },
+      "16": "Tu as ajouté 4 et 12. Mais 4 dizaines, c'est 40. Calcule 40 + 12."
+     },
+     "hints": [
+      "12 unités, c'est 1 dizaine et 2 unités."
+     ],
+     "sol": "12 unités, c'est 1 dizaine et 2 unités. 5 dizaines et 2 unités, c'est 52."
+    },
+    {
+     "type": "number",
+     "id": "rappel-dizaines-90",
+     "skill": "N.num1000",
+     "text": "Combien de dizaines y a-t-il dans 90 ?",
+     "say": "Combien de dizaines y a-t-il dans quatre-vingt-dix ?",
+     "show": [
+      {
+       "kind": "expr",
+       "text": "90"
+      }
+     ],
+     "answer": 9,
+     "errors": {
+      "90": "90, c'est le nombre entier. Je te demande combien de dizaines : compte de 10 en 10 jusqu'à 90.",
+      "0": "0, c'est le chiffre des unités. Le chiffre des dizaines, c'est le premier."
+     },
+     "hints": [
+      "Compte de 10 en 10 : 10, 20, 30… jusqu'à 90. Combien de fois ?"
+     ],
+     "sol": "90, c'est 9 dizaines et 0 unité."
+    }
+   ]
+  },
+  {
+   "type": "demo",
+   "title": "Je te montre",
+   "lines": [
+    {
+     "text": "Voici 90 : 9 dizaines.",
+     "say": "Voici quatre-vingt-dix : neuf dizaines.",
+     "show": [
+      {
+       "kind": "expr",
+       "text": "90"
+      },
+      {
+       "kind": "blocks",
+       "h": 0,
+       "t": 9,
+       "u": 0
+      }
+     ]
+    },
+    {
+     "text": "J'ajoute 1 dizaine. Maintenant, j'ai 10 dizaines.",
+     "say": "J'ajoute une dizaine. Maintenant, j'ai dix dizaines.",
+     "show": [
+      {
+       "kind": "expr",
+       "text": "90 + 10"
+      },
+      {
+       "kind": "blocks",
+       "h": 0,
+       "t": 10,
+       "u": 0
+      }
+     ]
+    },
+    {
+     "text": "10 dizaines, c'est comme 10 unités : je les ferme ! Elles font 1 centaine.",
+     "say": "Dix dizaines, c'est comme dix unités : je les ferme ! Elles font une centaine.",
+     "show": [
+      {
+       "kind": "expr",
+       "text": "90 + 10"
+      },
+      {
+       "kind": "blocks",
+       "h": 0,
+       "t": 10,
+       "u": 0,
+       "regroup": true
+      }
+     ]
+    },
+    {
+     "text": "1 centaine, 0 dizaine, 0 unité : c'est 100. On écrit 1, puis 0, puis 0.",
+     "say": "Une centaine, zéro dizaine, zéro unité : c'est cent. On écrit un, puis zéro, puis zéro.",
+     "show": [
+      {
+       "kind": "expr",
+       "text": "90 + 10 = 100"
+      },
+      {
+       "kind": "blocks",
+       "h": 1,
+       "t": 0,
+       "u": 0
+      }
+     ]
+    },
+    {
+     "text": "1 centaine, c'est 10 dizaines. C'est aussi 100 unités.",
+     "say": "Une centaine, c'est dix dizaines. C'est aussi cent unités.",
+     "show": [
+      {
+       "kind": "text",
+       "text": "1 centaine = 10 dizaines = 100 unités"
+      },
+      {
+       "kind": "blocks",
+       "h": 1,
+       "t": 0,
+       "u": 0
+      }
+     ]
+    },
+    {
+     "text": "Après 100, on continue de 10 en 10 : 110, 120… Et 110, c'est 1 centaine et 1 dizaine.",
+     "say": "Après cent, on continue de dix en dix : cent dix, cent vingt… Et cent dix, c'est une centaine et une dizaine.",
+     "show": [
+      {
+       "kind": "expr",
+       "text": "90, 100, 110, 120"
+      },
+      {
+       "kind": "blocks",
+       "h": 1,
+       "t": 1,
+       "u": 0
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "type": "say",
+   "text": "À nous deux : 96 + 7. Attention, il va y avoir deux fermetures !",
+   "say": "À nous deux : quatre-vingt-seize plus sept. Attention, il va y avoir deux fermetures !",
+   "show": [
+    {
+     "kind": "expr",
+     "text": "96 + 7"
+    },
+    {
+     "kind": "blocks",
+     "h": 0,
+     "t": 9,
+     "u": 6
+    }
+   ]
+  },
+  {
+   "type": "manip",
+   "mode": "blocks",
+   "id": "b-96-7",
+   "skill": "N.echange",
+   "h": 0,
+   "t": 9,
+   "u": 6,
+   "add": 7,
+   "hundreds": true,
+   "answer": 103,
+   "text": "96 + 7. Pose les 7 unités et ferme la dizaine. Puis compte les dizaines : s'il y en a 10, ferme-les aussi !",
+   "say": "Quatre-vingt-seize plus sept. Pose les sept unités et ferme la dizaine. Puis compte les dizaines : s'il y en a dix, ferme-les aussi !",
+   "ask": "Combien ça fait maintenant ?",
+   "errors": {
+    "913": {
+     "text": "Tu as écrit 13 à côté du 9. Mais 13 unités, c'est 1 dizaine et 3 unités. Avec les 9 dizaines, ça fait 10 dizaines : 1 centaine !",
+     "show": [
+      {
+       "kind": "blocks",
+       "h": 0,
+       "t": 9,
+       "u": 13,
+       "regroup": true
+      }
+     ]
+    },
+    "93": {
+     "text": "Tu as oublié la dizaine qui se forme : 6 + 7 = 13, c'est 1 dizaine de plus. Et 10 dizaines font 1 centaine.",
+     "show": [
+      {
+       "kind": "blocks",
+       "h": 0,
+       "t": 9,
+       "u": 13,
+       "regroup": true
+      }
+     ]
+    },
+    "1003": {
+     "text": "Tu as écrit 100, puis 3 à côté. Mais 1 centaine, 0 dizaine et 3 unités, ça s'écrit avec 3 chiffres seulement.",
+     "show": [
+      {
+       "kind": "blocks",
+       "h": 1,
+       "t": 0,
+       "u": 3
+      }
+     ]
+    },
+    "102": "Presque ! 6 + 7 = 13 : après la fermeture, il reste 3 unités."
+   },
+   "hints": [
+    "6 + 7 = 13 : ferme 1 dizaine. Combien de dizaines maintenant ?",
+    "10 dizaines, c'est 1 centaine. Il reste 0 dizaine et 3 unités."
+   ],
+   "sol": "6 + 7 = 13 : 1 dizaine de plus, donc 10 dizaines, donc 1 centaine. 1 centaine, 0 dizaine, 3 unités : 103."
+  },
+  {
+   "type": "manip",
+   "mode": "jumps",
+   "id": "saut-96-7",
+   "skill": "N.ligne",
+   "from": 90,
+   "to": 110,
+   "start": 96,
+   "via": 100,
+   "answer": 103,
+   "text": "Le même calcul sur la ligne : 96 + 7. Fais un saut jusqu'à 100, puis le reste.",
+   "say": "Le même calcul sur la ligne : quatre-vingt-seize plus sept. Fais un saut jusqu'à cent, puis le reste.",
+   "errors": {
+    "via": "Arrête-toi d'abord à 100 : c'est le nombre tout rond.",
+    "100": "100, c'est l'arrêt du milieu. Il reste encore 3 à ajouter.",
+    "102": "Presque ! 96 + 4 = 100. Le 7, c'est 4 et 3 : il reste 3.",
+    "104": "Un pas de trop ! 96 + 4 = 100, puis il reste seulement 3."
+   },
+   "hints": [
+    "Combien manque-t-il à 96 pour arriver à 100 ?",
+    "96 + 4 = 100. Le 7, c'est 4 et 3."
+   ],
+   "sol": "96 + 4 = 100, puis 100 + 3 = 103."
+  },
+  {
+   "type": "say",
+   "text": "À toi tout{e} seul{e}. Pense aux 10 dizaines qui font une centaine.",
+   "say": "À toi tout{e} seul{e}. Pense aux dix dizaines qui font une centaine.",
+   "show": [
+    {
+     "kind": "title",
+     "text": "À toi !"
+    }
+   ]
+  },
+  {
+   "type": "number",
+   "id": "seul-10-en-10",
+   "skill": "N.num1000",
+   "text": "Compte de 10 en 10 : 80, 90, 100, ?",
+   "say": "Compte de dix en dix : quatre-vingts, quatre-vingt-dix, cent… et après ?",
+   "show": [
+    {
+     "kind": "expr",
+     "text": "80, 90, 100, ?"
+    }
+   ],
+   "answer": 110,
+   "errors": {
+    "1000": {
+     "text": "Après 100, on n'ajoute pas un 0 au bout. On ajoute 1 dizaine : 1 centaine et 1 dizaine.",
+     "show": [
+      {
+       "kind": "blocks",
+       "h": 1,
+       "t": 1,
+       "u": 0
+      }
+     ]
+    },
+    "101": {
+     "text": "Tu as ajouté 1 unité. Mais on compte de 10 en 10 : on ajoute 1 dizaine.",
+     "show": [
+      {
+       "kind": "blocks",
+       "h": 1,
+       "t": 1,
+       "u": 0
+      }
+     ]
+    },
+    "200": "Tu as ajouté 1 centaine. Mais on compte de 10 en 10 : on ajoute seulement 1 dizaine."
+   },
+   "hints": [
+    "Chaque fois, on ajoute 1 dizaine.",
+    "1 centaine et 1 dizaine : ça s'écrit comment ?"
+   ],
+   "sol": "100 + 10 = 110 : 1 centaine, 1 dizaine, 0 unité."
+  },
+  {
+   "type": "number",
+   "id": "seul-124",
+   "skill": "N.num1000",
+   "text": "1 centaine, 2 dizaines, 4 unités : c'est quel nombre ?",
+   "say": "Une centaine, deux dizaines, quatre unités : c'est quel nombre ?",
+   "show": [
+    {
+     "kind": "text",
+     "text": "1 centaine, 2 dizaines, 4 unités"
+    }
+   ],
+   "answer": 124,
+   "errors": {
+    "10204": {
+     "text": "Tu as écrit 100, puis 20, puis 4, les uns à côté des autres. Mais chaque chiffre a sa place : un chiffre pour les centaines, un pour les dizaines, un pour les unités.",
+     "show": [
+      {
+       "kind": "blocks",
+       "h": 1,
+       "t": 2,
+       "u": 4
+      }
+     ]
+    },
+    "1020": {
+     "text": "Tu as commencé à écrire 100, puis 20. Mais chaque chiffre a sa place : un chiffre pour les centaines, un pour les dizaines, un pour les unités.",
+     "show": [
+      {
+       "kind": "blocks",
+       "h": 1,
+       "t": 2,
+       "u": 4
+      }
+     ]
+    },
+    "1024": {
+     "text": "Tu as écrit 10 pour la centaine. Mais 1 centaine s'écrit avec un seul chiffre : 1, puis 2, puis 4.",
+     "show": [
+      {
+       "kind": "blocks",
+       "h": 1,
+       "t": 2,
+       "u": 4
+      }
+     ]
+    },
+    "7": "Tu as ajouté 1 + 2 + 4. Mais 1 centaine, c'est 100, et 2 dizaines, c'est 20.",
+    "421": "Tu as écrit les chiffres à l'envers. On commence par les centaines, puis les dizaines, puis les unités."
+   },
+   "hints": [
+    "1 centaine, c'est 100. 2 dizaines, c'est 20.",
+    "100 + 20 + 4 = ?"
+   ],
+   "sol": "100 + 20 + 4 = 124."
+  },
+  {
+   "type": "number",
+   "id": "seul-apres-139",
+   "skill": "N.num1000",
+   "text": "Quel nombre vient juste après 139 ?",
+   "say": "Quel nombre vient juste après cent trente-neuf ?",
+   "show": [
+    {
+     "kind": "expr",
+     "text": "139, ?"
+    }
+   ],
+   "answer": 140,
+   "errors": {
+    "1310": {
+     "text": "Tu as écrit 10 à la place du 9. Mais 9 unités et 1 unité, ça fait 10 unités : 1 dizaine de plus.",
+     "show": [
+      {
+       "kind": "blocks",
+       "h": 1,
+       "t": 3,
+       "u": 10,
+       "regroup": true
+      }
+     ]
+    },
+    "149": "Tu as ajouté 1 dizaine. Juste après, on ajoute seulement 1 unité.",
+    "138": "138, c'est juste avant 139. Je te demande le nombre juste après."
+   },
+   "hints": [
+    "139 + 1 = ? 9 unités et 1 unité, ça fait 10 unités.",
+    "10 unités font 1 dizaine : 3 dizaines deviennent 4 dizaines."
+   ],
+   "sol": "139 + 1 = 140 : 1 centaine, 4 dizaines, 0 unité."
+  },
+  {
+   "type": "maman",
+   "clip": "fiche"
+  },
+  {
+   "type": "paper",
+   "text": "Prends ta fiche bleue « Dix dizaines, une centaine ». Fais une étoile, puis deux, puis trois si tu peux. Quand tu as fini, tape tes réponses ici."
+  },
+  {
+   "type": "part",
+   "n": 3,
+   "title": "Lecture",
+   "text": "Troisième temps : la lecture."
+  },
+  {
+   "type": "reading",
+   "id": "lecture-pinasse-2",
+   "title": "Sur la pinasse",
+   "reread": true,
+   "passage": [
+    "La pinasse glisse sur le fleuve Niger.",
+    "Kono est perché à l'avant, près d'une petite fille qui s'appelle Awa.",
+    "Son grand-père est le pinassier : c'est lui qui conduit la pinasse.",
+    "Awa compte les sacs de riz : trois piles de dix sacs.",
+    "« Trois dizaines, ça fait trente sacs ! » dit-elle.",
+    "Sur la rive, des pêcheurs lancent leurs filets dans l'eau.",
+    "Des oiseaux blancs volent au-dessus des vagues.",
+    "Kono plonge et attrape un petit poisson tout brillant.",
+    "Le soir, le grand-père dit : « Demain, nous serons à Ségou. »"
+   ]
+  },
+  {
+   "type": "part",
+   "n": 4,
+   "title": "Ta méthode",
+   "text": "Dernier temps : explique ta méthode."
+  },
+  {
+   "type": "record",
+   "kind": "methode",
+   "clip": "explique",
+   "text": "Explique avec ta voix ce qui se passe quand on a 10 dizaines. Tu peux parler de 96 + 7. Appuie sur le rond rouge pour commencer, et encore une fois pour finir.",
+   "say": "Explique avec ta voix ce qui se passe quand on a dix dizaines. Tu peux parler de quatre-vingt-seize plus sept. Appuie sur le rond rouge pour commencer, et encore une fois pour finir.",
+   "show": [
+    {
+     "kind": "title",
+     "text": "Explique avec ta voix"
+    },
+    {
+     "kind": "blocks",
+     "h": 0,
+     "t": 10,
+     "u": 0
+    }
+   ]
+  },
+  {
+   "type": "end",
+   "clip": "fin_bleu"
+  }
+ ],
+ "paper": {
+  "title": "Dix dizaines, une centaine",
+  "model": "10 dizaines = 1 centaine = 100. 96 + 7 = 96 + 4 + 3 = 103",
+  "model_visual": {
+   "kind": "blocks",
+   "h": 0,
+   "t": 10,
+   "u": 0,
+   "regroup": true
+  },
+  "levels": [
+   {
+    "stars": 1,
+    "ins": "Écris le nombre.",
+    "who": "seul",
+    "items": [
+     {
+      "id": "a",
+      "q": "1 centaine, 3 dizaines, 5 unités",
+      "blocks": {
+       "h": 1,
+       "t": 3,
+       "u": 5
+      },
+      "answer": 135,
+      "errors": {
+       "1035": "Tu as écrit 10 pour la centaine. 1 centaine s'écrit avec un seul chiffre : 1, puis 3, puis 5.",
+       "1030": "Tu as écrit 100, puis 30, puis 5 à la suite. Chaque chiffre a sa place : centaines, dizaines, unités.",
+       "9": "Tu as ajouté 1 + 3 + 5. Mais 1 centaine, c'est 100, et 3 dizaines, c'est 30."
+      }
+     },
+     {
+      "id": "b",
+      "q": "1 centaine et 8 unités",
+      "blocks": {
+       "h": 1,
+       "t": 0,
+       "u": 8
+      },
+      "answer": 108,
+      "errors": {
+       "18": "Tu as oublié la place des dizaines. Il n'y a pas de dizaine : on écrit 0 au milieu.",
+       "1008": "Tu as écrit 100, puis 8 à côté. Le 8 prend la place du dernier 0.",
+       "180": "Tu as mis le 8 à la place des dizaines. Les 8 sont des unités : ils vont à la fin."
+      }
+     },
+     {
+      "id": "c",
+      "q": "10 dizaines et 4 unités",
+      "blocks": {
+       "t": 10,
+       "u": 4
+      },
+      "answer": 104,
+      "errors": {
+       "1004": "Tu as écrit 10 dizaines avec deux chiffres. Mais 10 dizaines, c'est 1 centaine : 1 centaine, 0 dizaine, 4 unités.",
+       "14": "Tu as compté 1 dizaine au lieu de 10. Et 10 dizaines font 1 centaine.",
+       "140": "Tu as mis le 4 à la place des dizaines. Les 4 sont des unités : ils vont à la fin."
+      }
+     }
+    ]
+   },
+   {
+    "stars": 2,
+    "ins": "Calcule. Pour d), dessine les sauts sur la ligne.",
+    "who": "seul",
+    "items": [
+     {
+      "id": "d",
+      "q": "95 + 8",
+      "line": [
+       90,
+       110
+      ],
+      "answer": 103,
+      "errors": {
+       "913": "Tu as écrit 13 à côté du 9. 5 + 8 = 13 : 1 dizaine de plus, et 10 dizaines font 1 centaine.",
+       "93": "Tu as oublié la dizaine : 5 + 8 = 13.",
+       "1003": "Tu as écrit 100, puis 3 à côté. 100 + 3 s'écrit avec 3 chiffres seulement."
+      }
+     },
+     {
+      "id": "e",
+      "q": "98 + 7",
+      "answer": 105,
+      "errors": {
+       "915": "Tu as écrit 15 à côté du 9. 8 + 7 = 15 : 1 dizaine de plus, et 10 dizaines font 1 centaine.",
+       "95": "Tu as oublié la dizaine : 8 + 7 = 15.",
+       "1005": "Tu as écrit 100, puis 5 à côté. 100 + 5 s'écrit avec 3 chiffres seulement."
+      }
+     },
+     {
+      "id": "f",
+      "q": "130, 140, ?",
+      "answer": 150,
+      "errors": {
+       "141": "Tu as ajouté 1 unité. On compte de 10 en 10 : on ajoute 1 dizaine.",
+       "240": "Tu as ajouté 1 centaine. On compte de 10 en 10 : on ajoute 1 dizaine."
+      }
+     }
+    ]
+   },
+   {
+    "stars": 3,
+    "ins": "Défis. Tu peux dessiner pour chercher.",
+    "who": "seul",
+    "items": [
+     {
+      "id": "g",
+      "q": "9 piles de 10 sacs, puis encore 1 pile de 10. Combien de sacs ?",
+      "short": "9 piles de 10 sacs, puis 1 pile",
+      "answer": 100,
+      "errors": {
+       "91": "Tu as ajouté 1 sac. Mais c'est 1 pile de 10 sacs : 1 dizaine de plus.",
+       "19": "Tu as ajouté 9 et 10. Mais 9 piles de 10, c'est 90 sacs.",
+       "910": "Tu as écrit 10 à côté du 9. 9 dizaines et 1 dizaine, ça fait 10 dizaines : 1 centaine."
+      }
+     },
+     {
+      "id": "h",
+      "q": "120 = ? dizaines",
+      "short": "Dizaines dans 120",
+      "answer": 12,
+      "errors": {
+       "2": "2, c'est le chiffre des dizaines. Mais la centaine contient aussi 10 dizaines.",
+       "120": "120, c'est le nombre entier. Compte les dizaines : 1 centaine, c'est 10 dizaines, et il y en a encore 2.",
+       "1": "1, c'est le nombre de centaines. Une centaine, c'est 10 dizaines."
+      }
+     },
+     {
+      "id": "i",
+      "q": "9 dizaines et 13 unités",
+      "answer": 103,
+      "errors": {
+       "913": "Tu as écrit 13 à côté du 9. 13 unités font 1 dizaine de plus, et 10 dizaines font 1 centaine.",
+       "93": "Tu as oublié la dizaine cachée dans les 13 unités.",
+       "1003": "Tu as écrit 100, puis 3 à côté. 1 centaine, 0 dizaine, 3 unités s'écrit avec 3 chiffres."
+      }
+     }
+    ]
+   }
+  ],
+  "maman": [
+   "La tablette montre 10 dizaines qui se ferment en 1 centaine, fait manipuler 96 + 7, puis refait le même calcul sur la ligne des nombres. La lecture est la même que mardi : relire le même texte rend la lecture plus fluide, c'est voulu.",
+   "Erreurs typiques à surveiller : écrire 18 ou 1008 pour « 1 centaine et 8 unités », 1003 pour 96 + 7. Faites dire : combien de centaines ? de dizaines ? d'unités ?",
+   "Défi h) : 120, c'est 12 dizaines (10 dans la centaine, plus 2) ; « 2 » est l'erreur la plus fréquente. Défi i) : 13 unités font 1 dizaine de plus, soit 10 dizaines, donc 1 centaine : 103."
+  ]
+ }
+}
