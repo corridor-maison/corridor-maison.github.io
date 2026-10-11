@@ -1,6 +1,6 @@
 {
-  "name": "L'école de Kono",
-  "short_name": "Kono",
+  "name": "Corridor à la maison",
+  "short_name": "Corridor",
   "description": "Leçons guidées par la voix pour les parcours Bleu et Orange.",
   "lang": "fr",
   "start_url": "./",

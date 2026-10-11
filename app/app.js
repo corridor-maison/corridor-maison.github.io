@@ -274,7 +274,7 @@ function kidLabel(c) { return name(c) || (c === 'bleu' ? 'Bleu' : 'Orange'); }
 function screenSetup() {
   setChild(null); stopSpeech();
   app.innerHTML = `<div class="stack">
-  <div class="brand">${KONO.replace('class="kono"', 'class="kono" style="width:90px"')}<div><h1>L'école de Kono</h1><p class="muted">Réglage de départ, à faire une seule fois par un parent.</p></div></div>
+  <div class="brand">${KONO.replace('class="kono"', 'class="kono" style="width:90px"')}<div><h1>Corridor à la maison</h1><p class="muted">Réglage de départ, à faire une seule fois par un parent.</p></div></div>
   <div class="card stack"><h3>Les enfants</h3>
     ${['bleu', 'orange'].map(c => `<div class="row"><label class="f" style="flex:1 1 220px">Prénom de l'enfant ${c === 'bleu' ? 'Bleu (7 ans)' : 'Orange (5 ans ½)'}<input type="text" id="n-${c}" value="${esc(S.names[c])}" autocomplete="off"></label>
       <div class="seg" role="group" aria-label="Fille ou garçon"><button data-g="${c}:0" class="${S.girl[c] ? '' : 'on'}">Garçon</button><button data-g="${c}:1" class="${S.girl[c] ? 'on' : ''}">Fille</button></div></div>`).join('')}
@@ -310,7 +310,7 @@ function bindVoiceControls() {
 function screenHome() {
   setChild(null); stopSpeech();
   app.innerHTML = `<div class="stack">
-  <div class="brand">${KONO.replace('class="kono"', 'class="kono" style="width:96px"')}<div><h1>L'école de Kono</h1><p class="muted">Qui voyage avec Kono aujourd'hui ?</p></div></div>
+  <div class="brand">${KONO.replace('class="kono"', 'class="kono" style="width:96px"')}<div><h1>Corridor à la maison</h1><p class="muted">Qui voyage avec Kono aujourd'hui ?</p></div></div>
   <div class="kids">
     <button class="kid bleu" data-c="bleu"><b>${esc(kidLabel('bleu'))}</b><span>Parcours bleu · 7 ans</span></button>
     <button class="kid orange" data-c="orange"><b>${esc(kidLabel('orange'))}</b><span>Parcours orange · 5 ans ½</span></button>
@@ -862,7 +862,7 @@ async function screenParent(tab) {
   }
   if (tab === 'reglages') {
     pane.innerHTML = `<div class="card stack"><p style="margin:0">Prénoms, garçon ou fille, et code parent.</p><div><button class="btn" id="setup" style="--c:var(--river)">Modifier les réglages</button></div></div>
-    <div class="card stack"><h3>Bloquer la tablette sur l'application</h3><p class="small" style="margin:0">Android : Paramètres › Sécurité › Épinglage d'écran. Ouvrez L'école de Kono, affichez les applications récentes, touchez l'icône de l'application puis « Épingler ».</p></div>
+    <div class="card stack"><h3>Bloquer la tablette sur l'application</h3><p class="small" style="margin:0">Android : Paramètres › Sécurité › Épinglage d'écran. Ouvrez Corridor à la maison, affichez les applications récentes, touchez l'icône de l'application puis « Épingler ».</p></div>
     <div class="card stack"><h3>Remettre le suivi à zéro</h3><p class="small muted" style="margin:0">Efface les séances, les records et les mesures (pas les enregistrements de Maman).</p><div class="row"><input type="text" id="conf" placeholder="Tapez EFFACER"><button class="btn ghost" id="wipe">Effacer le suivi</button></div></div>`;
     $('#setup').onclick = screenSetup;
     $('#wipe').onclick = () => { if ($('#conf').value.trim().toUpperCase() !== 'EFFACER') return; S.progress = blank().progress; save(); screenParent('suivi'); };
@@ -909,7 +909,7 @@ function screenGrade(r) {
   draw();
 }
 function report() {
-  const L = [`Rapport L'école de Kono · ${today()} · v${VERSION}`];
+  const L = [`Rapport Corridor à la maison · ${today()} · v${VERSION}`];
   ['bleu', 'orange'].forEach(c => {
     const pr = S.progress[c];
     L.push('', `== ${c === 'bleu' ? 'BLEU (7 ans)' : 'ORANGE (5 ans ½)'} : ${kidLabel(c)} ==`);

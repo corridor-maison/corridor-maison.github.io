@@ -1,4 +1,4 @@
-# L'école de Kono
+# Corridor à la maison
 
 Séances guidées par une voix, pour les parcours Bleu (7 ans, CE1) et Orange (5 ans ½, grande section).
 Kono, un oiseau du fleuve, emmène l'enfant en voyage sur le Niger, de Bamako à Gao : chaque séance fait avancer la pinasse sur la carte.

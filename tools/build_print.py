@@ -99,7 +99,7 @@ def kid_page(L, n):
 <h1 style="color:{color}">{esc(P["title"])}</h1>
 <div class="model"><div style="flex:1"><b>Ce que Kono m'a montré</b><br>{esc(model)}</div>{visual}</div>
 {body}
-<div class="foot"><span>L'école de Kono · {esc(L["week"])} · même contenu que la tablette</span><span>{n}</span></div></section>'''
+<div class="foot"><span>Corridor à la maison · {esc(L["week"])} · même contenu que la tablette</span><span>{n}</span></div></section>'''
 
 def reading_pages(L, n0):
     out = []
@@ -118,7 +118,7 @@ def reading_pages(L, n0):
 <div class="lv" style="margin-top:8mm"><div class="lvh" style="font-family:Nunito">Pour l'adulte : la mesure d'une minute</div>
 <p style="font-size:10.5pt;margin:0 0 2mm">Chronométrer une minute. Compter les mots lus correctement (le nombre de la ligne atteinte, moins les erreurs). Objectif de fin de CE1 : 70 mots par minute. Comparer l'enfant à lui-même, jamais aux autres.</p>
 <table class="a" style="font-size:10.5pt"><tr><td><b>Mesure</b></td><td><b>Date</b></td><td><b>Mots lus</b></td><td><b>Erreurs</b></td><td><b>Mots par minute</b></td></tr>{mes}</table></div>
-<div class="foot"><span>L'école de Kono · {esc(L["week"])} · même texte que la tablette</span><span>{n0 + len(out)}</span></div></section>''')
+<div class="foot"><span>Corridor à la maison · {esc(L["week"])} · même texte que la tablette</span><span>{n0 + len(out)}</span></div></section>''')
     return out
 
 def maman_page(lessons, n):
@@ -138,7 +138,7 @@ def maman_page(lessons, n):
     return f'''<section class="page adult"><div style="border-bottom:3px solid #2b2b28;padding-bottom:2mm"><div style="font-family:Nunito;font-weight:800;color:#7a4ea3;letter-spacing:1.5px;font-size:9pt">CARTE MAMAN · {esc(WEEK)}</div><h1 style="margin:1mm 0 0">Réponses et points à surveiller · {"Bleu" if lessons[0]["child"] == "bleu" else "Orange"}</h1></div>
 <p style="margin:3mm 0 0">La tablette explique, montre un exemple, fait pratiquer, puis demande à l'enfant de faire sa fiche et de taper ses réponses. Votre rôle : être à portée de voix, regarder la fiche à la fin, et écouter le soir l'enregistrement où l'enfant explique sa méthode (Espace parent › Suivi).</p>
 {blocks}
-<div class="foot"><span>L'école de Kono · {esc(WEEK)} · généré depuis les fichiers de leçon</span><span>{n}</span></div></section>'''
+<div class="foot"><span>Corridor à la maison · {esc(WEEK)} · généré depuis les fichiers de leçon</span><span>{n}</span></div></section>'''
 
 async def main():
     idx = json.loads((APP / "lessons" / "index.json").read_text())
