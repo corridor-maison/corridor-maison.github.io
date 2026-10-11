@@ -1,0 +1,546 @@
+{
+ "id": "gs-s1-collection",
+ "parcours": "gs",
+ "order": 2,
+ "week": "S1",
+ "day": "mercredi",
+ "title": "Le panier de mangues",
+ "domain": "Nombres",
+ "programme": "Grande section · dénombrer et constituer une collection jusqu'à 10",
+ "objective": "Poser le nombre de mangues demandé, et savoir que le dernier nombre dit donne la quantité.",
+ "skills": [
+  "GS.N.constituer",
+  "GS.N.subitizing",
+  "GS.N.denombrer",
+  "GS.O.recit"
+ ],
+ "escale": 1,
+ "steps": [
+  {
+   "type": "maman",
+   "clip": "bonjour"
+  },
+  {
+   "type": "say",
+   "text": "Coucou {prenom} ! C'est Kono. Aujourd'hui, on remplit le panier de mangues. Et tu vas remettre les images de Bintou dans l'ordre.",
+   "show": [
+    {
+     "kind": "title",
+     "text": "Le panier de mangues"
+    }
+   ]
+  },
+  {
+   "type": "part",
+   "n": 1,
+   "title": "Jeu rapide",
+   "text": "Premier temps : le jeu rapide."
+  },
+  {
+   "type": "drill",
+   "id": "jeu-rapide-orange",
+   "title": "Jeu rapide",
+   "seconds": 120,
+   "count": 8,
+   "input": "choice",
+   "text": "Huit petites questions. Regarde bien, et touche la bonne réponse.",
+   "kinds": [
+    {
+     "kind": "count-tf",
+     "w": 2
+    },
+    {
+     "kind": "tf-complement",
+     "w": 1
+    },
+    {
+     "kind": "decomp",
+     "n": [
+      5,
+      6
+     ],
+     "w": 1
+    }
+   ]
+  },
+  {
+   "type": "part",
+   "n": 2,
+   "title": "La leçon",
+   "text": "Deuxième temps : compter les mangues."
+  },
+  {
+   "type": "review",
+   "fallback": [
+    {
+     "type": "choice",
+     "id": "rappel-cache-6-2",
+     "text": "Tu te souviens de la calebasse ? 6 mangues en tout. Tu en vois 2. Combien sont cachées ?",
+     "say": "Tu te souviens de la calebasse magique ? Six mangues en tout. Tu en vois deux. Combien sont cachées ?",
+     "show": [
+      {
+       "kind": "hidden",
+       "total": 6,
+       "visible": 2,
+       "item": "mangue"
+      },
+      {
+       "kind": "text",
+       "text": "6 en tout"
+      }
+     ],
+     "options": [
+      2,
+      4,
+      6
+     ],
+     "optionKind": "dots",
+     "answer": 4,
+     "errors": {
+      "2": "Tu as compté les mangues que tu vois. Je cherche celles qui sont sous la calebasse.",
+      "6": "Six, c'est toutes les mangues. Combien sont cachées ?"
+     },
+     "hints": [
+      "Montre six doigts. Baisse deux doigts. Compte ceux qui restent levés."
+     ],
+     "sol": "Six, c'est deux et quatre. Quatre mangues sont cachées.",
+     "skill": "GS.N.decomposer"
+    }
+   ]
+  },
+  {
+   "type": "demo",
+   "title": "Je te montre",
+   "lines": [
+    {
+     "text": "Voici des mangues. Combien y en a-t-il ? Je vais compter.",
+     "show": [
+      {
+       "kind": "items",
+       "n": 7,
+       "item": "mangue"
+      }
+     ]
+    },
+    {
+     "text": "Je touche chaque mangue une seule fois : 1, 2, 3, 4, 5, 6, 7.",
+     "say": "Je touche chaque mangue une seule fois, et je dis un nombre. Un, deux, trois, quatre, cinq, six, sept.",
+     "show": [
+      {
+       "kind": "items",
+       "n": 7,
+       "item": "mangue"
+      }
+     ]
+    },
+    {
+     "text": "Le dernier nombre que j'ai dit, c'est 7. Alors il y a 7 mangues.",
+     "say": "Le dernier nombre que j'ai dit, c'est sept. Alors il y a sept mangues.",
+     "show": [
+      {
+       "kind": "items",
+       "n": 7,
+       "item": "mangue"
+      },
+      {
+       "kind": "expr",
+       "text": "7 mangues"
+      }
+     ]
+    },
+    {
+     "text": "7, ce n'est pas la dernière mangue : c'est toutes les mangues ensemble. Pas besoin de recompter !",
+     "say": "Sept, ce n'est pas la dernière mangue : c'est toutes les mangues ensemble. Pas besoin de recompter !",
+     "show": [
+      {
+       "kind": "items",
+       "n": 7,
+       "item": "mangue"
+      },
+      {
+       "kind": "expr",
+       "text": "7 mangues"
+      }
+     ]
+    },
+    {
+     "text": "Attention aux pièges : on ne compte pas une mangue deux fois, et on n'oublie pas la dernière.",
+     "show": [
+      {
+       "kind": "items",
+       "n": 7,
+       "item": "mangue"
+      }
+     ]
+    },
+    {
+     "text": "Maintenant, je pose 7 mangues dans la boîte. Je compte en posant, et je m'arrête à 7.",
+     "say": "Maintenant, je pose sept mangues dans la boîte. Un, deux, trois, quatre, cinq, six, sept. Stop ! Je m'arrête à sept.",
+     "show": [
+      {
+       "kind": "tenframe",
+       "filled": 7
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "type": "choice",
+   "id": "compte-dernier-8",
+   "text": "J'ai compté : 1, 2, 3, 4, 5, 6, 7, 8. Combien de mangues ?",
+   "say": "On essaie ensemble. J'ai compté les mangues : un, deux, trois, quatre, cinq, six, sept, huit. Alors, combien y a-t-il de mangues ?",
+   "show": [
+    {
+     "kind": "items",
+     "n": 8,
+     "item": "mangue"
+    }
+   ],
+   "options": [
+    1,
+    8,
+    9
+   ],
+   "optionKind": "dots",
+   "answer": 8,
+   "errors": {
+    "1": "Tu as choisi une seule mangue, la dernière. Mais huit, c'est toutes les mangues ensemble.",
+    "9": "Le dernier nombre que j'ai dit, c'est huit. Pas neuf."
+   },
+   "hints": [
+    "Écoute le dernier nombre que j'ai dit."
+   ],
+   "sol": "Le dernier nombre, c'est huit : il y a huit mangues.",
+   "skill": "GS.N.denombrer"
+  },
+  {
+   "type": "say",
+   "text": "À toi de remplir la boîte. Compte à voix haute à chaque mangue que tu poses.",
+   "show": [
+    {
+     "kind": "tenframe",
+     "filled": 0
+    }
+   ]
+  },
+  {
+   "type": "manip",
+   "mode": "tenframe",
+   "id": "pose-8-mangues",
+   "start": 0,
+   "goal": "total",
+   "item": "mangue",
+   "answer": 8,
+   "text": "Pose 8 mangues dans la boîte. Puis valide.",
+   "say": "Pose huit mangues dans la boîte. Compte à voix haute à chaque mangue : un, deux, trois… Arrête-toi à huit. Puis valide.",
+   "errors": {
+    "7": "Il en manque une. Tu as peut-être compté une mangue deux fois. Recompte en touchant chaque mangue une seule fois.",
+    "9": "Il y en a une de trop : tu ne t'es pas arrêté{e} à huit. Enlève une mangue.",
+    "10": "La boîte est pleine : ça fait dix mangues. Il en faut huit. Enlève des mangues."
+   },
+   "hints": [
+    "Une ligne pleine, c'est cinq. Ensuite, continue : six, sept, huit. Stop !"
+   ],
+   "sol": "Huit mangues : une ligne pleine de cinq, et encore trois.",
+   "skill": "GS.N.constituer"
+  },
+  {
+   "type": "manip",
+   "mode": "tenframe",
+   "id": "pose-5-mangues",
+   "start": 0,
+   "goal": "total",
+   "item": "mangue",
+   "answer": 5,
+   "text": "Tout{e} seul{e} maintenant : pose 5 mangues.",
+   "say": "Tout{e} seul{e} maintenant : pose cinq mangues dans la boîte, puis valide.",
+   "errors": {
+    "4": "Il en manque une. Recompte jusqu'à la dernière mangue.",
+    "6": "Il y en a une de trop : tu as dépassé cinq. Enlève une mangue.",
+    "8": "Il y en a trop. Il en faut cinq. Enlève des mangues, et recompte."
+   },
+   "hints": [
+    "Cinq, c'est une ligne pleine."
+   ],
+   "sol": "Cinq mangues : une ligne pleine.",
+   "skill": "GS.N.constituer"
+  },
+  {
+   "type": "choice",
+   "id": "coup-oeil-3",
+   "text": "Regarde vite, sans compter. Combien de mangues ?",
+   "say": "Nouveau jeu ! Regarde vite, sans compter. Combien de mangues ?",
+   "show": [
+    {
+     "kind": "items",
+     "n": 3,
+     "item": "mangue"
+    }
+   ],
+   "options": [
+    2,
+    3,
+    4
+   ],
+   "optionKind": "dots",
+   "answer": 3,
+   "errors": {
+    "2": "Tu as oublié une mangue. Touche chaque mangue, jusqu'à la dernière.",
+    "4": "Tu as peut-être compté une mangue deux fois. Touche chaque mangue une seule fois."
+   },
+   "hints": [
+    "Touche chaque mangue une seule fois, et écoute le dernier nombre."
+   ],
+   "sol": "Trois mangues. Bientôt, tu les verras d'un seul coup d'œil.",
+   "skill": "GS.N.subitizing"
+  },
+  {
+   "type": "choice",
+   "id": "coup-oeil-4",
+   "text": "Et là ? D'un coup d'œil : combien de mangues ?",
+   "say": "Et là ? Regarde vite, d'un coup d'œil. Combien de mangues ?",
+   "show": [
+    {
+     "kind": "items",
+     "n": 4,
+     "item": "mangue"
+    }
+   ],
+   "options": [
+    5,
+    4,
+    3
+   ],
+   "optionKind": "dots",
+   "answer": 4,
+   "errors": {
+    "5": "Tu as compté une mangue deux fois. Touche chaque mangue une seule fois.",
+    "3": "Tu as oublié la dernière mangue. Compte jusqu'au bout."
+   },
+   "hints": [
+    "Cherche deux mangues, puis encore deux mangues."
+   ],
+   "sol": "Quatre mangues : deux et deux.",
+   "skill": "GS.N.subitizing"
+  },
+  {
+   "type": "maman",
+   "clip": "fiche"
+  },
+  {
+   "type": "paper",
+   "text": "Prends ta fiche « Le panier de mangues ».",
+   "say": "Prends ta fiche « Le panier de mangues ». Une étoile : compte les points, et écris le nombre. Deux étoiles : colorie et dessine juste ce qu'il faut. Quand tu as fini, tape tes réponses ici."
+  },
+  {
+   "type": "part",
+   "n": 3,
+   "title": "Histoire",
+   "text": "Troisième temps : l'histoire."
+  },
+  {
+   "type": "story",
+   "id": "panier-bintou",
+   "title": "Le panier de Bintou",
+   "pass": 3,
+   "skipVocab": true,
+   "order": true,
+   "sentences": [
+    "Au marché de Ségou, Bintou vend des mangues avec sa grand-mère.",
+    "Un matin, le vent se met à souffler très fort.",
+    "Le panier de mangues tombe et roule jusqu'au fleuve !",
+    "Bintou a peur : ses mangues vont partir sur l'eau.",
+    "Un vieux pêcheur voit le panier qui flotte.",
+    "Il rame vite avec sa pirogue et attrape le panier.",
+    "Bintou est très contente. Elle dit merci au pêcheur.",
+    "Pour le remercier, elle lui donne la plus belle mangue."
+   ],
+   "vocab": [
+    {
+     "word": "souffler",
+     "say": "Souffler, c'est pousser de l'air très fort. Souffle très fort, comme le vent !"
+    },
+    {
+     "word": "flotter",
+     "say": "Flotter, c'est rester sur l'eau sans couler. Mets ta main à plat et fais-la glisser doucement, comme sur l'eau."
+    },
+    {
+     "word": "ramer",
+     "say": "Ramer, c'est pousser l'eau avec une rame pour faire avancer la pirogue. Fais comme si tu ramais !"
+    }
+   ],
+   "questions": [
+    {
+     "type": "choice",
+     "id": "bintou-apres-vent",
+     "text": "Que se passe-t-il juste après que le vent souffle ?",
+     "say": "Que se passe-t-il juste après que le vent souffle ? Bintou dit merci ? Le panier tombe ? Ou le pêcheur arrive ?",
+     "options": [
+      "Bintou dit merci",
+      "Le panier tombe",
+      "Le pêcheur arrive"
+     ],
+     "answer": "Le panier tombe",
+     "errors": {
+      "Bintou dit merci": "Ça, c'est à la fin de l'histoire. Le vent souffle très fort, et alors ?",
+      "Le pêcheur arrive": "Le pêcheur arrive plus tard. D'abord, que fait le vent au panier ?"
+     },
+     "hints": [
+      "Le vent souffle très fort. Qu'est-ce qui tombe ?"
+     ],
+     "sol": "Le vent souffle, puis le panier tombe et roule jusqu'au fleuve.",
+     "skill": "GS.O.recit"
+    },
+    {
+     "type": "choice",
+     "id": "bintou-avant-merci",
+     "text": "Que fait le pêcheur juste avant que Bintou dise merci ?",
+     "say": "Que fait le pêcheur juste avant que Bintou dise merci ? Il attrape le panier ? Il mange une mangue ? Ou il dort ?",
+     "options": [
+      "Il attrape le panier",
+      "Il mange une mangue",
+      "Il dort"
+     ],
+     "answer": "Il attrape le panier",
+     "errors": {
+      "Il mange une mangue": "La mangue, Bintou la donne après le merci. Avant, que fait le pêcheur avec sa pirogue ?",
+      "Il dort": "Le pêcheur ne dort pas dans l'histoire. Il voit le panier qui flotte, et alors ?"
+     },
+     "hints": [
+      "Le pêcheur rame vite avec sa pirogue. Pour faire quoi ?"
+     ],
+     "sol": "Il attrape le panier. Ensuite, Bintou dit merci.",
+     "skill": "GS.O.recit"
+    }
+   ],
+   "scenes": [
+    "marche",
+    "vent",
+    "pecheur",
+    "merci"
+   ],
+   "retell": "Raconte l'histoire avec les images, dans le bon ordre. Dis : d'abord, après, à la fin. Appuie sur le rond rouge, raconte tout, puis appuie encore une fois."
+  },
+  {
+   "type": "part",
+   "n": 4,
+   "title": "Ce que j'ai appris",
+   "text": "Dernier temps : ce que tu as appris."
+  },
+  {
+   "type": "say",
+   "text": "Aujourd'hui, tu as appris à compter : une mangue, un nombre. Le dernier nombre dit combien il y en a. Ce soir, donne 7 cailloux à Maman, en comptant à voix haute.",
+   "say": "Aujourd'hui, tu as appris à compter : une mangue, un nombre. Le dernier nombre dit combien il y en a. Ce soir, donne sept cailloux à Maman, en comptant à voix haute.",
+   "show": [
+    {
+     "kind": "items",
+     "n": 7,
+     "item": "mangue"
+    },
+    {
+     "kind": "expr",
+     "text": "7 mangues"
+    }
+   ]
+  },
+  {
+   "type": "end",
+   "clip": "fin"
+  }
+ ],
+ "paper": {
+  "title": "Le panier de mangues",
+  "model": "Je touche chaque mangue une fois. Le dernier nombre dit combien il y en a : 7 mangues.",
+  "model_visual": {
+   "kind": "items",
+   "n": 7,
+   "item": "mangue"
+  },
+  "levels": [
+   {
+    "stars": 1,
+    "ins": "Compte les points. Écris le nombre.",
+    "who": "seul",
+    "items": [
+     {
+      "id": "a",
+      "q": "boîte avec 8 points",
+      "tenframe": 8,
+      "answer": 8,
+      "errors": {
+       "9": "Tu as compté un point deux fois. Touche chaque point une seule fois.",
+       "7": "Tu as oublié un point. Compte jusqu'au dernier."
+      }
+     },
+     {
+      "id": "b",
+      "q": "boîte avec 6 points",
+      "tenframe": 6,
+      "answer": 6,
+      "errors": {
+       "7": "Tu as compté un point deux fois. Touche chaque point une seule fois.",
+       "5": "Tu as oublié un point. Compte jusqu'au dernier."
+      }
+     },
+     {
+      "id": "c",
+      "q": "boîte avec 9 points",
+      "tenframe": 9,
+      "answer": 9,
+      "errors": {
+       "10": "Une case est vide. Compte seulement les points.",
+       "8": "Tu as oublié un point. Compte jusqu'au dernier."
+      }
+     }
+    ]
+   },
+   {
+    "stars": 2,
+    "ins": "Colorie. Dessine.",
+    "who": "seul",
+    "items": [
+     {
+      "id": "d",
+      "q": "Colorie 7 cases.",
+      "tenframe": 0
+     },
+     {
+      "id": "e",
+      "q": "Dessine 6 mangues.",
+      "draw": {
+       "n": 6,
+       "item": "mangue"
+      }
+     }
+    ]
+   },
+   {
+    "stars": 3,
+    "ins": "Maman lit. Tu cherches.",
+    "who": "maman",
+    "items": [
+     {
+      "id": "f",
+      "q": "Bintou a 3 mangues. Sa grand-mère lui en donne 2. Combien de mangues a Bintou maintenant ?",
+      "short": "3 mangues, et encore 2",
+      "answer": 5,
+      "errors": {
+       "1": "Tu as enlevé. Mais la grand-mère donne : Bintou en a plus.",
+       "6": "Recompte avec tes doigts : trois doigts, puis encore deux."
+      }
+     },
+     {
+      "id": "g",
+      "q": "Maman montre des doigts, une seconde, puis les cache. Dis vite combien. Jouez trois fois."
+     }
+    ]
+   }
+  ],
+  "maman": [
+   "Le principe à installer : le dernier nombre dit donne la quantité. Après un comptage, demandez « Alors, combien ? » : l'enfant doit répondre sans recompter.",
+   "Erreurs typiques : compter deux fois le même objet, en oublier un, ne pas s'arrêter au nombre demandé. Faites toucher ou déplacer chaque objet en le comptant.",
+   "Jusqu'à 4 ou 5, une quantité se reconnaît d'un coup d'œil, sans compter : c'est le jeu du défi g)."
+  ]
+ }
+}

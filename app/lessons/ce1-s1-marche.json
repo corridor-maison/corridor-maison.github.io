@@ -1,0 +1,990 @@
+{
+ "id": "ce1-s1-marche",
+ "parcours": "ce1",
+ "order": 3,
+ "week": "S1",
+ "day": "jeudi",
+ "title": "Problèmes au marché",
+ "domain": "Problèmes",
+ "programme": "CE1 · résolution de problèmes additifs : chercher le tout, chercher une partie (modèle en barres)",
+ "objective": "Représenter un problème avec des barres : quand on cherche le tout, on ajoute ; quand on cherche une partie, on avance de la partie connue jusqu'au tout.",
+ "skills": [
+  "P.additifs",
+  "G.monnaie",
+  "C.soustraction",
+  "C.dizaine",
+  "L.fluence",
+  "O.expliquer"
+ ],
+ "escale": 1,
+ "steps": [
+  {
+   "type": "maman",
+   "clip": "bonjour"
+  },
+  {
+   "type": "say",
+   "text": "Salut {prenom} ! Aujourd'hui, la pinasse arrive à Ségou, et on va au marché. Au programme : le calcul express, des problèmes avec des barres, puis une nouvelle lecture.",
+   "show": [
+    {
+     "kind": "title",
+     "text": "Problèmes au marché"
+    }
+   ]
+  },
+  {
+   "type": "part",
+   "n": 1,
+   "title": "Calcul express",
+   "text": "Premier temps : le calcul express."
+  },
+  {
+   "type": "drill",
+   "id": "calcul-express-bleu",
+   "title": "Calcul express",
+   "seconds": 150,
+   "count": 10,
+   "input": "keypad",
+   "text": "Dix calculs. Ils vont t'aider pour les problèmes du marché.",
+   "kinds": [
+    {
+     "kind": "complement-next-ten",
+     "w": 3
+    },
+    {
+     "kind": "through10",
+     "w": 2
+    },
+    {
+     "kind": "double",
+     "min": 5,
+     "max": 20,
+     "w": 1
+    }
+   ]
+  },
+  {
+   "type": "part",
+   "n": 2,
+   "title": "La leçon",
+   "text": "Deuxième temps : la leçon du jour."
+  },
+  {
+   "type": "review",
+   "fallback": [
+    {
+     "type": "number",
+     "id": "rappel-98-4",
+     "skill": "C.dizaine",
+     "text": "Échauffement. 98 + 4 = ? Passe par 100.",
+     "say": "Échauffement. Quatre-vingt-dix-huit plus quatre ? Passe par cent.",
+     "show": [
+      {
+       "kind": "expr",
+       "text": "98 + 4"
+      },
+      {
+       "kind": "numberline",
+       "from": 90,
+       "to": 110,
+       "marks": [
+        98,
+        100
+       ]
+      }
+     ],
+     "answer": 102,
+     "errors": {
+      "912": {
+       "text": "Tu as écrit 12 à côté du 9. 8 + 4 = 12 : 1 dizaine de plus, et 10 dizaines font 1 centaine.",
+       "show": [
+        {
+         "kind": "blocks",
+         "h": 0,
+         "t": 9,
+         "u": 12,
+         "regroup": true
+        }
+       ]
+      },
+      "92": {
+       "text": "Tu as oublié la dizaine : 8 + 4 = 12, c'est 1 dizaine de plus.",
+       "show": [
+        {
+         "kind": "blocks",
+         "h": 0,
+         "t": 9,
+         "u": 12,
+         "regroup": true
+        }
+       ]
+      },
+      "1002": "Tu as écrit 100, puis 2 à côté. 1 centaine, 0 dizaine et 2 unités s'écrit avec 3 chiffres seulement."
+     },
+     "hints": [
+      "Combien manque-t-il à 98 pour arriver à 100 ?",
+      "98 + 2 = 100. Il reste 2 à ajouter."
+     ],
+     "sol": "98 + 2 = 100, puis 100 + 2 = 102.",
+     "after": [
+      {
+       "kind": "expr",
+       "text": "98 + 4 = 102"
+      },
+      {
+       "kind": "numberline",
+       "from": 90,
+       "to": 110,
+       "marks": [
+        98,
+        100,
+        102
+       ],
+       "jumps": [
+        [
+         98,
+         100,
+         "+2"
+        ],
+        [
+         100,
+         102,
+         "+2"
+        ]
+       ]
+      }
+     ]
+    },
+    {
+     "type": "number",
+     "id": "rappel-46-50",
+     "skill": "C.soustraction",
+     "text": "Combien manque-t-il à 46 pour arriver à 50 ?",
+     "say": "Combien manque-t-il à quarante-six pour arriver à cinquante ?",
+     "show": [
+      {
+       "kind": "expr",
+       "text": "46 + ? = 50"
+      },
+      {
+       "kind": "numberline",
+       "from": 40,
+       "to": 60,
+       "marks": [
+        46,
+        50
+       ]
+      }
+     ],
+     "answer": 4,
+     "errors": {
+      "96": "Tu as ajouté 46 et 50. Je te demande seulement ce qui manque pour aller de 46 à 50.",
+      "5": "Tu as compté 46 dans tes pas. Pars de 46 sans le compter : 47, 48, 49, 50."
+     },
+     "hints": [
+      "Pense seulement au 6 : combien faut-il pour faire 10 ?"
+     ],
+     "sol": "46 + 4 = 50, parce que 6 + 4 = 10."
+    }
+   ]
+  },
+  {
+   "type": "demo",
+   "title": "Je te montre",
+   "lines": [
+    {
+     "text": "Au marché de Ségou, Awa a 38 F. Sa maman lui donne 7 F. Combien d'argent Awa a-t-elle maintenant ?",
+     "say": "Au marché de Ségou, Awa a trente-huit francs. Sa maman lui donne sept francs. Combien d'argent Awa a-t-elle maintenant ?",
+     "show": [
+      {
+       "kind": "text",
+       "text": "Awa a 38 F. Sa maman lui donne 7 F."
+      }
+     ]
+    },
+    {
+     "text": "Je dessine le problème avec des barres : une barre pour les 38 F d'Awa, une barre pour les 7 F de sa maman.",
+     "say": "Je dessine le problème avec des barres : une barre pour les trente-huit francs d'Awa, une barre pour les sept francs de sa maman.",
+     "show": [
+      {
+       "kind": "bar",
+       "parts": [
+        38,
+        7
+       ],
+       "whole": null,
+       "labels": [
+        "Awa a",
+        "Maman donne"
+       ],
+       "unit": "F"
+      }
+     ]
+    },
+    {
+     "text": "Les deux barres mises bout à bout, c'est le tout : tout l'argent d'Awa. C'est lui qu'on cherche.",
+     "show": [
+      {
+       "kind": "bar",
+       "parts": [
+        38,
+        7
+       ],
+       "whole": null,
+       "labels": [
+        "Awa a",
+        "Maman donne"
+       ],
+       "unit": "F"
+      }
+     ]
+    },
+    {
+     "text": "On connaît les deux parties. On cherche le tout : on ajoute. 38 + 7.",
+     "say": "On connaît les deux parties. On cherche le tout : on ajoute. Trente-huit plus sept.",
+     "show": [
+      {
+       "kind": "bar",
+       "parts": [
+        38,
+        7
+       ],
+       "whole": null,
+       "labels": [
+        "Awa a",
+        "Maman donne"
+       ],
+       "unit": "F"
+      },
+      {
+       "kind": "expr",
+       "text": "38 + 7 = ?"
+      }
+     ]
+    },
+    {
+     "text": "Je passe par 40 : 38 + 2 = 40, puis 40 + 5 = 45.",
+     "say": "Je passe par quarante : trente-huit plus deux, quarante. Puis quarante plus cinq, quarante-cinq.",
+     "show": [
+      {
+       "kind": "bar",
+       "parts": [
+        38,
+        7
+       ],
+       "whole": null,
+       "labels": [
+        "Awa a",
+        "Maman donne"
+       ],
+       "unit": "F"
+      },
+      {
+       "kind": "numberline",
+       "from": 30,
+       "to": 50,
+       "marks": [
+        38,
+        40,
+        45
+       ],
+       "jumps": [
+        [
+         38,
+         40,
+         "+2"
+        ],
+        [
+         40,
+         45,
+         "+5"
+        ]
+       ]
+      }
+     ]
+    },
+    {
+     "text": "Awa a maintenant 45 F.",
+     "say": "Awa a maintenant quarante-cinq francs.",
+     "show": [
+      {
+       "kind": "bar",
+       "parts": [
+        38,
+        7
+       ],
+       "whole": 45,
+       "labels": [
+        "Awa a",
+        "Maman donne"
+       ],
+       "unit": "F"
+      },
+      {
+       "kind": "expr",
+       "text": "38 + 7 = 45"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "type": "say",
+   "text": "Un autre problème, à nous deux. Le panier d'Awa contient 52 mangues. 47 mangues sont mûres. Combien de mangues ne sont pas mûres ?",
+   "say": "Un autre problème, à nous deux. Le panier d'Awa contient cinquante-deux mangues. Quarante-sept mangues sont mûres. Combien de mangues ne sont pas mûres ?",
+   "show": [
+    {
+     "kind": "bar",
+     "parts": [
+      47,
+      null
+     ],
+     "whole": 52,
+     "labels": [
+      "mûres",
+      "pas mûres"
+     ]
+    }
+   ]
+  },
+  {
+   "type": "choice",
+   "id": "guide-mangues-quoi",
+   "skill": "P.additifs",
+   "text": "Regarde les barres. Ici, que cherche-t-on : le tout, ou une partie ?",
+   "show": [
+    {
+     "kind": "bar",
+     "parts": [
+      47,
+      null
+     ],
+     "whole": 52,
+     "labels": [
+      "mûres",
+      "pas mûres"
+     ]
+    }
+   ],
+   "options": [
+    "Le tout",
+    "Une partie"
+   ],
+   "answer": "Une partie",
+   "errors": {
+    "Le tout": "Le tout, on le connaît déjà : c'est le panier entier, 52 mangues. On cherche les mangues pas mûres : c'est une partie."
+   },
+   "hints": [
+    "Où est le point d'interrogation sur les barres ?"
+   ],
+   "sol": "On connaît le tout et une partie. On cherche l'autre partie."
+  },
+  {
+   "type": "say",
+   "text": "Pour trouver la partie qui manque, on part de 47 et on avance jusqu'à 52. Le chemin parcouru, ce sont les mangues pas mûres.",
+   "say": "Pour trouver la partie qui manque, on part de quarante-sept et on avance jusqu'à cinquante-deux. Le chemin parcouru, ce sont les mangues pas mûres.",
+   "show": [
+    {
+     "kind": "bar",
+     "parts": [
+      47,
+      null
+     ],
+     "whole": 52,
+     "labels": [
+      "mûres",
+      "pas mûres"
+     ]
+    },
+    {
+     "kind": "numberline",
+     "from": 40,
+     "to": 60,
+     "marks": [
+      47,
+      52
+     ]
+    }
+   ]
+  },
+  {
+   "type": "manip",
+   "mode": "jumps",
+   "id": "saut-47-52",
+   "skill": "C.soustraction",
+   "from": 40,
+   "to": 60,
+   "start": 47,
+   "via": 50,
+   "answer": 52,
+   "text": "Pars de 47. Fais un saut jusqu'à 50, puis un autre jusqu'à 52.",
+   "say": "Pars de quarante-sept. Fais un saut jusqu'à cinquante, puis un autre jusqu'à cinquante-deux.",
+   "errors": {
+    "via": "Arrête-toi d'abord à 50 : c'est le nombre tout rond.",
+    "50": "50, c'est l'arrêt du milieu. Continue jusqu'à 52, le panier entier.",
+    "51": "Presque ! Le panier contient 52 mangues : avance encore de 1.",
+    "53": "Un pas de trop ! Le panier contient 52 mangues : arrête-toi à 52."
+   },
+   "hints": [
+    "Combien manque-t-il à 47 pour arriver à 50 ?",
+    "De 50 à 52, il y a 2."
+   ],
+   "sol": "47 + 3 = 50, puis 50 + 2 = 52."
+  },
+  {
+   "type": "number",
+   "id": "guide-mangues-ecart",
+   "skill": "C.soustraction",
+   "text": "De combien as-tu avancé en tout ? C'est le nombre de mangues pas mûres.",
+   "show": [
+    {
+     "kind": "numberline",
+     "from": 40,
+     "to": 60,
+     "marks": [
+      47,
+      50,
+      52
+     ],
+     "jumps": [
+      [
+       47,
+       50,
+       "+3"
+      ],
+      [
+       50,
+       52,
+       "+2"
+      ]
+     ]
+    },
+    {
+     "kind": "bar",
+     "parts": [
+      47,
+      null
+     ],
+     "whole": 52,
+     "labels": [
+      "mûres",
+      "pas mûres"
+     ]
+    }
+   ],
+   "answer": 5,
+   "errors": {
+    "2": "Tu as compté les sauts : il y en a 2. Mais je te demande de combien tu as avancé : regarde le +3 et le +2.",
+    "99": "Tu as ajouté 47 et 52. Mais 52, c'est déjà tout le panier. On cherche seulement l'écart entre 47 et 52.",
+    "52": "52, c'est le panier entier. Je te demande de combien tu as avancé depuis 47."
+   },
+   "hints": [
+    "Regarde les deux sauts : +3, puis +2.",
+    "3 + 2 = ?"
+   ],
+   "sol": "3 + 2 = 5. 5 mangues ne sont pas mûres, car 47 + 5 = 52.",
+   "after": [
+    {
+     "kind": "bar",
+     "parts": [
+      47,
+      5
+     ],
+     "whole": 52,
+     "labels": [
+      "mûres",
+      "pas mûres"
+     ]
+    },
+    {
+     "kind": "expr",
+     "text": "47 + 5 = 52"
+    }
+   ]
+  },
+  {
+   "type": "say",
+   "text": "Ce calcul s'écrit aussi avec le signe moins : 52 − 47 = 5. Ici, le moins veut dire : quel est l'écart entre 47 et 52 ?",
+   "say": "Ce calcul s'écrit aussi avec le signe moins : cinquante-deux moins quarante-sept égale cinq. Ici, le moins veut dire : quel est l'écart entre quarante-sept et cinquante-deux ?",
+   "show": [
+    {
+     "kind": "expr",
+     "text": "52 − 47 = 5"
+    },
+    {
+     "kind": "numberline",
+     "from": 40,
+     "to": 60,
+     "marks": [
+      47,
+      50,
+      52
+     ],
+     "jumps": [
+      [
+       47,
+       50,
+       "+3"
+      ],
+      [
+       50,
+       52,
+       "+2"
+      ]
+     ]
+    }
+   ]
+  },
+  {
+   "type": "say",
+   "text": "Retiens bien. On cherche le tout ? On ajoute les parties. On cherche une partie ? On part de la partie connue et on avance jusqu'au tout.",
+   "show": [
+    {
+     "kind": "text",
+     "text": "Le tout ? J'ajoute les parties."
+    },
+    {
+     "kind": "text",
+     "text": "Une partie ? J'avance jusqu'au tout."
+    }
+   ]
+  },
+  {
+   "type": "say",
+   "text": "À toi tout{e} seul{e}. D'abord, demande-toi : je cherche le tout, ou une partie ?",
+   "show": [
+    {
+     "kind": "title",
+     "text": "À toi !"
+    }
+   ]
+  },
+  {
+   "type": "number",
+   "id": "seul-beignets",
+   "skill": "G.monnaie",
+   "text": "Awa achète des beignets pour 35 F et des mangues pour 25 F. Combien paie-t-elle en tout ?",
+   "say": "Awa achète des beignets pour trente-cinq francs et des mangues pour vingt-cinq francs. Combien paie-t-elle en tout ?",
+   "show": [
+    {
+     "kind": "bar",
+     "parts": [
+      35,
+      25
+     ],
+     "whole": null,
+     "labels": [
+      "beignets",
+      "mangues"
+     ],
+     "unit": "F"
+    }
+   ],
+   "answer": 60,
+   "errors": {
+    "50": {
+     "text": "Tu as oublié la dizaine : 5 + 5 = 10, c'est 1 dizaine de plus.",
+     "show": [
+      {
+       "kind": "blocks",
+       "t": 5,
+       "u": 10,
+       "regroup": true
+      }
+     ]
+    },
+    "510": {
+     "text": "Tu as écrit 10 à côté du 5. Mais 10 unités, c'est 1 dizaine : 5 dizaines et 1 dizaine.",
+     "show": [
+      {
+       "kind": "blocks",
+       "t": 5,
+       "u": 10,
+       "regroup": true
+      }
+     ]
+    },
+    "10": {
+     "text": "Tu as cherché l'écart entre 35 et 25. Mais ici, on connaît les deux parties : on cherche le tout, alors on ajoute.",
+     "show": [
+      {
+       "kind": "bar",
+       "parts": [
+        35,
+        25
+       ],
+       "whole": null,
+       "labels": [
+        "beignets",
+        "mangues"
+       ],
+       "unit": "F"
+      }
+     ]
+    }
+   },
+   "hints": [
+    "On connaît les deux parties. On cherche le tout : on ajoute.",
+    "35 + 20 = 55, puis 55 + 5 = ?"
+   ],
+   "sol": "35 + 25 = 60. Awa paie 60 francs.",
+   "after": [
+    {
+     "kind": "bar",
+     "parts": [
+      35,
+      25
+     ],
+     "whole": 60,
+     "labels": [
+      "beignets",
+      "mangues"
+     ],
+     "unit": "F"
+    },
+    {
+     "kind": "expr",
+     "text": "35 + 25 = 60"
+    }
+   ]
+  },
+  {
+   "type": "number",
+   "id": "seul-pot",
+   "skill": "C.soustraction",
+   "text": "Awa a 45 F. Elle veut un petit pot en terre à 60 F. Combien lui manque-t-il ?",
+   "say": "Awa a quarante-cinq francs. Elle veut un petit pot en terre à soixante francs. Combien lui manque-t-il ?",
+   "show": [
+    {
+     "kind": "bar",
+     "parts": [
+      45,
+      null
+     ],
+     "whole": 60,
+     "labels": [
+      "Awa a",
+      "il manque"
+     ],
+     "unit": "F"
+    }
+   ],
+   "answer": 15,
+   "errors": {
+    "105": {
+     "text": "Tu as ajouté 45 et 60. Mais 60 francs, c'est le prix du pot : c'est le tout. On cherche ce qui manque de 45 à 60.",
+     "show": [
+      {
+       "kind": "bar",
+       "parts": [
+        45,
+        null
+       ],
+       "whole": 60,
+       "labels": [
+        "Awa a",
+        "il manque"
+       ],
+       "unit": "F"
+      }
+     ]
+    },
+    "25": {
+     "text": "Tu as fait 5 moins 0, puis 6 moins 4. Pars plutôt de 45 et avance jusqu'à 60 : d'abord jusqu'à 50.",
+     "show": [
+      {
+       "kind": "numberline",
+       "from": 40,
+       "to": 60,
+       "marks": [
+        45,
+        50,
+        60
+       ],
+       "jumps": [
+        [
+         45,
+         50,
+         "+5"
+        ],
+        [
+         50,
+         60,
+         "+10"
+        ]
+       ]
+      }
+     ]
+    },
+    "10": {
+     "text": "Tu as oublié le petit saut de 45 à 50 : il y a 5.",
+     "show": [
+      {
+       "kind": "numberline",
+       "from": 40,
+       "to": 60,
+       "marks": [
+        45,
+        50,
+        60
+       ],
+       "jumps": [
+        [
+         45,
+         50,
+         "+5"
+        ],
+        [
+         50,
+         60,
+         "+10"
+        ]
+       ]
+      }
+     ]
+    }
+   },
+   "hints": [
+    "On connaît le tout : 60 francs. Pars de 45 et avance jusqu'à 60.",
+    "45 + 5 = 50, puis 50 + 10 = 60. Combien en tout ?"
+   ],
+   "sol": "45 + 5 = 50, puis 50 + 10 = 60. 5 + 10 = 15 : il manque 15 francs.",
+   "after": [
+    {
+     "kind": "bar",
+     "parts": [
+      45,
+      15
+     ],
+     "whole": 60,
+     "labels": [
+      "Awa a",
+      "il manque"
+     ],
+     "unit": "F"
+    },
+    {
+     "kind": "numberline",
+     "from": 40,
+     "to": 60,
+     "marks": [
+      45,
+      50,
+      60
+     ],
+     "jumps": [
+      [
+       45,
+       50,
+       "+5"
+      ],
+      [
+       50,
+       60,
+       "+10"
+      ]
+     ]
+    }
+   ]
+  },
+  {
+   "type": "maman",
+   "clip": "fiche"
+  },
+  {
+   "type": "paper",
+   "text": "Prends ta fiche « Problèmes au marché ». Fais une étoile, puis deux, puis trois si tu peux. Quand tu as fini, tape tes réponses ici."
+  },
+  {
+   "type": "part",
+   "n": 3,
+   "title": "Lecture",
+   "text": "Troisième temps : la lecture."
+  },
+  {
+   "type": "reading",
+   "id": "lecture-marche-segou",
+   "title": "Le marché de Ségou",
+   "passage": [
+    "Ce matin, la pinasse arrive à Ségou.",
+    "Au bord du fleuve, Kono voit de grands arbres : les balanzans.",
+    "Kono suit Awa et son grand-père au marché.",
+    "Il y a des tas de poissons, des mangues et des beignets chauds.",
+    "Plus loin, des femmes font des pots en terre : ce sont les potières.",
+    "Awa choisit un petit pot rouge.",
+    "Il coûte cinquante francs, et Awa donne deux pièces de vingt-cinq francs.",
+    "La potière sourit : « Ton pot gardera l'eau bien fraîche ! »",
+    "Kono se pose sur le pot rouge : quelle belle ville !"
+   ]
+  },
+  {
+   "type": "part",
+   "n": 4,
+   "title": "Ta méthode",
+   "text": "Dernier temps : explique ta méthode."
+  },
+  {
+   "type": "record",
+   "kind": "methode",
+   "clip": "explique",
+   "text": "Explique avec ta voix comment tu as trouvé les mangues pas mûres. Parle des barres et des sauts. Appuie sur le rond rouge pour commencer, et encore une fois pour finir.",
+   "show": [
+    {
+     "kind": "title",
+     "text": "Explique avec ta voix"
+    },
+    {
+     "kind": "bar",
+     "parts": [
+      47,
+      null
+     ],
+     "whole": 52,
+     "labels": [
+      "mûres",
+      "pas mûres"
+     ]
+    }
+   ]
+  },
+  {
+   "type": "end",
+   "clip": "fin"
+  }
+ ],
+ "paper": {
+  "title": "Problèmes au marché",
+  "model": "Le tout ? J'ajoute. Une partie ? J'avance jusqu'au tout : 52 − 47 = 5.",
+  "model_visual": {
+   "kind": "bar",
+   "parts": [
+    47,
+    null
+   ],
+   "whole": 52,
+   "labels": [
+    "mûres",
+    "pas mûres"
+   ]
+  },
+  "levels": [
+   {
+    "stars": 1,
+    "ins": "Résous. Tu peux dessiner les barres ou les sauts.",
+    "who": "seul",
+    "items": [
+     {
+      "id": "a",
+      "q": "Awa a 24 F. Son grand-père lui donne 9 F. Combien a-t-elle ?",
+      "short": "Awa : 24 F + 9 F",
+      "answer": 33,
+      "lines": 1,
+      "errors": {
+       "213": "Tu as écrit 13 à côté du 2 : 4 + 9 = 13, c'est 1 dizaine de plus.",
+       "23": "Tu as oublié la dizaine : 4 + 9 = 13.",
+       "15": "Tu as cherché l'écart. Mais le grand-père donne de l'argent : on cherche le tout, on ajoute."
+      }
+     },
+     {
+      "id": "b",
+      "q": "Le panier a 30 mangues. 26 sont mûres. Combien ne le sont pas ?",
+      "short": "30 mangues, 26 mûres",
+      "answer": 4,
+      "lines": 1,
+      "errors": {
+       "56": "Tu as ajouté 30 et 26. Mais 30, c'est tout le panier : avance de 26 jusqu'à 30.",
+       "16": "Tu as fait 6 moins 0 dans les unités. Pars plutôt de 26 et avance jusqu'à 30.",
+       "5": "Tu as compté 26 dans tes pas. Pars de 26 sans le compter : 27, 28, 29, 30."
+      }
+     },
+     {
+      "id": "c",
+      "q": "45 − 38",
+      "line": [
+       30,
+       50
+      ],
+      "answer": 7,
+      "errors": {
+       "13": "Tu as fait 8 moins 5 dans les unités. Pars plutôt de 38 et avance jusqu'à 45 : 38 + 2 = 40, puis 5.",
+       "83": "Tu as ajouté 45 et 38. On cherche l'écart : pars de 38 et avance jusqu'à 45."
+      }
+     }
+    ]
+   },
+   {
+    "stars": 2,
+    "ins": "Trouve l'écart : avance en passant par la dizaine.",
+    "who": "seul",
+    "items": [
+     {
+      "id": "d",
+      "q": "43 − 39",
+      "answer": 4,
+      "errors": {
+       "16": "Tu as fait 9 moins 3 dans les unités. Pars plutôt de 39 et avance jusqu'à 43 : 39 + 1 = 40, puis 3.",
+       "82": "Tu as ajouté 43 et 39. On cherche l'écart : pars de 39 et avance jusqu'à 43.",
+       "5": "Tu as compté 39 dans tes pas. Pars de 39 sans le compter : 40, 41, 42, 43."
+      }
+     },
+     {
+      "id": "e",
+      "q": "64 − 57",
+      "answer": 7,
+      "errors": {
+       "13": "Tu as fait 7 moins 4 dans les unités. Pars plutôt de 57 : 57 + 3 = 60, puis 4.",
+       "121": "Tu as ajouté 64 et 57. On cherche l'écart : pars de 57 et avance jusqu'à 64."
+      }
+     },
+     {
+      "id": "f",
+      "q": "82 − 76",
+      "answer": 6,
+      "errors": {
+       "14": "Tu as fait 6 moins 2 dans les unités. Pars plutôt de 76 : 76 + 4 = 80, puis 2.",
+       "158": "Tu as ajouté 82 et 76. On cherche l'écart : pars de 76 et avance jusqu'à 82."
+      }
+     }
+    ]
+   },
+   {
+    "stars": 3,
+    "ins": "Défis. Dessine les barres pour chercher.",
+    "who": "seul",
+    "items": [
+     {
+      "id": "g",
+      "q": "Awa a 20 F. On lui donne 25 F. Le pot coûte 50 F. Combien manque-t-il ?",
+      "short": "20 F + 25 F, pot à 50 F",
+      "answer": 5,
+      "lines": 1,
+      "errors": {
+       "45": "45 francs, c'est ce qu'Awa a maintenant. Cherche encore ce qui manque pour arriver à 50.",
+       "95": "Tu as tout ajouté. Mais 50 francs, c'est le prix : cherche ce qui manque de 45 à 50.",
+       "30": "Tu as fait 50 moins 20. N'oublie pas les 25 francs qu'on lui donne."
+      }
+     },
+     {
+      "id": "h",
+      "q": "47 + ? = 61",
+      "answer": 14,
+      "errors": {
+       "108": "Tu as ajouté 47 et 61. Je te demande ce qui manque pour aller de 47 à 61.",
+       "26": "Tu as fait 7 moins 1, puis 6 moins 4. Pars plutôt de 47 : 47 + 3 = 50, puis de 50 à 61.",
+       "13": "Presque ! 47 + 3 = 50, puis de 50 à 61 il y a 11. Ajoute 3 et 11."
+      }
+     },
+     {
+      "id": "i",
+      "q": "Invente un problème du marché avec 40 F et 47 F. Raconte-le à Maman."
+     }
+    ]
+   }
+  ],
+  "maman": [
+   "La tablette montre le modèle en barres : quand on cherche le tout, on ajoute ; quand on cherche une partie, on part de la partie connue et on avance jusqu'au tout. Le signe − se lit ici comme un écart : pour 64 − 57, on avance de 57 à 64.",
+   "Erreurs typiques à surveiller : ajouter les deux nombres alors qu'on cherche ce qui manque (56 au lieu de 4 pour le b), ou soustraire chiffre par chiffre en inversant (13 au lieu de 7 pour le c). Demandez : « Le tout, on le connaît ? »",
+   "Défi g) : deux étapes, 20 + 25 = 45, puis de 45 à 50 il manque 5. Défi i) : à l'oral, réponse libre, par exemple « Awa a 40 F, le pot coûte 47 F, combien manque-t-il ? » (7 F) ou « 40 F et encore 47 F » (87 F)."
+  ]
+ }
+}

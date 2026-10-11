@@ -1,0 +1,543 @@
+{
+ "id": "gs-s1-syllabes",
+ "parcours": "gs",
+ "order": 3,
+ "week": "S1",
+ "day": "jeudi",
+ "title": "Les syllabes",
+ "domain": "Langage oral",
+ "programme": "Grande section · conscience phonologique : découper un mot en syllabes à l'oral",
+ "objective": "Taper dans ses mains à chaque syllabe d'un mot, et compter les syllabes.",
+ "skills": [
+  "GS.L.syllabes",
+  "GS.N.amis10",
+  "GS.O.recit",
+  "GS.O.vocabulaire"
+ ],
+ "escale": 1,
+ "steps": [
+  {
+   "type": "maman",
+   "clip": "bonjour"
+  },
+  {
+   "type": "say",
+   "text": "Coucou {prenom} ! C'est Kono. Aujourd'hui, on tape dans les mains pour découper les mots. Et tu racontes Bintou, sans les images !",
+   "show": [
+    {
+     "kind": "title",
+     "text": "Les syllabes"
+    }
+   ]
+  },
+  {
+   "type": "part",
+   "n": 1,
+   "title": "Jeu rapide",
+   "text": "Premier temps : le jeu rapide."
+  },
+  {
+   "type": "drill",
+   "id": "jeu-rapide-orange",
+   "title": "Jeu rapide",
+   "seconds": 120,
+   "count": 8,
+   "input": "choice",
+   "text": "Huit petites questions. Regarde bien, et touche la bonne réponse.",
+   "kinds": [
+    {
+     "kind": "tf-complement",
+     "w": 2
+    },
+    {
+     "kind": "count-tf",
+     "w": 1
+    }
+   ]
+  },
+  {
+   "type": "part",
+   "n": 2,
+   "title": "La leçon",
+   "text": "Deuxième temps : les syllabes."
+  },
+  {
+   "type": "review",
+   "fallback": [
+    {
+     "type": "choice",
+     "id": "rappel-amis-6",
+     "text": "Tu te souviens des amis de 10 ? 6 points. Combien de cases vides ?",
+     "say": "Tu te souviens des amis de dix ? Six points. Combien de cases vides ?",
+     "show": [
+      {
+       "kind": "tenframe",
+       "filled": 6
+      }
+     ],
+     "options": [
+      4,
+      6,
+      5
+     ],
+     "optionKind": "dots",
+     "answer": 4,
+     "errors": {
+      "6": "Tu as compté les points. Moi, je cherche les cases vides, les cases blanches.",
+      "5": "Recompte les cases blanches, en les touchant une par une."
+     },
+     "hints": [
+      "Six et combien font dix ? Compte les cases blanches."
+     ],
+     "sol": "Six et quatre font dix.",
+     "skill": "GS.N.amis10"
+    }
+   ]
+  },
+  {
+   "type": "demo",
+   "title": "Je te montre",
+   "lines": [
+    {
+     "text": "Les mots sont faits de petits morceaux. On les appelle des syllabes.",
+     "show": [
+      {
+       "kind": "icon",
+       "name": "poisson"
+      }
+     ]
+    },
+    {
+     "text": "Poisson. Je le dis lentement, en tapant dans mes mains : pois… son.",
+     "show": [
+      {
+       "kind": "syllables",
+       "name": "poisson",
+       "n": 2
+      }
+     ]
+    },
+    {
+     "text": "2 tapes : poisson a 2 syllabes.",
+     "say": "Deux tapes. Poisson a deux syllabes.",
+     "show": [
+      {
+       "kind": "syllables",
+       "name": "poisson",
+       "n": 2
+      }
+     ]
+    },
+    {
+     "text": "Bateau : ba… teau. 2 tapes, 2 syllabes.",
+     "say": "Bateau. Ba… teau. Deux tapes : deux syllabes.",
+     "show": [
+      {
+       "kind": "syllables",
+       "name": "bateau",
+       "n": 2
+      }
+     ]
+    },
+    {
+     "text": "Chat : une seule tape. 1 syllabe.",
+     "say": "Chat. Une seule tape. Chat a une syllabe.",
+     "show": [
+      {
+       "kind": "syllables",
+       "name": "chat",
+       "n": 1
+      }
+     ]
+    },
+    {
+     "text": "Ananas : a… na… nas. 3 tapes, 3 syllabes.",
+     "say": "Ananas. A… na… nas. Trois tapes : trois syllabes !",
+     "show": [
+      {
+       "kind": "syllables",
+       "name": "ananas",
+       "n": 3
+      }
+     ]
+    },
+    {
+     "text": "Attention : on ne compte pas les lettres. On écoute le mot, et on compte les tapes.",
+     "show": [
+      {
+       "kind": "syllables",
+       "name": "chat",
+       "n": 1
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "type": "say",
+   "text": "À toi ! Dis le mot avec moi, tape dans tes mains, puis touche le bon nombre de points.",
+   "show": [
+    {
+     "kind": "icon",
+     "name": "ballon"
+    }
+   ]
+  },
+  {
+   "type": "choice",
+   "id": "syll-ballon",
+   "text": "Ballon. Combien de syllabes ?",
+   "say": "Ballon. Dis-le avec moi, en tapant dans tes mains : bal… lon. Combien de syllabes ?",
+   "show": [
+    {
+     "kind": "icon",
+     "name": "ballon"
+    }
+   ],
+   "options": [
+    1,
+    2,
+    3
+   ],
+   "optionKind": "dots",
+   "answer": 2,
+   "errors": {
+    "1": "Tu as dit le mot d'un seul coup. Redis-le lentement : bal… lon. Une tape pour chaque morceau.",
+    "3": "Tu as tapé une fois de trop. Redis le mot doucement : bal… lon."
+   },
+   "hints": [
+    "Mets ta main sous ton menton et dis : ballon. Ton menton descend combien de fois ?"
+   ],
+   "sol": "Bal… lon : deux syllabes.",
+   "skill": "GS.L.syllabes"
+  },
+  {
+   "type": "choice",
+   "id": "syll-sac",
+   "text": "Sac. Combien de syllabes ?",
+   "say": "Sac. Dis-le avec moi, en tapant dans tes mains : sac. Combien de syllabes ?",
+   "show": [
+    {
+     "kind": "icon",
+     "name": "sac"
+    }
+   ],
+   "options": [
+    1,
+    2,
+    3
+   ],
+   "optionKind": "dots",
+   "answer": 1,
+   "errors": {
+    "3": "Tu as peut-être compté les lettres : s, a, c. Mais on écoute le mot. Sac : une seule tape.",
+    "2": "Tu as coupé le mot en deux. Mais sac se dit d'un seul coup : une seule tape."
+   },
+   "hints": [
+    "Dis sac, et tape une fois. Est-ce qu'il reste un morceau à dire ?"
+   ],
+   "sol": "Sac : une seule syllabe.",
+   "skill": "GS.L.syllabes"
+  },
+  {
+   "type": "choice",
+   "id": "syll-baobab",
+   "text": "Tout{e} seul{e} : baobab. Combien de syllabes ?",
+   "say": "Tout{e} seul{e}, maintenant. Baobab. Dis-le en tapant dans tes mains. Combien de syllabes ?",
+   "show": [
+    {
+     "kind": "icon",
+     "name": "baobab"
+    }
+   ],
+   "options": [
+    1,
+    2,
+    3
+   ],
+   "optionKind": "dots",
+   "answer": 3,
+   "errors": {
+    "2": "Tu as oublié la dernière syllabe. Redis le mot jusqu'au bout : ba… o… bab.",
+    "1": "Tu as dit le mot d'un seul coup. Dis-le doucement, une tape par morceau."
+   },
+   "hints": [
+    "Le baobab est un très grand arbre. Dis son nom lentement, jusqu'au bout."
+   ],
+   "sol": "Ba… o… bab : trois syllabes.",
+   "skill": "GS.L.syllabes"
+  },
+  {
+   "type": "choice",
+   "id": "syll-trois-domino",
+   "text": "Quel mot a 3 syllabes ?",
+   "say": "Quel mot a trois syllabes ? Chat ? Domino ? Ou lapin ? Dis chaque mot en tapant dans tes mains.",
+   "show": [
+    {
+     "kind": "text",
+     "text": "3 syllabes ?"
+    }
+   ],
+   "options": [
+    "chat",
+    "domino",
+    "lapin"
+   ],
+   "optionKind": "icon",
+   "answer": "domino",
+   "errors": {
+    "chat": "Chat : une seule tape. Il en faut trois.",
+    "lapin": "La… pin : deux tapes. Il en faut trois."
+   },
+   "hints": [
+    "Dis chaque mot en tapant. Lequel te fait taper trois fois ?"
+   ],
+   "sol": "Do… mi… no : trois syllabes.",
+   "skill": "GS.L.syllabes"
+  },
+  {
+   "type": "maman",
+   "clip": "fiche"
+  },
+  {
+   "type": "paper",
+   "text": "Prends ta fiche « Les syllabes ».",
+   "say": "Prends ta fiche « Les syllabes ». Dis le nom de chaque image, tape dans tes mains, et colorie un rond par syllabe. Quand tu as fini, donne tes réponses ici, sur la tablette."
+  },
+  {
+   "type": "part",
+   "n": 3,
+   "title": "Histoire",
+   "text": "Troisième temps : l'histoire."
+  },
+  {
+   "type": "story",
+   "id": "panier-bintou",
+   "title": "Le panier de Bintou",
+   "pass": 4,
+   "skipVocab": true,
+   "noImages": true,
+   "sentences": [
+    "Au marché de Ségou, Bintou vend des mangues avec sa grand-mère.",
+    "Un matin, le vent se met à souffler très fort.",
+    "Le panier de mangues tombe et roule jusqu'au fleuve !",
+    "Bintou a peur : ses mangues vont partir sur l'eau.",
+    "Un vieux pêcheur voit le panier qui flotte.",
+    "Il rame vite avec sa pirogue et attrape le panier.",
+    "Bintou est très contente. Elle dit merci au pêcheur.",
+    "Pour le remercier, elle lui donne la plus belle mangue."
+   ],
+   "vocab": [
+    {
+     "word": "souffler",
+     "say": "Souffler, c'est pousser de l'air très fort. Souffle très fort, comme le vent !"
+    },
+    {
+     "word": "flotter",
+     "say": "Flotter, c'est rester sur l'eau sans couler. Mets ta main à plat et fais-la glisser doucement, comme sur l'eau."
+    },
+    {
+     "word": "ramer",
+     "say": "Ramer, c'est pousser l'eau avec une rame pour faire avancer la pirogue. Fais comme si tu ramais !"
+    }
+   ],
+   "questions": [
+    {
+     "type": "choice",
+     "id": "bintou-debut-ou",
+     "text": "Où commence l'histoire ?",
+     "say": "Où commence l'histoire ? À l'école ? Au marché de Ségou ? Ou dans la forêt ?",
+     "options": [
+      "À l'école",
+      "Au marché de Ségou",
+      "Dans la forêt"
+     ],
+     "answer": "Au marché de Ségou",
+     "errors": {
+      "À l'école": "Bintou ne va pas à l'école dans l'histoire. Elle vend des mangues. Où vend-on des mangues ?",
+      "Dans la forêt": "Il n'y a pas de forêt dans l'histoire. Où Bintou vend-elle ses mangues ?"
+     },
+     "hints": [
+      "Bintou vend des mangues avec sa grand-mère. Où ?"
+     ],
+     "sol": "Au marché de Ségou, avec sa grand-mère.",
+     "skill": "GS.O.recit"
+    },
+    {
+     "type": "choice",
+     "id": "bintou-qui-attrape",
+     "text": "Qui attrape le panier sur le fleuve ?",
+     "say": "Qui attrape le panier sur le fleuve ? La grand-mère ? Bintou ? Ou un vieux pêcheur ?",
+     "options": [
+      "La grand-mère",
+      "Bintou",
+      "Un vieux pêcheur"
+     ],
+     "answer": "Un vieux pêcheur",
+     "errors": {
+      "La grand-mère": "La grand-mère est au marché. Sur l'eau, qui a une pirogue ?",
+      "Bintou": "Bintou n'a pas de pirogue. Qui rame sur le fleuve ?"
+     },
+     "hints": [
+      "Pense à la pirogue. Qui rame vite ?"
+     ],
+     "sol": "Un vieux pêcheur, avec sa pirogue.",
+     "skill": "GS.O.recit"
+    }
+   ],
+   "scenes": [
+    "marche",
+    "vent",
+    "pecheur",
+    "merci"
+   ],
+   "retell": "Raconte toute l'histoire, sans les images, comme un vrai conteur. Appuie sur le rond rouge, raconte tout, puis appuie encore une fois."
+  },
+  {
+   "type": "part",
+   "n": 4,
+   "title": "Ce que j'ai appris",
+   "text": "Dernier temps : ce que tu as appris."
+  },
+  {
+   "type": "say",
+   "text": "Aujourd'hui, tu as appris à couper les mots en syllabes : pois… son, 2 tapes ! Ce soir, Maman dit un mot, et toi, tu tapes les syllabes.",
+   "say": "Aujourd'hui, tu as appris à couper les mots en syllabes. Pois… son : deux tapes ! Ce soir, Maman dit un mot, et toi, tu tapes les syllabes.",
+   "show": [
+    {
+     "kind": "syllables",
+     "name": "poisson",
+     "n": 2
+    }
+   ]
+  },
+  {
+   "type": "end",
+   "clip": "fin"
+  }
+ ],
+ "paper": {
+  "title": "Les syllabes",
+  "model": "Je dis le mot et je tape dans mes mains : pois… son. 2 tapes, 2 syllabes.",
+  "model_visual": {
+   "kind": "none"
+  },
+  "levels": [
+   {
+    "stars": 1,
+    "ins": "Colorie un rond par syllabe.",
+    "who": "seul",
+    "items": [
+     {
+      "id": "a",
+      "q": "lapin",
+      "syll": {
+       "name": "lapin"
+      },
+      "answer": 2,
+      "errors": {
+       "1": "Redis le mot lentement : la… pin. Deux tapes.",
+       "3": "Tu as tapé une fois de trop. La… pin : deux tapes."
+      }
+     },
+     {
+      "id": "b",
+      "q": "bol",
+      "syll": {
+       "name": "bol"
+      },
+      "answer": 1,
+      "errors": {
+       "3": "Tu as compté les lettres : b, o, l. On écoute le mot : bol, une seule tape.",
+       "2": "Bol se dit d'un seul coup : une seule tape."
+      }
+     },
+     {
+      "id": "c",
+      "q": "domino",
+      "syll": {
+       "name": "domino"
+      },
+      "answer": 3,
+      "errors": {
+       "2": "Tu as oublié une syllabe. Do… mi… no : trois tapes."
+      }
+     }
+    ]
+   },
+   {
+    "stars": 2,
+    "ins": "Colorie un rond par syllabe.",
+    "who": "seul",
+    "items": [
+     {
+      "id": "d",
+      "q": "soleil",
+      "syll": {
+       "name": "soleil"
+      },
+      "answer": 2,
+      "errors": {
+       "1": "Redis le mot lentement, en tapant : soleil a deux syllabes.",
+       "3": "Tu as tapé une fois de trop. Soleil : deux tapes seulement."
+      }
+     },
+     {
+      "id": "e",
+      "q": "ananas",
+      "syll": {
+       "name": "ananas"
+      },
+      "answer": 3,
+      "errors": {
+       "2": "Tu as oublié la dernière syllabe. A… na… nas : trois tapes."
+      }
+     },
+     {
+      "id": "f",
+      "q": "vélo",
+      "syll": {
+       "name": "velo"
+      },
+      "answer": 2,
+      "errors": {
+       "1": "Redis le mot lentement : vé… lo. Deux tapes.",
+       "3": "Tu as tapé une fois de trop. Vé… lo : deux tapes."
+      }
+     }
+    ]
+   },
+   {
+    "stars": 3,
+    "ins": "Maman lit. Tu cherches.",
+    "who": "maman",
+    "items": [
+     {
+      "id": "g",
+      "q": "Maman dit : sac, bateau. Tape les deux mots. Combien de tapes en tout ?",
+      "short": "sac + bateau : combien de tapes ?",
+      "answer": 3,
+      "errors": {
+       "2": "Tu as compté les mots. On compte les tapes : sac, une ; ba… teau, deux. Une et deux font trois."
+      }
+     },
+     {
+      "id": "h",
+      "q": "Maman dit : chat, domino. Tape les deux mots. Combien de tapes en tout ?",
+      "short": "chat + domino : combien de tapes ?",
+      "answer": 4,
+      "errors": {
+       "2": "Tu as compté les mots. On compte les tapes : chat, une ; do… mi… no, trois.",
+       "3": "Tu as compté seulement domino. Ajoute la tape de chat."
+      }
+     }
+    ]
+   }
+  ],
+  "maman": [
+   "On découpe à l'oral, pas à l'écrit : l'enfant dit le mot en tapant une fois dans les mains par syllabe. Astuce : main sous le menton, il descend à chaque syllabe.",
+   "Erreurs typiques : compter les lettres (s-a-c donne 3 au lieu de 1), oublier la dernière syllabe (ba-o au lieu de ba-o-bab). Faites redire le mot lentement, jusqu'au bout.",
+   "Les mots de la séance n'ont pas de e muet final : pas d'hésitation possible. Au défi ★★★, on additionne les tapes des deux mots (1 + 2 = 3 ; 1 + 3 = 4)."
+  ]
+ }
+}
