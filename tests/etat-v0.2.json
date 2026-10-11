@@ -1,0 +1,44 @@
+{
+ "setup": true,
+ "pin": "2468",
+ "names": { "bleu": "Ali", "orange": "Awa" },
+ "girl": { "bleu": false, "orange": true },
+ "voice": { "name": "Google français", "rate": 0.85 },
+ "settings": { "subtitles": true, "sounds": false },
+ "progress": {
+  "bleu": {
+   "runs": [
+    { "lesson": "bleu-s0-dizaine", "title": "Passer par la dizaine", "week": "S0", "date": "2026-10-06", "start": 1759740000000, "end": 1759741200000, "done": true, "recs": 1, "fish": 6, "gold": 1,
+      "items": [
+       { "id": "seul-29-4", "q": "29 + 4 = ?", "answer": 33, "answers": ["213", "33"], "ok": true, "first": false, "review": false },
+       { "id": "seul-56-8", "q": "56 + 8 = ?", "answer": 64, "answers": ["64"], "ok": true, "first": true, "review": false },
+       { "id": "fiche-a", "q": "Fiche ★ 18 + 5", "answer": 23, "answers": ["23"], "ok": true, "first": true, "paper": true }
+      ],
+      "drill": { "id": "calcul-express-bleu", "score": 7, "count": 10, "secs": 58, "record": true } },
+    { "lesson": "bleu-s0-dizaine", "title": "Passer par la dizaine", "week": "S0", "date": "2026-10-08", "start": 1759912800000, "end": 1759913100000, "done": false, "recs": 0, "fish": 1, "gold": 0, "items": [], "drill": null }
+   ],
+   "review": [ { "lesson": "bleu-s0-dizaine", "id": "seul-29-4" } ],
+   "done": { "bleu-s0-dizaine": "2026-10-06" },
+   "records": { "calcul-express-bleu": { "best": 7, "secs": 58, "date": "2026-10-06" } },
+   "drillMisses": { "calcul-express-bleu": [ { "q": "47 + 6", "answer": 53, "kind": "through10" } ] },
+   "skills": { "through10": { "n": 6, "ko": 2 }, "complement-next-ten": { "n": 4, "ko": 0 } },
+   "measures": [ { "type": "fluence", "date": "2026-10-06", "lesson": "bleu-s0-dizaine", "recId": 1, "read": 61, "errors": 3, "secs": 60, "wcpm": 58 } ]
+  },
+  "orange": {
+   "runs": [
+    { "lesson": "orange-s0-amis10", "title": "Les amis de 10", "week": "S0", "date": "2026-10-06", "start": 1759743000000, "end": 1759744000000, "done": true, "recs": 1, "fish": 4, "gold": 2,
+      "items": [
+       { "id": "guide-8", "q": "Combien de cases sont vides ?", "answer": 2, "answers": ["8", "2"], "ok": true, "first": false, "review": false },
+       { "id": "q-peur", "q": "Pourquoi Bintou a-t-elle peur ?", "answer": "Ses mangues vont partir sur l'eau.", "answers": ["Ses mangues vont partir sur l'eau."], "ok": true, "first": true, "review": false }
+      ],
+      "drill": { "id": "jeu-rapide-orange", "score": 6, "count": 8, "secs": 52, "record": true } }
+   ],
+   "review": [ { "lesson": "orange-s0-amis10", "id": "guide-8" } ],
+   "done": { "orange-s0-amis10": "2026-10-06" },
+   "records": { "jeu-rapide-orange": { "best": 6, "secs": 52, "date": "2026-10-06" } },
+   "drillMisses": { "jeu-rapide-orange": [ { "q": "Combien de cases vides ?", "answer": 3, "kind": "tf-complement", "show": [ { "kind": "tenframe", "filled": 7, "small": true } ], "options": [3, 4, 2] } ] },
+   "skills": { "tf-complement": { "n": 5, "ko": 2 }, "count-tf": { "n": 3, "ko": 0 } },
+   "measures": [ { "type": "recit", "date": "2026-10-06", "lesson": "orange-s0-amis10", "recId": 2, "score": 4, "items": [0, 1, 2, 4] } ]
+  }
+ }
+}

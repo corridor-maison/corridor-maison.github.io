@@ -2,6 +2,8 @@
 
 **Version 1 · 11 octobre 2026 · décision du fondateur : profils locaux, sans serveur.**
 
+**Version 1.1 · 12 octobre 2026 · annexe A : le catalogue de la v0.3.1 (manipulations, histoire, erreurs objets, dessins), à la demande du fondateur. Le reste est inchangé.**
+
 Ce contrat lie deux parties : l'application (dossier `app/`, dépôt `corridor-maison/corridor-maison.github.io`) et le générateur de leçons (Cowork, ou tout autre modèle). Il s'applique à toute leçon produite à partir de maintenant. Les deux leçons S0 existantes seront mises à ce format par la livraison « profils » de l'application, pas par Cowork.
 
 ## 1. Principes
@@ -10,7 +12,7 @@ Ce contrat lie deux parties : l'application (dossier `app/`, dépôt `corridor-m
 2. **L'application route par `parcours`.** Jamais par âge, par couleur ni par prénom. Le parcours d'un enfant est choisi à la création de son profil, à partir de sa classe.
 3. **Tout identifiant est immuable.** Identifiant de leçon, identifiant de parcours, numéro de phrase dans `voix/registre.json` : on ajoute, on ne renomme jamais, on ne renumérote jamais.
 4. **Aucune donnée d'enfant dans le dépôt.** Pas de prénom, pas d'âge, pas de suivi. Tout cela reste dans la tablette.
-5. **Liste fermée.** Une leçon n'utilise que ce que l'application sait exécuter : les types d'étapes, les sortes d'automatismes (`kinds`) et les dessins (`show`) du README § 4. Un besoin nouveau se traite d'abord dans l'application, ensuite dans la leçon. Jamais l'inverse.
+5. **Liste fermée.** Une leçon n'utilise que ce que l'application sait exécuter : les types d'étapes, les sortes d'automatismes (`kinds`) et les dessins (`show`) du README § 4, complétés par l'annexe A. Un besoin nouveau se traite d'abord dans l'application, ensuite dans la leçon. Jamais l'inverse.
 
 ## 2. Les parcours : `app/parcours.json`
 
@@ -82,7 +84,7 @@ Une publication contient, pour chaque parcours actif, les quatre leçons de la s
 
 ## 7. Acceptation
 
-Une leçon est acceptée quand `python3 tools/check_lessons.py` rend `0`. Ce script arrive avec la livraison « profils ». Il vérifie : le schéma de l'index, l'existence de chaque fichier de leçon et l'inverse, les clés obligatoires, `parcours` connu, `escale` connu, `order` unique par parcours, l'absence de `child`, l'absence de couleur et de prénom en dur dans les textes, les types d'étapes et les `kinds` dans la liste fermée, et au moins un niveau `seul` par fiche. En attendant le script, cette liste est la revue manuelle.
+Une leçon est acceptée quand `python3 tools/check_lessons.py` rend `0`. Ce script arrive avec la livraison « profils ». Il vérifie : le schéma de l'index, l'existence de chaque fichier de leçon et l'inverse, les clés obligatoires, `parcours` connu, `escale` connu, `order` unique par parcours, l'absence de `child`, l'absence de couleur et de prénom en dur dans les textes, les types d'étapes, les `kinds`, les dessins et les champs de l'annexe A dans la liste fermée, les erreurs objets bien formées, et au moins un niveau `seul` par fiche. En attendant le script, cette liste est la revue manuelle.
 
 ## 8. Ordre de mise en service
 
@@ -108,3 +110,54 @@ Une leçon est acceptée quand `python3 tools/check_lessons.py` rend `0`. Ce scr
 | `voix/registre.json` | La chaîne des voix | `tools/build_audio.py`, lancé par le fondateur |
 | `app/*.js`, `app/*.html`, `app/*.css`, `app/sw.js` | L'application | La session application |
 | Ce contrat | Le fondateur | Modifié par une nouvelle version numérotée, jamais en place |
+
+## Annexe A · Catalogue de la v0.3.1
+
+Liste fermée au sens du § 1.5, en plus des types d'étapes, des `kinds` et des dessins du README § 4. `tools/check_lessons.py` vérifie exactement ce catalogue, ni plus ni moins. Les champs ici décrits s'ajoutent au format existant ; aucun champ existant ne change de sens.
+
+### A.1 Deux étapes de plus
+
+| `type` | Ce que fait la tablette | Champs |
+|---|---|---|
+| `manip` | L'enfant manipule, puis valide. Trois modes (ci-dessous). Jugée comme une question : 3 essais, chaque erreur typique expliquée, puis la réponse montrée. | `id`, `mode`, `text`, `say`, `answer`, `errors`, `hints`, `sol`, `skill`, et les champs du mode |
+| `order` | Remettre les images d'une histoire dans l'ordre. Trois erreurs sur une même image : l'image est placée et l'on continue. | `id`, `text`, `say`, `scenes` (dans le bon ordre), `hints` |
+
+- `manip`, mode `tenframe` (boîte de dix) : `start` (jetons déjà posés), `goal` (`add` : on compte les jetons posés par l'enfant ; `total` : on compte tous les jetons), `item` (`jeton` par défaut, ou `mangue`).
+- `manip`, mode `blocks` (dizaines et unités) : `t`, `u`, `h`, `hundreds` (vrai : colonne des centaines), `add` (unités à poser) ou `addTens` (dizaines à poser), `ask` (question du clavier). Quand 10 unités brillent, l'enfant les touche pour fermer la dizaine (animation) ; avec `hundreds`, 10 dizaines se ferment en une centaine. Puis le clavier demande le résultat.
+- `manip`, mode `jumps` (ligne des nombres) : `from`, `to`, `start`, `via` (arrêt obligatoire ; l'erreur `via` est dite si l'enfant n'y est pas passé). La ligne couvre au plus 20 nombres.
+
+### A.2 Champs nouveaux sur des étapes existantes
+
+| Étape | Champ | Sens |
+|---|---|---|
+| `story` | `pass` | 2, 3… : nouvelle séance sur la même histoire (l'étape d'ordre reçoit un identifiant distinct par passage) |
+| `story` | `skipVocab` | vrai : pas de mots mimés |
+| `story` | `order` | vrai : ajoute l'étape de remise en ordre des images après les questions |
+| `story` | `noImages` | vrai : le récit final se fait sans images |
+| `reading` | `reread` | vrai : relecture d'un texte déjà lu (annoncée comme telle, mesurée à part) |
+| `review` | `max` | nombre de défis rejoués (2 par défaut) |
+| `review` | `fill` | vrai : complète avec `fallback` jusqu'à `max` |
+| `choice` | `optionKind` | `text` (défaut), `icon` (les options sont des noms d'images), `dots` (les options sont des nombres montrés en points) |
+
+Pour information, hors liste fermée : `skills` à la racine et `skill` sur une question sont des codes de `app/progression/<parcours>.json` ; sans `skill`, une question compte pour le premier code de `skills`. Le rapport du dimanche en tire la rubrique 2.
+
+### A.3 Les erreurs objets
+
+La valeur d'une clé de `errors` (question, manipulation ou exercice de la fiche) est une phrase, ou un objet `{ "text": "…", "show": [ … ] }` dont le dessin est joué pour montrer l'erreur, par exemple `{ "kind": "blocks", "t": 2, "u": 13, "regroup": true }` pour 213 au lieu de 33. Aucune autre clé n'est admise dans cet objet.
+
+### A.4 Six dessins de plus (`show`)
+
+| `kind` | Champs |
+|---|---|
+| `blocks` | `h`, `t`, `u` ; `regroup: true` = anime la fermeture de la dizaine (ou de la centaine) |
+| `bar` | modèle en barres : `parts` (nombres ou `null` pour « ? »), `whole` (nombre ou `null`), `labels`, `unit` (ex. « F ») |
+| `items` | une collection à compter : `n`, `item` (nom d'image) |
+| `hidden` | `total`, `visible`, `item` : des objets dont une partie est cachée sous une calebasse |
+| `icon` | `name`, `label` (facultatif, mot écrit sous l'image) |
+| `syllables` | `name` (image), `n` (nombre de syllabes) : l'image et n ronds qui s'allument un par un |
+
+Images disponibles (`item`, `name`, options `icon`) : `mangue`, `jeton`, `poisson`, `chat`, `sac`, `bol`, `bateau`, `ballon`, `lapin`, `soleil`, `velo`, `ananas`, `baobab`, `domino`, `calebasse`, `panier`. Scènes d'histoire : `marche`, `vent`, `pecheur`, `merci`.
+
+### A.5 Les phrases de Maman (`clip`)
+
+`bonjour`, `bravo_effort`, `fiche`, `explique`, `fin`, `bravo_escale`. `bonjour` et `fin` sont enregistrées une fois par enfant ; l'application les range sous `<phrase>@<profil>`.

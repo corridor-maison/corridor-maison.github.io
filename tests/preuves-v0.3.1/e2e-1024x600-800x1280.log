@@ -1,0 +1,16 @@
+=== e2e 1024x600 ===
+gs-s1-syllabes: OK
+révision gs: OK
+contrôle moteur (étape injectée, profil Contrôle) : boîte de dix en ajout OK
+COUVERTURE : tenframe:add = 1 · tenframe:total = 3 · blocks:fermeture-unites = 6 · blocks:fermeture-dizaines = 1 · jumps:via = 2 · order = 1 · erreur-animee = 4
+ERREURS JS : aucune
+E2E : OK
+e2e 1024x600 exit: 0
+=== e2e 800x1280 ===
+gs-s1-syllabes: OK
+révision gs: OK
+contrôle moteur (étape injectée, profil Contrôle) : boîte de dix en ajout OK
+COUVERTURE : tenframe:add = 1 · tenframe:total = 3 · blocks:fermeture-unites = 6 · blocks:fermeture-dizaines = 1 · jumps:via = 2 · order = 1 · erreur-animee = 4
+ERREURS JS : aucune
+E2E : OK
+e2e 800x1280 exit: 0
