@@ -4,6 +4,7 @@ Ce fichier est lu par chaque agent qui travaille dans ce dépôt. Il dit ce qui 
 
 ## Avant toute chose
 
+0. Lire `HANDOVER.md` : le passage de relais du 11 octobre 2026, avec l'état du dépôt, les décisions du mandat v0.3.1 et les tests à reproduire.
 1. `git fetch origin` puis `git checkout -b <type>/<sujet> origin/main`. **`main` est la seule vérité, et le site publié est `main`.** Jamais de push direct sur `main`, jamais de force push.
 2. Lire la section « État » ci-dessous et vérifier qu'elle correspond au dépôt : `git log --oneline -5 origin/main`, `const VERSION` dans `app/app.js`, `const CACHE` dans `app/sw.js`.
 3. Regarder les pull requests ouvertes et les branches. **Un fichier touché par deux chantiers ouverts : on s'arrête et on le signale au fondateur.**
