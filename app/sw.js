@@ -1,9 +1,9 @@
 /* Hors ligne : l'application et les leçons sont gardées sur la tablette.
    Les leçons sont d'abord demandées au réseau (pour recevoir la semaine suivante), puis prises dans le cache si pas de connexion. */
-const CACHE = 'kono-0.2.0';
+const CACHE = 'kono-0.3.0';
 const CORE = ['./', 'index.html', 'styles.css', 'app.js', 'manifest.webmanifest',
   'fonts/andika-400.woff2', 'fonts/andika-700.woff2', 'fonts/nunito-800.woff2',
-  'icons/icon-192.png', 'icons/icon-512.png', 'lessons/index.json', 'phrases.json', 'audio/manifest.json'];
+  'icons/icon-192.png', 'icons/icon-512.png', 'parcours.json', 'lessons/index.json', 'phrases.json', 'audio/manifest.json'];
 
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(async c => {

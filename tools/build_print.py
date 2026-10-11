@@ -13,7 +13,11 @@ def face(fam, f, w):
     b = base64.b64encode((APP / "fonts" / f).read_bytes()).decode()
     return f"@font-face{{font-family:'{fam}';src:url(data:font/woff2;base64,{b}) format('woff2');font-weight:{w}}}"
 
-BLEU, ORANGE = "#1c5aa6", "#c35713"
+COULEURS = {"bleu": "#1c5aa6", "orange": "#c35713", "vert": "#2c8554", "violet": "#7a4ea3"}
+BLEU = COULEURS["bleu"]  # accent des sauts sur la ligne des nombres, quel que soit le parcours
+PARCOURS = {p["id"]: p for p in json.loads((APP / "parcours.json").read_text(encoding="utf-8"))["parcours"]}
+def par(L): return PARCOURS[L["parcours"]]
+def colour(L): return COULEURS.get(par(L).get("couleur"), "#1c5aa6")
 CSS = face("Andika", "andika-400.woff2", 400) + face("Andika", "andika-700.woff2", 700) + face("Nunito", "nunito-800.woff2", 800) + f"""
 @page {{ size: A4; margin: 0 }} * {{ box-sizing: border-box }} body {{ margin: 0; font-family: Andika, sans-serif; color: #1b2430; -webkit-print-color-adjust: exact; print-color-adjust: exact }}
 .page {{ width: 210mm; height: 297mm; padding: 11mm 13mm 12mm; position: relative; overflow: hidden; break-after: page }}
@@ -79,10 +83,11 @@ def item_html(it, color):
     return f'<div class="it"><span class="k">{esc(it["id"])})</span><span style="font-size:16pt;white-space:nowrap">{esc(q)} =</span><span class="box" style="width:19mm"></span></div>'
 
 def kid_page(L, n):
-    c = L["child"]; color = BLEU if c == "bleu" else ORANGE; P = L["paper"]
-    who = "BLEU · 7 ans" if c == "bleu" else "ORANGE · 5 ans ½"
+    color = colour(L); P = L["paper"]; pr = par(L)
+    who = f'{pr["label"].upper()} · {pr["age_min"]}-{pr["age_max"]} ans'
+    big = pr["age_min"] <= 6
     model = P.get("model", "")
-    if c == "bleu":
+    if any(it.get("line") for lv in P["levels"] for it in lv["items"]):
         visual = numberline(30, 50, marks=(38, 40, 45), jumps=((38, 40, "+2"), (40, 45, "+5")), w=330, top=26)
     else:
         visual = tenframe(7, 26)
@@ -94,7 +99,7 @@ def kid_page(L, n):
         else:
             inner = "".join(item_html(it, color) for it in items)
         tag = '<span class="tag m">Avec Maman</span>' if lv.get("who") == "maman" else '<span class="tag">Seul</span>'
-        body += f'<div class="lv"><div class="lvh">{stars(lv["stars"])}<span style="font-size:{14 if c == "bleu" else 16}pt">{esc(lv["ins"])}</span>{tag}</div>{inner}</div>'
+        body += f'<div class="lv"><div class="lvh">{stars(lv["stars"])}<span style="font-size:{16 if big else 14}pt">{esc(lv["ins"])}</span>{tag}</div>{inner}</div>'
     return f'''<section class="page"><div class="band" style="background:{color}"><span><b>{who}</b> &nbsp;<span class="what">{esc(L["week"])} · {esc(L["domain"])}</span></span><span class="pr">Prénom :</span></div>
 <h1 style="color:{color}">{esc(P["title"])}</h1>
 <div class="model"><div style="flex:1"><b>Ce que Kono m'a montré</b><br>{esc(model)}</div>{visual}</div>
@@ -110,7 +115,7 @@ def reading_pages(L, n0):
             total += len([w for w in sent.split() if any(ch.isalnum() for ch in w)])
             rows += f'<tr><td style="font-size:17pt;line-height:1.7;padding:1.5mm 3mm">{esc(sent)}</td><td style="width:14mm;text-align:right;color:#8a8a85;font-family:Nunito;font-weight:800">{total}</td></tr>'
         mes = "".join(f'<tr><td>{k}</td><td></td><td></td><td></td><td></td></tr>' for k in range(1, 5))
-        color = BLEU if L["child"] == "bleu" else ORANGE
+        color = colour(L)
         out.append(f'''<section class="page"><div class="band" style="background:{color}"><span><b>TEXTE À RELIRE</b> &nbsp;<span class="what">{esc(L["week"])} · Lecture</span></span><span class="pr">Prénom :</span></div>
 <h1 style="color:{color}">{esc(st["title"])}</h1>
 <p style="font-size:11pt;color:#55554f;margin:0 0 3mm">À relire chaque jour, à voix haute, pour lire de plus en plus facilement. Le nombre à droite compte les mots depuis le début.</p>
@@ -124,18 +129,18 @@ def reading_pages(L, n0):
 def maman_page(lessons, n):
     blocks = ""
     for L in lessons:
-        color = BLEU if L["child"] == "bleu" else ORANGE
+        color = colour(L)
         rows = ""
         for lv in L["paper"]["levels"]:
             for it in lv["items"]:
                 errs = "; ".join(f"{k} : {v}" for k, v in (it.get("errors") or {}).items())
                 rows += f'<tr><td style="white-space:nowrap">{"★" * lv["stars"]} {esc(it["id"])})</td><td>{esc(it.get("short") or it["q"])}</td><td><b>{esc(it.get("answer", "réponse libre"))}</b></td><td class="small" style="color:#6b6b66">{esc(errs)}</td></tr>'
         notes = "".join(f"<li>{esc(t)}</li>" for t in L["paper"].get("maman", []))
-        blocks += f'''<div class="corr" style="border-color:{color}"><h2 style="margin-top:0;color:{color}">{"Bleu" if L["child"] == "bleu" else "Orange"} · {esc(L["title"])}</h2>
+        blocks += f'''<div class="corr" style="border-color:{color}"><h2 style="margin-top:0;color:{color}">{esc(par(L)["label"])} · {esc(L["title"])}</h2>
 <p style="margin:0 0 2mm"><b>Objectif :</b> {esc(L["objective"])} <span style="color:#6b6b66">({esc(L["programme"])})</span></p>
 <ul style="margin:0 0 2mm 4mm;padding-left:3mm">{notes}</ul>
 <table class="a"><tr><td><b>Niveau</b></td><td><b>Exercice</b></td><td><b>Réponse</b></td><td><b>Erreurs typiques et ce que dit la tablette</b></td></tr>{rows}</table></div>'''
-    return f'''<section class="page adult"><div style="border-bottom:3px solid #2b2b28;padding-bottom:2mm"><div style="font-family:Nunito;font-weight:800;color:#7a4ea3;letter-spacing:1.5px;font-size:9pt">CARTE MAMAN · {esc(WEEK)}</div><h1 style="margin:1mm 0 0">Réponses et points à surveiller · {"Bleu" if lessons[0]["child"] == "bleu" else "Orange"}</h1></div>
+    return f'''<section class="page adult"><div style="border-bottom:3px solid #2b2b28;padding-bottom:2mm"><div style="font-family:Nunito;font-weight:800;color:#7a4ea3;letter-spacing:1.5px;font-size:9pt">CARTE MAMAN · {esc(WEEK)}</div><h1 style="margin:1mm 0 0">Réponses et points à surveiller · {esc(par(lessons[0])["label"])}</h1></div>
 <p style="margin:3mm 0 0">La tablette explique, montre un exemple, fait pratiquer, puis demande à l'enfant de faire sa fiche et de taper ses réponses. Votre rôle : être à portée de voix, regarder la fiche à la fin, et écouter le soir l'enregistrement où l'enfant explique sa méthode (Espace parent › Suivi).</p>
 {blocks}
 <div class="foot"><span>Corridor à la maison · {esc(WEEK)} · généré depuis les fichiers de leçon</span><span>{n}</span></div></section>'''
@@ -143,7 +148,7 @@ def maman_page(lessons, n):
 async def main():
     idx = json.loads((APP / "lessons" / "index.json").read_text())
     lessons = [json.loads((APP / "lessons" / f'{l["id"]}.json').read_text()) for l in idx["lessons"] if l["week"] == WEEK]
-    lessons.sort(key=lambda L: (L["child"] != "bleu", L["order"]))
+    lessons.sort(key=lambda L: (list(PARCOURS).index(L["parcours"]), L["order"]))
     pages = [kid_page(L, i + 1) for i, L in enumerate(lessons)]
     for L in lessons: pages += reading_pages(L, len(pages) + 1)
     pages += [maman_page([L], len(pages) + 1 + i) for i, L in enumerate(lessons)]
