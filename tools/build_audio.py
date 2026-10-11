@@ -1,25 +1,33 @@
 # -*- coding: utf-8 -*-
-"""Chaîne audio de L'école de Kono.
+"""Chaîne audio de Corridor à la maison.
 
 Ce que fait ce script, dans l'ordre :
   1. Relève chaque phrase que l'application peut dire (leçons + phrases.json), découpée exactement comme le moteur.
   2. Attribue un rôle : « conteur » (textes de lecture, histoires) ou « kono » (tout le reste).
-  3. Tient un registre stable des numéros de phrases (voix/registre.json, on ajoute, on ne renumérote jamais).
+  3. Tient un registre stable des numéros de phrases (voix/registre.json : on ajoute, on ne renumérote jamais).
   4. Écrit le script d'enregistrement : print/voix_a_enregistrer.md.
   5. Importe les enregistrements humains déposés dans voix/conteur/ et voix/kono/
      (fichier nommé par son numéro, ex. 012.m4a, ou par sa clé, ex. 3fa2c91b.m4a) -> app/audio/rec/<clé>.mp3
-  6. Si la variable GOOGLE_TTS_API_KEY existe : génère les phrases manquantes avec une voix de synthèse
-     haut de gamme (voix : KONO_VOICE, par défaut fr-FR-Neural2-A) -> app/audio/gen/<clé>.mp3
+  6. Génère les phrases manquantes avec une voix de synthèse haut de gamme, si une clé est fournie :
+       - Google (par défaut) : GOOGLE_TTS_API_KEY ; voix KONO_VOICE (défaut fr-FR-Chirp3-HD-Achird) et CONTEUR_VOICE
+         (défaut fr-FR-Chirp3-HD-Sulafat, utilisée seulement si aucun enregistrement humain n'existe).
+       - ElevenLabs : KONO_ENGINE=elevenlabs, ELEVENLABS_API_KEY, ELEVENLABS_VOICE_ID (voix créée par « Voice Design »,
+         jamais une voix copiée sur une personne réelle).
+     -> app/audio/gen/<clé>.mp3
   7. Écrit app/audio/manifest.json (enregistrement humain prioritaire sur la synthèse).
 
-Usage : python3 tools/build_audio.py
+Usage :
+  python3 tools/build_audio.py            tout le cycle ci-dessus
+  python3 tools/build_audio.py essai      le test à l'aveugle : 10 phrases dites par plusieurs voix,
+                                          dans print/essai_voix/ (fichiers numérotés, la correspondance est dans cle.txt)
 """
-import base64, json, os, pathlib, re, subprocess, sys, urllib.request, datetime
+import base64, json, os, pathlib, re, subprocess, sys, urllib.request, datetime, random
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 APP = ROOT / "app"
 VOIX = ROOT / "voix"
 AUDIO = APP / "audio"
+APPNAME = "Corridor à la maison"
 
 # ---------- même découpage et même clé que app.js ----------
 def norm(t): return str(t or "").replace("«", "").replace("»", "").replace("★", " étoile ")
@@ -31,6 +39,8 @@ def key_of(t):
         h ^= x; h = (h * 0x01000193) & 0xFFFFFFFF
     return f"{h:08x}"
 
+WORD = {"velo": "vélo"}
+
 def variants(t):
     """{e} : les deux accords ; {prenom} : phrase exclue (dite par la tablette, car le prénom change)."""
     out = []
@@ -38,9 +48,11 @@ def variants(t):
         out.extend(s for s in sentences(v) if "{prenom}" not in s)
     return out
 
+def err_text(e): return e if isinstance(e, str) else (e or {}).get("text", "")
+
 def collect():
-    ph = json.loads((APP / "phrases.json").read_text())
-    idx = json.loads((APP / "lessons" / "index.json").read_text())
+    ph = json.loads((APP / "phrases.json").read_text(encoding="utf-8"))
+    idx = json.loads((APP / "lessons" / "index.json").read_text(encoding="utf-8"))
     items = []  # (rôle, phrase, origine)
     def add(role, text, origin):
         if not text: return
@@ -51,14 +63,22 @@ def collect():
         if k in ("_note", "clips"): continue
         for t in (v if isinstance(v, list) else [v]): add("kono", t, "moteur")
     for c in ph.get("clips", []): add("kono", c.get("kono"), "remplacement de Maman")
+    def question(st, origin):
+        for e in (st.get("errors") or {}).values(): add("kono", err_text(e), origin)
+        for h in st.get("hints") or []: add("kono", h, origin)
+        add("kono", st.get("sol"), origin)
+        add("kono", st.get("ask"), origin)
+        if st.get("type") == "choice":
+            kind = st.get("optionKind") or ("text" if any(len(str(o)) > 4 for o in st.get("options", [])) else "plain")
+            if kind == "text":
+                for o in st["options"]: add("kono", str(o), origin + " (option)")
+            if kind == "icon":
+                for o in st["options"]: add("kono", WORD.get(o, o), origin + " (option)")
     def step(st, origin):
         t = st.get("type")
         spoken = st.get("say") or st.get("text")
-        if t in ("say", "part", "number", "choice", "paper", "record", "drill"): add("kono", spoken, origin)
-        if t in ("number", "choice"):
-            for e in (st.get("errors") or {}).values(): add("kono", e, origin)
-            for h in st.get("hints") or []: add("kono", h, origin)
-            add("kono", st.get("sol"), origin)
+        if t in ("say", "part", "number", "choice", "paper", "record", "drill", "manip", "order"): add("kono", spoken, origin)
+        if t in ("number", "choice", "manip", "order"): question(st, origin)
         if t == "demo":
             for ln in st["lines"]: add("kono", ln.get("say") or ln.get("text"), origin)
         if t == "review":
@@ -67,15 +87,16 @@ def collect():
             for s in st["passage"]: add("conteur", s, origin)
         if t == "story":
             for s in st["sentences"]: add("conteur", s, origin)
-            for v in st.get("vocab", []): add("kono", v["say"], origin)
+            if not st.get("skipVocab"):
+                for v in st.get("vocab", []): add("kono", v["say"], origin)
             for q in st.get("questions", []): step(q, origin)
             add("kono", st.get("retell"), origin)
     for l in idx["lessons"]:
-        L = json.loads((APP / "lessons" / f'{l["id"]}.json').read_text())
+        L = json.loads((APP / "lessons" / f'{l["id"]}.json').read_text(encoding="utf-8"))
         for st in L["steps"]: step(st, L["title"])
         for lv in L.get("paper", {}).get("levels", []):
             for it in lv["items"]:
-                for e in (it.get("errors") or {}).values(): add("kono", e, L["title"] + " (fiche)")
+                for e in (it.get("errors") or {}).values(): add("kono", err_text(e), L["title"] + " (fiche)")
     seen, uniq = set(), []
     for role, s, o in items:
         k = key_of(s)
@@ -85,12 +106,12 @@ def collect():
 
 def registry(entries):
     path = VOIX / "registre.json"; VOIX.mkdir(exist_ok=True)
-    reg = json.loads(path.read_text()) if path.exists() else {}
+    reg = json.loads(path.read_text(encoding="utf-8")) if path.exists() else {}
     n = max([int(v) for v in reg.values()] or [0])
     for e in entries:
         if e["key"] not in reg: n += 1; reg[e["key"]] = n
         e["n"] = reg[e["key"]]
-    path.write_text(json.dumps(reg, indent=1, sort_keys=True))
+    path.write_text(json.dumps(reg, indent=1, sort_keys=True), encoding="utf-8", newline="\n")
     return reg
 
 def import_recordings(entries):
@@ -100,7 +121,7 @@ def import_recordings(entries):
         d = VOIX / role
         if not d.exists(): continue
         for f in sorted(d.iterdir()):
-            if not f.is_file(): continue
+            if not f.is_file() or f.name.startswith("."): continue
             stem = f.stem.lower()
             key = stem if stem in keys else by_n.get(int(stem)) if stem.isdigit() else None
             if not key: print("  ignoré (nom non reconnu) :", f.name); continue
@@ -111,23 +132,68 @@ def import_recordings(entries):
             done += 1
     return done
 
+def tts_google(text, voice, rate):
+    api = os.environ["GOOGLE_TTS_API_KEY"]
+    body = json.dumps({"input": {"text": text}, "voice": {"languageCode": voice[:5], "name": voice},
+                       "audioConfig": {"audioEncoding": "MP3", "speakingRate": rate}}).encode()
+    req = urllib.request.Request(f"https://texttospeech.googleapis.com/v1/text:synthesize?key={api}", data=body, headers={"Content-Type": "application/json"})
+    with urllib.request.urlopen(req, timeout=60) as r:
+        return base64.b64decode(json.loads(r.read())["audioContent"])
+
+def tts_eleven(text, voice_id):
+    body = json.dumps({"text": text, "model_id": os.environ.get("ELEVENLABS_MODEL", "eleven_multilingual_v2"),
+                       "voice_settings": {"stability": 0.55, "similarity_boost": 0.75}}).encode()
+    req = urllib.request.Request(f"https://api.elevenlabs.io/v1/text-to-speech/{voice_id}", data=body,
+                                 headers={"Content-Type": "application/json", "xi-api-key": os.environ["ELEVENLABS_API_KEY"], "Accept": "audio/mpeg"})
+    with urllib.request.urlopen(req, timeout=60) as r:
+        return r.read()
+
 def generate(entries):
-    api = os.environ.get("GOOGLE_TTS_API_KEY")
-    if not api: return 0, "pas de clé GOOGLE_TTS_API_KEY : génération sautée"
-    voice = os.environ.get("KONO_VOICE", "fr-FR-Neural2-A")
+    engine = os.environ.get("KONO_ENGINE", "google")
+    if engine == "elevenlabs" and not (os.environ.get("ELEVENLABS_API_KEY") and os.environ.get("ELEVENLABS_VOICE_ID")):
+        return 0, "ELEVENLABS_API_KEY ou ELEVENLABS_VOICE_ID manquant : génération sautée"
+    if engine == "google" and not os.environ.get("GOOGLE_TTS_API_KEY"):
+        return 0, "pas de clé GOOGLE_TTS_API_KEY : génération sautée"
+    kv = os.environ.get("KONO_VOICE", "fr-FR-Chirp3-HD-Achird"); cv = os.environ.get("CONTEUR_VOICE", "fr-FR-Chirp3-HD-Sulafat")
     (AUDIO / "gen").mkdir(parents=True, exist_ok=True); n = 0
     for e in entries:
         out = AUDIO / "gen" / f'{e["key"]}.mp3'
         if out.exists() or (AUDIO / "rec" / f'{e["key"]}.mp3').exists(): continue
-        body = json.dumps({"input": {"text": e["text"]}, "voice": {"languageCode": "fr-FR", "name": voice},
-                           "audioConfig": {"audioEncoding": "MP3", "speakingRate": 0.93 if e["role"] == "kono" else 0.88}}).encode()
-        req = urllib.request.Request(f"https://texttospeech.googleapis.com/v1/text:synthesize?key={api}", data=body, headers={"Content-Type": "application/json"})
-        with urllib.request.urlopen(req, timeout=60) as r:
-            out.write_bytes(base64.b64decode(json.loads(r.read())["audioContent"]))
-        n += 1
-    return n, f"voix {voice}"
+        if engine == "elevenlabs": data = tts_eleven(e["text"], os.environ["ELEVENLABS_VOICE_ID"])
+        else: data = tts_google(e["text"], kv if e["role"] == "kono" else cv, 0.95 if e["role"] == "kono" else 0.9)
+        out.write_bytes(data); n += 1
+    return n, (f"ElevenLabs, voix {os.environ.get('ELEVENLABS_VOICE_ID')}" if engine == "elevenlabs" else f"Google, Kono : {kv}, conteur : {cv}")
+
+ESSAI = [
+    "Salut ! Moi, c'est Kono, le martin-pêcheur du fleuve.",
+    "Regarde ce calcul : trente-huit plus sept.",
+    "Trente-huit, c'est tout près de quarante. Il lui manque deux.",
+    "Pas encore. Tu as écrit treize à côté du deux.",
+    "Dix unités ! Touche-les pour fermer la dizaine.",
+    "Poisson doré ! Tu t'es trompé, tu as cherché encore, et tu as trouvé.",
+    "Combien de syllabes dans ce mot ? Bal… lon.",
+    "Le panier de mangues tombe et roule jusqu'au fleuve !",
+    "Une nouvelle escale sur le fleuve ! Regarde ton passeport.",
+    "Séance terminée. Regarde tous les poissons que tu as pêchés !",
+]
+def essai():
+    """Test à l'aveugle : les enfants écoutent, sans savoir qui est qui, et choisissent la voix de Kono."""
+    voices = [v for v in os.environ.get("ESSAI_VOICES", "fr-FR-Chirp3-HD-Achird,fr-FR-Chirp3-HD-Puck,fr-FR-Chirp3-HD-Sadachbia,fr-FR-Chirp3-HD-Leda").split(",") if v]
+    cands = []
+    if os.environ.get("GOOGLE_TTS_API_KEY"): cands += [("google", v) for v in voices]
+    if os.environ.get("ELEVENLABS_API_KEY") and os.environ.get("ELEVENLABS_VOICE_ID"): cands.append(("elevenlabs", os.environ["ELEVENLABS_VOICE_ID"]))
+    if not cands: print("Aucune clé : définir GOOGLE_TTS_API_KEY et/ou ELEVENLABS_API_KEY + ELEVENLABS_VOICE_ID."); return
+    random.shuffle(cands)
+    out = ROOT / "print" / "essai_voix"; out.mkdir(parents=True, exist_ok=True)
+    lines = []
+    for i, (eng, v) in enumerate(cands, 1):
+        audio = b"".join(tts_eleven(t, v) if eng == "elevenlabs" else tts_google(t, v, 0.95) for t in ESSAI)
+        (out / f"voix_{i}.mp3").write_bytes(audio); lines.append(f"voix_{i}.mp3 = {eng} {v}")
+    (out / "cle.txt").write_text("À ouvrir seulement après le choix des enfants.\n" + "\n".join(lines), encoding="utf-8", newline="\n")
+    print(f"{len(cands)} voix dans {out} (la correspondance est dans cle.txt)")
 
 def main():
+    if len(sys.argv) > 1 and sys.argv[1] == "essai": return essai()
     entries = collect(); registry(entries)
     nrec = import_recordings(entries)
     ngen, note = generate(entries)
@@ -135,9 +201,8 @@ def main():
     for e in entries:
         if (AUDIO / "rec" / f'{e["key"]}.mp3').exists(): files[e["key"]] = f'rec/{e["key"]}.mp3'
         elif (AUDIO / "gen" / f'{e["key"]}.mp3').exists(): files[e["key"]] = f'gen/{e["key"]}.mp3'
-    (AUDIO / "manifest.json").write_text(json.dumps({"version": datetime.datetime.now().isoformat(timespec="seconds"), "files": files}, indent=1, sort_keys=True))
-    # script d'enregistrement
-    lines = ["# Phrases à enregistrer · Corridor à la maison", "",
+    (AUDIO / "manifest.json").write_text(json.dumps({"version": datetime.datetime.now().isoformat(timespec="seconds"), "files": files}, indent=1, sort_keys=True), encoding="utf-8", newline="\n")
+    lines = [f"# Phrases à enregistrer · {APPNAME}", "",
              "Enregistrer une phrase par fichier, nommé par son numéro (ex. `012.m4a`), dans `voix/conteur/` ou `voix/kono/`.",
              "Pièce calme ; téléphone à 20 cm ; lire lentement, avec l'intonation d'un conte pour le rôle conteur.", ""]
     for role, titre in (("conteur", "Rôle conteur (voix humaine expressive)"), ("kono", "Rôle Kono (voix humaine, ou synthèse si une clé est fournie)")):
@@ -148,9 +213,10 @@ def main():
             lines.append(f'| {e["n"]:03d} | {e["text"]} | {e["origin"]} | {st} |')
         lines.append("")
     (ROOT / "print").mkdir(exist_ok=True)
-    (ROOT / "print" / "voix_a_enregistrer.md").write_text("\n".join(lines), encoding="utf-8")
+    (ROOT / "print" / "voix_a_enregistrer.md").write_text("\n".join(lines), encoding="utf-8", newline="\n")
     nk = sum(1 for e in entries if e["role"] == "kono"); nc = len(entries) - nk
-    print(f"{len(entries)} phrases ({nk} Kono, {nc} conteur) · {len(files)} ont un audio · importés : {nrec} · générés : {ngen} ({note})")
+    chars = sum(len(e["text"]) for e in entries)
+    print(f"{len(entries)} phrases ({nk} Kono, {nc} conteur, {chars} caractères) · {len(files)} ont un audio · importés : {nrec} · générés : {ngen} ({note})")
 
 if __name__ == "__main__":
     main()

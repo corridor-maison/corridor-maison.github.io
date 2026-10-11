@@ -1,0 +1,33 @@
+{
+ "_note": "Progression du parcours Orange (grande section). Alignée sur les programmes du cycle 1 (BO n° 41 du 31 octobre 2024, applicables depuis la rentrée 2025). Formulations de travail, à valider avec l'enseignante de la classe. Chaque leçon déclare les codes qu'elle travaille (champ skills) ; le rapport du dimanche donne un taux de réussite par code. Ce fichier est relu avant chaque nouvelle semaine.",
+ "level": "GS",
+ "child": "orange",
+ "version": "2026-10-11",
+ "periods": [
+  { "n": 1, "label": "Période 1 (septembre à mi-octobre)" },
+  { "n": 2, "label": "Période 2 (novembre à décembre)" },
+  { "n": 3, "label": "Période 3 (janvier à février)" },
+  { "n": 4, "label": "Période 4 (mars à avril)" },
+  { "n": 5, "label": "Période 5 (mai à juin)" }
+ ],
+ "skills": [
+  { "code": "GS.N.subitizing", "label": "Reconnaître une petite quantité d'un coup d'œil, sans compter", "periods": [1, 2] },
+  { "code": "GS.N.denombrer", "label": "Dénombrer une collection jusqu'à 10", "periods": [1, 2] },
+  { "code": "GS.N.constituer", "label": "Constituer une collection d'un nombre donné, jusqu'à 10", "periods": [1, 2] },
+  { "code": "GS.N.decomposer", "label": "Décomposer les nombres de 2 à 10", "periods": [1, 2, 3, 4] },
+  { "code": "GS.N.amis10", "label": "Trouver ce qui manque pour faire 10", "periods": [1, 2, 3] },
+  { "code": "GS.N.comptine", "label": "Réciter la comptine numérique jusqu'à 30", "periods": [1, 2, 3] },
+  { "code": "GS.L.syllabes", "label": "Découper un mot en syllabes à l'oral", "periods": [1, 2] },
+  { "code": "GS.L.rimes", "label": "Repérer des mots qui riment", "periods": [1, 2] },
+  { "code": "GS.L.phonemes", "label": "Repérer un son au début d'un mot", "periods": [2, 3, 4] },
+  { "code": "GS.L.lettres", "label": "Connaître le nom et le son des lettres", "periods": [1, 2, 3, 4, 5] },
+  { "code": "GS.O.recit", "label": "Comprendre une histoire et la raconter (personnages, ordre, émotions)", "periods": [1, 2, 3, 4, 5] },
+  { "code": "GS.O.vocabulaire", "label": "Comprendre et réutiliser des mots nouveaux", "periods": [1, 2, 3, 4, 5] },
+  { "code": "GS.E.cursive", "label": "Écrire en cursive (lettres, prénom)", "periods": [1, 2, 3, 4, 5] }
+ ],
+ "drillKinds": {
+  "count-tf": "GS.N.subitizing",
+  "tf-complement": "GS.N.amis10",
+  "decomp": "GS.N.decomposer"
+ }
+}
