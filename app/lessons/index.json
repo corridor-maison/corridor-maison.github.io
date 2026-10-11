@@ -1,59 +1,59 @@
 {
  "schema": 2,
- "version": "S0-2026-10-11",
+ "version": "S1-2026-10-11",
  "escales": {
   "gs": [
    {
     "n": 1,
     "name": "Bamako",
-    "sessions": 28
+    "sessions": 4
    },
    {
     "n": 2,
     "name": "Ségou",
-    "sessions": 28
+    "sessions": 32
    },
    {
     "n": 3,
     "name": "Djenné et Mopti",
-    "sessions": 28
+    "sessions": 36
    },
    {
     "n": 4,
     "name": "Tombouctou",
-    "sessions": 28
+    "sessions": 40
    },
    {
     "n": 5,
     "name": "Gao",
-    "sessions": 28
+    "sessions": 0
    }
   ],
   "ce1": [
    {
     "n": 1,
     "name": "Bamako",
-    "sessions": 28
+    "sessions": 4
    },
    {
     "n": 2,
     "name": "Ségou",
-    "sessions": 28
+    "sessions": 32
    },
    {
     "n": 3,
     "name": "Djenné et Mopti",
-    "sessions": 28
+    "sessions": 36
    },
    {
     "n": 4,
     "name": "Tombouctou",
-    "sessions": 28
+    "sessions": 40
    },
    {
     "n": 5,
     "name": "Gao",
-    "sessions": 28
+    "sessions": 0
    }
   ]
  },
@@ -62,16 +62,72 @@
    "id": "bleu-s0-dizaine",
    "parcours": "ce1",
    "order": 0,
-   "week": "S0",
+   "week": "S1",
    "title": "Passer par la dizaine",
+   "day": "lundi",
+   "escale": 1
+  },
+  {
+   "id": "ce1-s1-echange",
+   "parcours": "ce1",
+   "order": 1,
+   "week": "S1",
+   "title": "La dizaine qui se forme",
+   "day": "mardi",
+   "escale": 1
+  },
+  {
+   "id": "ce1-s1-centaine",
+   "parcours": "ce1",
+   "order": 2,
+   "week": "S1",
+   "title": "Dix dizaines, une centaine",
+   "day": "mercredi",
+   "escale": 1
+  },
+  {
+   "id": "ce1-s1-marche",
+   "parcours": "ce1",
+   "order": 3,
+   "week": "S1",
+   "title": "Problèmes au marché",
+   "day": "jeudi",
    "escale": 1
   },
   {
    "id": "orange-s0-amis10",
    "parcours": "gs",
    "order": 0,
-   "week": "S0",
+   "week": "S1",
    "title": "Les amis de 10",
+   "day": "lundi",
+   "escale": 1
+  },
+  {
+   "id": "gs-s1-cache",
+   "parcours": "gs",
+   "order": 1,
+   "week": "S1",
+   "title": "La calebasse magique",
+   "day": "mardi",
+   "escale": 1
+  },
+  {
+   "id": "gs-s1-collection",
+   "parcours": "gs",
+   "order": 2,
+   "week": "S1",
+   "title": "Le panier de mangues",
+   "day": "mercredi",
+   "escale": 1
+  },
+  {
+   "id": "gs-s1-syllabes",
+   "parcours": "gs",
+   "order": 3,
+   "week": "S1",
+   "title": "Les syllabes",
+   "day": "jeudi",
    "escale": 1
   }
  ]

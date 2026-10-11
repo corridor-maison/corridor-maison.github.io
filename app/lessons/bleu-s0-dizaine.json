@@ -2,11 +2,18 @@
  "id": "bleu-s0-dizaine",
  "parcours": "ce1",
  "order": 0,
- "week": "S0",
+ "week": "S1",
  "title": "Passer par la dizaine",
  "domain": "Nombres",
  "programme": "CE1 · calcul en ligne : stratégies pour ajouter un nombre à un chiffre",
  "objective": "Calculer 38 + 7 en passant par 40 : 38 + 2 = 40, puis 40 + 5 = 45.",
+ "skills": [
+  "C.dizaine",
+  "C.complements",
+  "L.fluence",
+  "O.expliquer"
+ ],
+ "day": "lundi",
  "steps": [
   {
    "type": "maman",

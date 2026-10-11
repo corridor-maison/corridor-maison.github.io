@@ -1,5 +1,5 @@
 {
- "_note": "Toutes les phrases que le moteur dit lui-même. Source unique : l'application les affiche et les dit ; tools/build_audio.py les fait enregistrer ou générer. Pas de nombre variable dans ces phrases : les chiffres s'affichent, ils ne se disent pas.",
+ "_note": "Toutes les phrases que le moteur dit lui-même. Source unique : l'application les dit ; tools/build_audio.py les fait enregistrer ou générer. Pas de nombre variable dans ces phrases : les chiffres s'affichent, ils ne se disent pas.",
  "good": [
   "Trouvé ! Tu peux dire à Maman comment tu as fait ?",
   "Oui ! Bonne méthode.",
@@ -25,13 +25,33 @@
  "drillMisses": "On revoit tes erreurs, sans chronomètre.",
  "readListen": "Écoute d'abord. Suis les mots avec ton doigt.",
  "readYourTurn": "À toi de lire à voix haute. Appuie sur le rond rouge, lis tout le texte, puis appuie encore une fois.",
+ "rereadIntro": "On relit le même texte. Aujourd'hui, tu vas le lire encore plus facilement.",
  "storyListen": "Écoute bien l'histoire. Il n'y a pas d'images pour l'instant : fabrique les images dans ta tête.",
+ "storyListenAgain": "On réécoute l'histoire. Ferme les yeux si tu veux, et fabrique les images dans ta tête.",
+ "listenAgain": "Pour réécouter, touche Kono. Sinon, touche la flèche.",
  "storyScenes": "Voici les images de l'histoire. Regarde si elles ressemblent aux images de ta tête.",
  "recAsk": "Appuie sur le rond rouge pour parler, puis encore une fois pour t'arrêter.",
  "endDone": "Séance terminée. Regarde tous les poissons que tu as pêchés !",
  "endGold": "Les poissons dorés, ce sont les réponses trouvées après une erreur.",
  "mapMove": "La pinasse avance sur le fleuve.",
+ "newEscale": "Une nouvelle escale sur le fleuve ! Regarde ton passeport.",
  "micOff": "Le micro n'est pas disponible. Explique à Maman à voix haute.",
+ "quitAsk": "Tu veux arrêter la séance ?",
+ "manipTen": "Dix unités ! Touche-les pour fermer la dizaine.",
+ "manipHundred": "Dix dizaines ! Touche-les pour faire une centaine.",
+ "manipAsk": "Combien maintenant ?",
+ "manipEmpty": "Touche les cases pour poser les jetons, puis touche la coche.",
+ "jumpsHelp": "Touche un nombre sur la ligne pour faire un saut.",
+ "orderAsk": "Remets les images dans l'ordre de l'histoire. Touche d'abord l'image du début.",
+ "orderTry": "Pas celle-là. Qu'est-ce qui se passe juste après ?",
+ "orderShow": "Regarde : c'est cette image qui vient maintenant.",
+ "orderDone": "Les images sont dans l'ordre de l'histoire !",
+ "revisionIntro": "Aujourd'hui, c'est une séance de révision. On revoit ce que tu as appris, pour ne pas l'oublier.",
+ "revisionPart1": "Premier temps : les automatismes.",
+ "revisionPart2": "Deuxième temps : on revoit des défis.",
+ "revisionPart3": "Troisième temps : on relit.",
+ "revisionPart4": "Dernier temps : explique.",
+ "revisionMethod": "Explique à Maman une chose que tu sais mieux faire maintenant.",
  "clips": [
   {
    "id": "bonjour",
@@ -66,5 +86,5 @@
    "kono": ""
   }
  ],
- "voiceTest": "Bonjour ! Moi, c'est Kono, l'oiseau du fleuve. Trente-huit plus sept, ça fait quarante-cinq. On apprend ensemble ?"
+ "voiceTest": "Bonjour ! Moi, c'est Kono, le martin-pêcheur du fleuve. Trente-huit plus sept, ça fait quarante-cinq. On apprend ensemble ?"
 }

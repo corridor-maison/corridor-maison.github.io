@@ -1,0 +1,42 @@
+{
+ "_note": "Progression du parcours Bleu (CE1). Alignée sur les programmes de français et de mathématiques du cycle 2 (BO n° 41 du 31 octobre 2024, applicables depuis la rentrée 2025). Formulations de travail, à valider avec l'enseignante de la classe. Chaque leçon déclare les codes qu'elle travaille (champ skills) ; le rapport du dimanche donne un taux de réussite par code. Ce fichier est relu avant chaque nouvelle semaine.",
+ "level": "CE1",
+ "child": "bleu",
+ "version": "2026-10-11",
+ "periods": [
+  { "n": 1, "label": "Période 1 (septembre à mi-octobre)" },
+  { "n": 2, "label": "Période 2 (novembre à décembre)" },
+  { "n": 3, "label": "Période 3 (janvier à février)" },
+  { "n": 4, "label": "Période 4 (mars à avril)" },
+  { "n": 5, "label": "Période 5 (mai à juin)" }
+ ],
+ "skills": [
+  { "code": "N.num100", "label": "Lire, écrire et décomposer les nombres jusqu'à 100 (dizaines, unités)", "periods": [1] },
+  { "code": "N.echange", "label": "Échanger 10 unités contre 1 dizaine, 10 dizaines contre 1 centaine", "periods": [1, 2] },
+  { "code": "N.num1000", "label": "Lire, écrire et décomposer les nombres jusqu'à 1 000", "periods": [1, 2, 3] },
+  { "code": "N.ligne", "label": "Placer et repérer des nombres sur une ligne graduée", "periods": [1, 2, 3] },
+  { "code": "C.complements", "label": "Compléments à 10 et à la dizaine supérieure", "periods": [1, 2] },
+  { "code": "C.dizaine", "label": "Ajouter un nombre à un chiffre en passant par la dizaine", "periods": [1, 2] },
+  { "code": "C.doubles", "label": "Doubles et moitiés", "periods": [1, 2, 3] },
+  { "code": "C.soustraction", "label": "Soustraire : retirer, chercher l'écart, compléter", "periods": [1, 2, 3] },
+  { "code": "C.tables", "label": "Tables de multiplication de 2, 3, 4 et 5 (8 égalités en 1 minute)", "periods": [3, 4, 5] },
+  { "code": "C.express", "label": "Automatismes de calcul (12 résultats en 3 minutes)", "periods": [1, 2, 3, 4, 5] },
+  { "code": "P.additifs", "label": "Résoudre des problèmes additifs (parties et tout, transformations)", "periods": [1, 2, 3, 4, 5] },
+  { "code": "P.multiplicatifs", "label": "Résoudre des problèmes multiplicatifs simples", "periods": [3, 4, 5] },
+  { "code": "G.monnaie", "label": "Calculer avec la monnaie (francs CFA)", "periods": [1, 2, 3, 4, 5] },
+  { "code": "G.longueurs", "label": "Mesurer et comparer des longueurs", "periods": [2, 3] },
+  { "code": "E.figures", "label": "Reconnaître, décrire et reproduire des figures", "periods": [2, 3, 4] },
+  { "code": "L.fluence", "label": "Lire à voix haute avec fluidité (repère de fin de CE1 : 70 mots par minute)", "periods": [1, 2, 3, 4, 5] },
+  { "code": "L.comprehension", "label": "Comprendre un texte lu seul", "periods": [1, 2, 3, 4, 5] },
+  { "code": "L.code", "label": "Décoder les graphèmes complexes", "periods": [1, 2] },
+  { "code": "O.expliquer", "label": "Expliquer à l'oral comment on a fait", "periods": [1, 2, 3, 4, 5] },
+  { "code": "E.phrases", "label": "Écrire des phrases correctes", "periods": [1, 2, 3, 4, 5] }
+ ],
+ "drillKinds": {
+  "complement10": "C.complements",
+  "complement-next-ten": "C.complements",
+  "through10": "C.dizaine",
+  "double": "C.doubles",
+  "table": "C.tables"
+ }
+}

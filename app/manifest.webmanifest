@@ -1,16 +1,26 @@
 {
   "name": "Corridor à la maison",
   "short_name": "Corridor",
-  "description": "Leçons guidées par la voix pour les parcours Bleu et Orange.",
+  "description": "Séances guidées par la voix de Kono, pour apprendre à la maison.",
   "lang": "fr",
   "start_url": "./",
   "scope": "./",
   "display": "fullscreen",
   "orientation": "any",
-  "background_color": "#eef2ef",
-  "theme_color": "#3d7fa3",
+  "background_color": "#f6efe2",
+  "theme_color": "#2f7ea6",
   "icons": [
-    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
-    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+    {
+      "src": "icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
   ]
 }

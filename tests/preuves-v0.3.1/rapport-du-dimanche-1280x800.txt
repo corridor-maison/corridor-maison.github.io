@@ -1,0 +1,185 @@
+CORRIDOR À LA MAISON · RAPPORT · format 1
+Date : 2026-10-11 · version 0.3.1
+
+== Profil xyj6 · Ali · parcours ce1 · classe CE1 · 7 ans ==
+1. SÉANCES (7 derniers jours) : 5 terminées · 0 arrêtées avant la fin · 5 min au total · séances faites depuis le début : 5
+2. COMPÉTENCES (7 derniers jours) · code | essais | 1er essai | après aide | réponse montrée
+   C.complements | 23 | 87 % | 0 % | 13 %
+   C.dizaine | 42 | 81 % | 14 % | 5 %
+   C.doubles | 6 | 100 % | 0 % | 0 %
+   C.soustraction | 3 | 100 % | 0 % | 0 %
+   G.monnaie | 1 | 100 % | 0 % | 0 %
+   N.echange | 15 | 67 % | 33 % | 0 %
+   N.ligne | 2 | 100 % | 0 % | 0 %
+   N.num1000 | 13 | 92 % | 8 % | 0 %
+   P.additifs | 9 | 89 % | 11 % | 0 %
+3. AUTOMATISMES : records : calcul-express-bleu 9 (2 s, 2026-10-11)
+4. MESURES : lecture : aucune · récit : aucun
+5. ENREGISTREMENTS : 10 au total · 10 pas encore écoutés : Lecture « Passer par la dizaine » (2026-10-11) ; Méthode « Passer par la dizaine » (2026-10-11) ; Lecture « La dizaine qui se forme » (2026-10-11) ; Méthode « La dizaine qui se forme » (2026-10-11) ; Relecture « Dix dizaines, une centaine » (2026-10-11) ; Méthode « Dix dizaines, une centaine » (2026-10-11)
+6. FILE DE RÉVISION : seul-29-4, b-27-5
+7. DÉTAIL DES SÉANCES (7 derniers jours)
+   - 2026-10-11 · Passer par la dizaine · 1 min · terminée · enregistrements : 2 · automatismes 9/10 en 2 s (record)
+      OK 1er essai | C.dizaine | Échauffement. Combien faut-il ajouter à 8 pour faire 10 ? | réponses : 2 | attendu : 2
+      OK 1er essai | C.dizaine | Et à 36, combien faut-il ajouter pour arriver à 40 ? | réponses : 4 | attendu : 4
+      OK 1er essai | C.dizaine | Combien manque-t-il à 47 pour arriver à 50 ? | réponses : 3 | attendu : 3
+      OK 1er essai | C.dizaine | Je coupe le 6 : 3 pour aller à 50. Il reste combien ? | réponses : 3 | attendu : 3
+      OK 1er essai | C.dizaine | Alors 50 + 3 = ? | réponses : 53 | attendu : 53
+      OK après erreur | C.dizaine | 29 + 4 = ? | réponses : 213 → 33 | attendu : 33
+      OK 1er essai | C.dizaine | 56 + 8 = ? | réponses : 64 | attendu : 64
+      OK après erreur | C.dizaine | Fiche ★ 18 + 5 | réponses : 231 → 23 | attendu : 23
+      OK 1er essai | C.dizaine | Fiche ★ 27 + 6 | réponses : 33 | attendu : 33
+      OK 1er essai | C.dizaine | Fiche ★ 45 + 7 | réponses : 52 | attendu : 52
+      OK 1er essai | C.dizaine | Fiche ★★ 38 + 9 | réponses : 47 | attendu : 47
+      OK 1er essai | C.dizaine | Fiche ★★ 66 + 8 | réponses : 74 | attendu : 74
+      OK 1er essai | C.dizaine | Fiche ★★ 79 + 5 | réponses : 84 | attendu : 84
+      OK 1er essai | C.dizaine | Fiche ★★★ Awa : 58 F + 25 F | réponses : 83 | attendu : 83
+      OK 1er essai | C.dizaine | Fiche ★★★ 47 + ? = 52 | réponses : 5 | attendu : 5
+   - 2026-10-11 · La dizaine qui se forme · 1 min · terminée · enregistrements : 2 · automatismes 9/10 en 2 s
+      OK après erreur | C.dizaine | On revoit un défi d'avant. 29 + 4 = ? | réponses : 213 → 33 | attendu : 33
+      OK après erreur | N.echange | 27 + 5. Pose les 5 unités, une par une. Quand 10 unités brillent, touche-les pour fermer la dizaine. | réponses : 212 → 32 | attendu : 32
+      OK 1er essai | C.dizaine | À toi de manipuler : 46 + 7. Pose les 7 unités. N'oublie pas de fermer la dizaine. | réponses : 53 | attendu : 53
+      OK 1er essai | N.echange | 3 dizaines et 13 unités, c'est combien ? | réponses : 43 | attendu : 43
+      OK 1er essai | C.dizaine | 58 + 6 = ? | réponses : 64 | attendu : 64
+      OK 1er essai | N.echange | 2 dizaines et 17 unités, c'est combien ? | réponses : 37 | attendu : 37
+      OK après erreur | N.echange | Fiche ★ 2 dizaines et 12 unités | réponses : 321 → 32 | attendu : 32
+      OK 1er essai | N.echange | Fiche ★ 4 dizaines et 15 unités | réponses : 55 | attendu : 55
+      OK 1er essai | N.echange | Fiche ★ 1 dizaine et 18 unités | réponses : 28 | attendu : 28
+      OK 1er essai | N.echange | Fiche ★★ 37 + 6 | réponses : 43 | attendu : 43
+      OK 1er essai | N.echange | Fiche ★★ 65 + 8 | réponses : 73 | attendu : 73
+      OK 1er essai | N.echange | Fiche ★★ 5 dizaines et 14 unités | réponses : 64 | attendu : 64
+      OK 1er essai | N.echange | Fiche ★★★ 3 paniers de 10 et 16 mangues | réponses : 46 | attendu : 46
+      OK 1er essai | N.echange | Fiche ★★★ 6 dizaines et 23 unités | réponses : 83 | attendu : 83
+   - 2026-10-11 · Dix dizaines, une centaine · 1 min · terminée · enregistrements : 2 · automatismes 9/10 en 2 s
+      OK après erreur | C.dizaine | On revoit un défi d'avant. 29 + 4 = ? | réponses : 213 → 33 | attendu : 33
+      OK après erreur | N.echange | On revoit un défi d'avant. 27 + 5. Pose les 5 unités, une par une. Quand 10 unités brillent, touche-les pour fermer la dizaine. | réponses : 212 → 32 | attendu : 32
+      OK 1er essai | N.echange | 96 + 7. Pose les 7 unités et ferme la dizaine. Puis compte les dizaines : s'il y en a 10, ferme-les aussi ! | réponses : 103 | attendu : 103
+      OK 1er essai | N.ligne | Le même calcul sur la ligne : 96 + 7. Fais un saut jusqu'à 100, puis le reste. | réponses : 96→100→103 | attendu : 103
+      OK 1er essai | N.num1000 | Compte de 10 en 10 : 80, 90, 100, ? | réponses : 110 | attendu : 110
+      OK 1er essai | N.num1000 | 1 centaine, 2 dizaines, 4 unités : c'est quel nombre ? | réponses : 124 | attendu : 124
+      OK 1er essai | N.num1000 | Quel nombre vient juste après 139 ? | réponses : 140 | attendu : 140
+      OK après erreur | N.num1000 | Fiche ★ 1 centaine, 3 dizaines, 5 unités | réponses : 1351 → 135 | attendu : 135
+      OK 1er essai | N.num1000 | Fiche ★ 1 centaine et 8 unités | réponses : 108 | attendu : 108
+      OK 1er essai | N.num1000 | Fiche ★ 10 dizaines et 4 unités | réponses : 104 | attendu : 104
+      OK 1er essai | N.num1000 | Fiche ★★ 95 + 8 | réponses : 103 | attendu : 103
+      OK 1er essai | N.num1000 | Fiche ★★ 98 + 7 | réponses : 105 | attendu : 105
+      OK 1er essai | N.num1000 | Fiche ★★ 130, 140, ? | réponses : 150 | attendu : 150
+      OK 1er essai | N.num1000 | Fiche ★★★ 9 piles de 10 sacs, puis 1 pile | réponses : 100 | attendu : 100
+      OK 1er essai | N.num1000 | Fiche ★★★ Dizaines dans 120 | réponses : 12 | attendu : 12
+      OK 1er essai | N.num1000 | Fiche ★★★ 9 dizaines et 13 unités | réponses : 103 | attendu : 103
+   - 2026-10-11 · Problèmes au marché · 1 min · terminée · enregistrements : 2 · automatismes 9/10 en 3 s
+      OK après erreur | C.dizaine | On revoit un défi d'avant. 29 + 4 = ? | réponses : 213 → 33 | attendu : 33
+      OK après erreur | N.echange | On revoit un défi d'avant. 27 + 5. Pose les 5 unités, une par une. Quand 10 unités brillent, touche-les pour fermer la dizaine. | réponses : 212 → 32 | attendu : 32
+      OK 1er essai | P.additifs | Regarde les barres. Ici, que cherche-t-on : le tout, ou une partie ? | réponses : Une partie | attendu : Une partie
+      OK 1er essai | C.soustraction | Pars de 47. Fais un saut jusqu'à 50, puis un autre jusqu'à 52. | réponses : 47→50→52 | attendu : 52
+      OK 1er essai | C.soustraction | De combien as-tu avancé en tout ? C'est le nombre de mangues pas mûres. | réponses : 5 | attendu : 5
+      OK 1er essai | G.monnaie | Awa achète des beignets pour 35 F et des mangues pour 25 F. Combien paie-t-elle en tout ? | réponses : 60 | attendu : 60
+      OK 1er essai | C.soustraction | Awa a 45 F. Elle veut un petit pot en terre à 60 F. Combien lui manque-t-il ? | réponses : 15 | attendu : 15
+      OK après erreur | P.additifs | Fiche ★ Awa : 24 F + 9 F | réponses : 331 → 33 | attendu : 33
+      OK 1er essai | P.additifs | Fiche ★ 30 mangues, 26 mûres | réponses : 4 | attendu : 4
+      OK 1er essai | P.additifs | Fiche ★ 45 − 38 | réponses : 7 | attendu : 7
+      OK 1er essai | P.additifs | Fiche ★★ 43 − 39 | réponses : 4 | attendu : 4
+      OK 1er essai | P.additifs | Fiche ★★ 64 − 57 | réponses : 7 | attendu : 7
+      OK 1er essai | P.additifs | Fiche ★★ 82 − 76 | réponses : 6 | attendu : 6
+      OK 1er essai | P.additifs | Fiche ★★★ 20 F + 25 F, pot à 50 F | réponses : 5 | attendu : 5
+      OK 1er essai | P.additifs | Fiche ★★★ 47 + ? = 61 | réponses : 14 | attendu : 14
+   - 2026-10-11 · Séance de révision · 1 min · terminée · enregistrements : 2 · automatismes 9/10 en 3 s
+      OK après erreur | C.dizaine | On revoit un défi d'avant. 29 + 4 = ? | réponses : 213 → 33 | attendu : 33
+      OK après erreur | N.echange | On revoit un défi d'avant. 27 + 5. Pose les 5 unités, une par une. Quand 10 unités brillent, touche-les pour fermer la dizaine. | réponses : 212 → 32 | attendu : 32
+      OK 1er essai | N.ligne | Le même calcul sur la ligne : 96 + 7. Fais un saut jusqu'à 100, puis le reste. | réponses : 96→100→103 | attendu : 103
+      OK 1er essai | N.num1000 | Combien de dizaines y a-t-il dans 90 ? | réponses : 9 | attendu : 9
+
+== Profil ngnu · Awa · parcours gs · classe GS · 5 ans ==
+1. SÉANCES (7 derniers jours) : 5 terminées · 0 arrêtées avant la fin · 5 min au total · séances faites depuis le début : 5
+2. COMPÉTENCES (7 derniers jours) · code | essais | 1er essai | après aide | réponse montrée
+   GS.L.syllabes | 13 | 92 % | 8 % | 0 %
+   GS.N.amis10 | 31 | 77 % | 19 % | 3 %
+   GS.N.constituer | 6 | 83 % | 17 % | 0 %
+   GS.N.decomposer | 22 | 91 % | 5 % | 5 %
+   GS.N.denombrer | 1 | 100 % | 0 % | 0 %
+   GS.N.subitizing | 19 | 95 % | 0 % | 5 %
+   GS.O.recit | 11 | 91 % | 9 % | 0 %
+3. AUTOMATISMES : records : jeu-rapide-orange 8 (2 s, 2026-10-11)
+4. MESURES : lecture : aucune · récit : aucun
+5. ENREGISTREMENTS : 5 au total · 5 pas encore écoutés : Récit « Les amis de 10 » (2026-10-11) ; Récit « La calebasse magique » (2026-10-11) ; Récit « Le panier de mangues » (2026-10-11) ; Récit « Les syllabes » (2026-10-11) ; Récit « Séance de révision » (2026-10-11)
+6. FILE DE RÉVISION : guide-8, panier-bintou-ordre-3
+7. DÉTAIL DES SÉANCES (7 derniers jours)
+   - 2026-10-11 · Les amis de 10 · 1 min · terminée · enregistrements : 1 · automatismes 8/8 en 2 s (record)
+      OK 1er essai | GS.N.amis10 | Pour commencer : combien de points dans la boîte ? | réponses : 6 | attendu : 6
+      OK après erreur | GS.N.amis10 | Combien de cases sont vides ? | réponses : 8 → 2 | attendu : 2
+      OK 1er essai | GS.N.amis10 | Et là, combien de cases sont vides ? | réponses : 5 | attendu : 5
+      OK 1er essai | GS.N.amis10 | Et là ? | réponses : 1 | attendu : 1
+      OK 1er essai | GS.N.amis10 | Combien de doigts sont baissés ? | réponses : 3 | attendu : 3
+      OK après erreur | GS.N.amis10 | Fiche ★ boîte avec 6 points | réponses : 41 → 4 | attendu : 4
+      OK 1er essai | GS.N.amis10 | Fiche ★ boîte avec 4 points | réponses : 6 | attendu : 6
+      OK 1er essai | GS.N.amis10 | Fiche ★ boîte avec 2 points | réponses : 8 | attendu : 8
+      OK 1er essai | GS.N.amis10 | Fiche ★★ 9 + ? = 10 | réponses : 1 | attendu : 1
+      OK 1er essai | GS.N.amis10 | Fiche ★★ 5 + ? = 10 | réponses : 5 | attendu : 5
+      OK 1er essai | GS.N.amis10 | Fiche ★★ 3 + ? = 10 | réponses : 7 | attendu : 7
+      OK 1er essai | GS.N.amis10 | Fiche ★★★ 10 mangues, j'en donne 4 | réponses : 6 | attendu : 6
+      OK 1er essai | GS.O.recit | Pourquoi Bintou a-t-elle peur ? | réponses : Ses mangues vont partir sur l'eau. | attendu : Ses mangues vont partir sur l'eau.
+      OK 1er essai | GS.O.recit | Comment se sent Bintou quand le pêcheur attrape le panier ? | réponses : Contente | attendu : Contente
+      OK 1er essai | GS.O.recit | Pourquoi Bintou donne-t-elle une mangue au pêcheur ? | réponses : Pour le remercier. | attendu : Pour le remercier.
+   - 2026-10-11 · La calebasse magique · 1 min · terminée · enregistrements : 1 · automatismes 7/8 en 2 s
+      OK après erreur | GS.N.amis10 | On revoit un défi d'avant. Combien de cases sont vides ? | réponses : 8 → 2 | attendu : 2
+      OK 1er essai | GS.N.decomposer | 5 mangues en tout. Tu en vois 2. Combien sont cachées ? | réponses : 3 | attendu : 3
+      OK 1er essai | GS.N.decomposer | Maintenant, 6 mangues en tout. Tu en vois 3. Combien sont cachées ? | réponses : 3 | attendu : 3
+      OK 1er essai | GS.N.decomposer | 6 mangues en tout. Tu en vois 4. Combien sont cachées ? | réponses : 2 | attendu : 2
+      OK 1er essai | GS.N.decomposer | Et là ? 6 mangues en tout. Tu en vois 1. Combien sont cachées ? | réponses : 5 | attendu : 5
+      OK 1er essai | GS.N.decomposer | Il y a 4 mangues. Pose des mangues pour en avoir 6 en tout. | réponses : 6 | attendu : 6
+      OK après erreur | GS.N.decomposer | Fiche ★ boîte avec 3 points, il en faut 5 | réponses : 21 → 2 | attendu : 2
+      OK 1er essai | GS.N.decomposer | Fiche ★ boîte avec 4 points, il en faut 5 | réponses : 1 | attendu : 1
+      OK 1er essai | GS.N.decomposer | Fiche ★ boîte avec 1 point, il en faut 5 | réponses : 4 | attendu : 4
+      OK 1er essai | GS.N.decomposer | Fiche ★★ 3 + ? = 5 | réponses : 2 | attendu : 2
+      OK 1er essai | GS.N.decomposer | Fiche ★★ 2 + ? = 6 | réponses : 4 | attendu : 4
+      OK 1er essai | GS.N.decomposer | Fiche ★★ 5 + ? = 6 | réponses : 1 | attendu : 1
+      OK 1er essai | GS.N.decomposer | Fiche ★★★ 6 mangues, 2 cachées | réponses : 4 | attendu : 4
+      OK 1er essai | GS.O.recit | Pourquoi le pêcheur rame-t-il vite ? | réponses : Pour attraper le panier | attendu : Pour attraper le panier
+      OK 1er essai | GS.O.recit | Que ressent Bintou quand le panier tombe ? | réponses : Elle a peur | attendu : Elle a peur
+      OK 1er essai | GS.O.recit | Le pêcheur a aidé Bintou. Que fait-on quand quelqu'un nous aide ? | réponses : On dit merci | attendu : On dit merci
+   - 2026-10-11 · Le panier de mangues · 1 min · terminée · enregistrements : 1 · automatismes 7/8 en 2 s
+      OK après erreur | GS.N.amis10 | On revoit un défi d'avant. Combien de cases sont vides ? | réponses : 8 → 2 | attendu : 2
+      OK 1er essai | GS.N.denombrer | J'ai compté : 1, 2, 3, 4, 5, 6, 7, 8. Combien de mangues ? | réponses : 8 | attendu : 8
+      OK 1er essai | GS.N.constituer | Pose 8 mangues dans la boîte. Puis valide. | réponses : 8 | attendu : 8
+      OK 1er essai | GS.N.constituer | Tout{e} seul{e} maintenant : pose 5 mangues. | réponses : 5 | attendu : 5
+      OK 1er essai | GS.N.subitizing | Regarde vite, sans compter. Combien de mangues ? | réponses : 3 | attendu : 3
+      OK 1er essai | GS.N.subitizing | Et là ? D'un coup d'œil : combien de mangues ? | réponses : 4 | attendu : 4
+      OK après erreur | GS.N.constituer | Fiche ★ boîte avec 8 points | réponses : 81 → 8 | attendu : 8
+      OK 1er essai | GS.N.constituer | Fiche ★ boîte avec 6 points | réponses : 6 | attendu : 6
+      OK 1er essai | GS.N.constituer | Fiche ★ boîte avec 9 points | réponses : 9 | attendu : 9
+      OK 1er essai | GS.N.constituer | Fiche ★★★ 3 mangues, et encore 2 | réponses : 5 | attendu : 5
+      OK 1er essai | GS.O.recit | Que se passe-t-il juste après que le vent souffle ? | réponses : Le panier tombe | attendu : Le panier tombe
+      OK 1er essai | GS.O.recit | Que fait le pêcheur juste avant que Bintou dise merci ? | réponses : Il attrape le panier | attendu : Il attrape le panier
+      OK après erreur | GS.O.recit | Remettre les images de l'histoire dans l'ordre | réponses : x2 → 1 → 2 → 3 → 4 | attendu : 1-2-3-4
+   - 2026-10-11 · Les syllabes · 1 min · terminée · enregistrements : 1 · automatismes 8/8 en 2 s
+      OK après erreur | GS.N.amis10 | On revoit un défi d'avant. Combien de cases sont vides ? | réponses : 8 → 2 | attendu : 2
+      OK 1er essai | GS.L.syllabes | Ballon. Combien de syllabes ? | réponses : 2 | attendu : 2
+      OK 1er essai | GS.L.syllabes | Sac. Combien de syllabes ? | réponses : 1 | attendu : 1
+      OK 1er essai | GS.L.syllabes | Tout{e} seul{e} : baobab. Combien de syllabes ? | réponses : 3 | attendu : 3
+      OK 1er essai | GS.L.syllabes | Quel mot a 3 syllabes ? | réponses : domino | attendu : domino
+      OK après erreur | GS.L.syllabes | Fiche ★ lapin | réponses : 21 → 2 | attendu : 2
+      OK 1er essai | GS.L.syllabes | Fiche ★ bol | réponses : 1 | attendu : 1
+      OK 1er essai | GS.L.syllabes | Fiche ★ domino | réponses : 3 | attendu : 3
+      OK 1er essai | GS.L.syllabes | Fiche ★★ soleil | réponses : 2 | attendu : 2
+      OK 1er essai | GS.L.syllabes | Fiche ★★ ananas | réponses : 3 | attendu : 3
+      OK 1er essai | GS.L.syllabes | Fiche ★★ vélo | réponses : 2 | attendu : 2
+      OK 1er essai | GS.L.syllabes | Fiche ★★★ sac + bateau : combien de tapes ? | réponses : 3 | attendu : 3
+      OK 1er essai | GS.L.syllabes | Fiche ★★★ chat + domino : combien de tapes ? | réponses : 4 | attendu : 4
+      OK 1er essai | GS.O.recit | Où commence l'histoire ? | réponses : Au marché de Ségou | attendu : Au marché de Ségou
+      OK 1er essai | GS.O.recit | Qui attrape le panier sur le fleuve ? | réponses : Un vieux pêcheur | attendu : Un vieux pêcheur
+   - 2026-10-11 · Séance de révision · 1 min · terminée · enregistrements : 1 · automatismes 7/8 en 2 s
+      OK après erreur | GS.N.amis10 | On revoit un défi d'avant. Combien de cases sont vides ? | réponses : 8 → 2 | attendu : 2
+      OK 1er essai | GS.N.decomposer | Il y a 4 mangues. Pose des mangues pour en avoir 6 en tout. | réponses : 6 | attendu : 6
+      OK 1er essai | GS.N.decomposer | Maintenant, 6 mangues en tout. Tu en vois 3. Combien sont cachées ? | réponses : 3 | attendu : 3
+      OK 1er essai | GS.L.syllabes | Tout{e} seul{e} : baobab. Combien de syllabes ? | réponses : 3 | attendu : 3
+
+== Profil 8mgr · Contrôle · parcours gs · classe GS · 5 ans ==
+1. SÉANCES (7 derniers jours) : 1 terminées · 0 arrêtées avant la fin · 1 min au total · séances faites depuis le début : 1
+2. COMPÉTENCES (7 derniers jours) · code | essais | 1er essai | après aide | réponse montrée
+   aucune
+3. AUTOMATISMES : records : aucun
+4. MESURES : lecture : aucune · récit : aucun
+5. ENREGISTREMENTS : 0 au total · 0 pas encore écouté
+6. FILE DE RÉVISION : vide
+7. DÉTAIL DES SÉANCES (7 derniers jours)
+   - 2026-10-11 · Contrôle du moteur · 1 min · terminée · enregistrements : 0
+      OK 1er essai | - | Il y a 7 jetons. Pose les jetons qui manquent pour faire 10. | réponses : 3 | attendu : 3
