@@ -81,6 +81,30 @@ Sans nouvelle semaine, la tablette propose une séance de révision : l'habitude
 
 Sauvegarde : Espace parent › Réglages › Télécharger la sauvegarde (le suivi dans un fichier, gardé par la famille ; une sauvegarde de la v0.2 se restaure aussi).
 
+## 4. Format d'une séance (référence citée par le contrat comme « README § 4 »)
+
+Étapes possibles, dans l'ordre de l'enseignement explicite. Les listes sont fermées : `tools/check_lessons.py` les vérifie, avec l'annexe A du contrat qui ajoute les étapes `manip` et `order`, les champs `pass`, `skipVocab`, `order`, `noImages`, `reread`, `max`, `fill` et `optionKind`, les erreurs objets et six dessins.
+
+| `type` | Ce que fait la tablette |
+|---|---|
+| `maman` | Joue la phrase enregistrée par Maman (`clip` : `bonjour`, `bravo_effort`, `fiche`, `explique`, `fin`, `bravo_escale`). Sinon, Kono dit une phrase neutre. |
+| `say` | Kono parle (`say` pour la voix, `text` pour la bulle) et affiche `show`. |
+| `part` | Annonce un des quatre temps (`n`, `title`, `text`). L'en-tête de la séance montre le temps en cours. |
+| `review` | Rejoue jusqu'à `max` défis ratés les jours précédents (2 par défaut), sinon `fallback`. |
+| `demo` | « Je te montre » : une suite de `lines`, chacune avec sa voix et son dessin. |
+| `number` / `choice` | Question avec clavier ou choix. `errors` = explication propre à chaque mauvaise réponse typique ; `hints` = indices ; `sol` = solution expliquée ; `after` = dessin affiché une fois trouvé ; `options` et `optionKind` pour `choice`. |
+| `manip` | L'enfant manipule puis valide : boîte de dix, dizaines et unités, sauts sur la ligne des nombres (annexe A du contrat). |
+| `order` | Remettre les images d'une histoire dans l'ordre (annexe A du contrat). |
+| `paper` | Envoie l'enfant sur sa fiche, puis vérifie les réponses tapées. Les exercices viennent de la section `paper` du même fichier. |
+| `record` | L'enfant s'enregistre pour expliquer sa méthode ou raconter l'histoire. Le parent écoute le soir. |
+| `drill` | Automatismes : `count` questions en `seconds` secondes, `kinds` pondérés (`complement10`, `complement-next-ten`, `through10`, `double`, `table`, `tf-complement`, `count-tf`, `decomp`), `input` = `keypad` ou `choice`. Record gardé par enfant. |
+| `reading` | Lecture répétée : `passage` = liste de phrases. Écoute surlignée, puis enregistrement de l'enfant ; `reread` pour une relecture. |
+| `story` | Histoire : `sentences`, `vocab` (mot + explication à mimer), `questions` (étapes `choice`), `scenes` (images), `retell` (consigne pour raconter), et les champs de l'annexe A. |
+| `end` | Bilan de la séance et phrase de fin de Maman (`clip` : `fin`). |
+
+Dessins disponibles dans `show` : `title`, `expr`, `text`, `numberline` (from, to, marks, jumps), `split` (whole, parts), `tenframe` (filled, highlightEmpty), `fingers` (up), `part`, `word`, `listen`, `scenes`, plus les six de l'annexe A (`blocks`, `bar`, `items`, `hidden`, `icon`, `syllables`).
+Jetons de texte : `{prenom}` (prénom de l'enfant), `{e}` (accord au féminin). Aucune couleur comme identité dans un texte : c'est l'application qui nomme la fiche.
+
 ## Les voix
 
 `python3 tools/build_audio.py` écrit `print/voix_a_enregistrer.md` (chaque phrase, son numéro, son rôle, son statut) et `app/audio/manifest.json`.
