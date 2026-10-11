@@ -1,4 +1,4 @@
-# L'école de Kono
+# Corridor à la maison
 
 Séances guidées par une voix, pour les parcours Bleu (7 ans, CE1) et Orange (5 ans ½, grande section).
 Kono, un oiseau du fleuve, emmène l'enfant en voyage sur le Niger, de Bamako à Gao : chaque séance fait avancer la pinasse sur la carte.
@@ -38,7 +38,7 @@ Le plus simple : GitHub Pages (gratuit, en https, ce qui est obligatoire pour le
 1. Créer un dépôt GitHub, par exemple `ecole-kono`.
 2. Y déposer le **contenu** du dossier `app/` à la racine du dépôt (index.html doit être à la racine).
 3. Settings › Pages › Source : « Deploy from a branch », branche `main`, dossier `/ (root)`.
-4. L'adresse sera du type `https://<compte>.github.io/ecole-kono/`.
+4. L'adresse publique est `https://corridor-maison.github.io/`.
 
 Aucune donnée d'enfant ne part sur GitHub : les prénoms, le suivi, les enregistrements et la voix de Maman restent **sur la tablette**.
 Le dépôt ne contient que les leçons. Si le dépôt est public, les leçons sont lisibles par tous, rien d'autre.

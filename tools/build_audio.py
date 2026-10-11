@@ -137,7 +137,7 @@ def main():
         elif (AUDIO / "gen" / f'{e["key"]}.mp3').exists(): files[e["key"]] = f'gen/{e["key"]}.mp3'
     (AUDIO / "manifest.json").write_text(json.dumps({"version": datetime.datetime.now().isoformat(timespec="seconds"), "files": files}, indent=1, sort_keys=True))
     # script d'enregistrement
-    lines = ["# Phrases à enregistrer · L'école de Kono", "",
+    lines = ["# Phrases à enregistrer · Corridor à la maison", "",
              "Enregistrer une phrase par fichier, nommé par son numéro (ex. `012.m4a`), dans `voix/conteur/` ou `voix/kono/`.",
              "Pièce calme ; téléphone à 20 cm ; lire lentement, avec l'intonation d'un conte pour le rôle conteur.", ""]
     for role, titre in (("conteur", "Rôle conteur (voix humaine expressive)"), ("kono", "Rôle Kono (voix humaine, ou synthèse si une clé est fournie)")):
