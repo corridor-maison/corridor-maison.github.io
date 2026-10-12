@@ -9,11 +9,12 @@ Ce fichier est lu par chaque agent qui travaille dans ce dépôt. Il dit ce qui 
 2. Lire la section « État » ci-dessous et vérifier qu'elle correspond au dépôt : `git log --oneline -5 origin/main`, `const VERSION` dans `app/app.js`, `const CACHE` dans `app/sw.js`.
 3. Regarder les pull requests ouvertes et les branches. **Un fichier touché par deux chantiers ouverts : on s'arrête et on le signale au fondateur.**
 
-## État au 12 octobre 2026 : v0.3.1 (PR « v0.3.1 : semaine S1, manipulations, profils »)
+## État au 12 octobre 2026 : v0.3.1, commit `59cf9b1` (PR #8) ; README § 4 rétabli (PR #9, `204f541`)
 
 - **Publié** sur https://corridor-maison.github.io/ par `.github/workflows/pages.yml` à chaque push sur `main` : contrôle des leçons, puis publication du dossier `app/` tel quel. Dépôt `corridor-maison/corridor-maison.github.io`.
 - **Fait** : renommage « Corridor à la maison » ; hors ligne dès la première ouverture ; profils locaux par enfant ; routage par parcours (`gs`, `ce1`) ; index au schéma 2 ; migration automatique des données v0.2 ; rapport du dimanche par profil (format 1, 7 rubriques) ; `tools/check_lessons.py` ; manipulations (boîte de dix, dizaines et unités avec fermeture animée, sauts sur la ligne des nombres), six dessins de plus, 16 images SVG, histoire avec images à remettre dans l'ordre, lecture répétée, séance de révision composée seule, progressions `app/progression/` et compétences dans le rapport ; semaine S1 complète (4 séances par parcours, les deux S0 en sont les lundis) ; tests `tests/e2e.py`, `tests/offline.py`, `tests/migration.py`.
-- **Ouvert** : la table des classes de l'école pour compléter `app/parcours.json` ; l'export d'un profil vers une autre tablette ; les semaines S2 et suivantes (Cowork, selon le contrat) ; les voix à enregistrer ou générer (`print/voix_a_enregistrer.md`, 1 144 phrases, dont les numéros 1145 à 1152 nés de la mise au contrat des phrases « ta fiche ») ; la voix de Kono sur tablette réelle, jamais testée en machine ; la boîte de dix « en ajout » n'est utilisée par aucune séance publiée.
+- **Ouvert** : la table des classes de l'école pour compléter `app/parcours.json` ; l'export d'un profil vers une autre tablette ; les semaines S2 et suivantes (Cowork, selon le contrat) ; les voix à enregistrer ou générer (`print/voix_a_enregistrer.md`, 1 144 phrases, dont les numéros 1145 à 1152 nés de la mise au contrat des phrases « ta fiche ») ; la voix de Kono sur tablette réelle, jamais testée en machine ; la boîte de dix « en ajout » n'est utilisée par aucune séance publiée ; trois règles de contrôle proposées et non ajoutées, à décider par le fondateur (refuser une escale sous 1 séance, vérifier que chaque image citée existe et est préchargée, vérifier que chaque code de compétence existe dans la progression du parcours) ; tests explicites à écrire (isolation entre profils, séance arrêtée comptée pour le bon profil, mutations refusées par le contrôleur).
+- **Décisions tranchées par le fondateur le 11 octobre 2026**, qui priment sur toute note antérieure : les S0 sont les lundis de S1 (semaine `S1`, identifiants inchangés) ; une livraison = une PR en commits séparés (moteur ; séances ; docs et tests) ; escales du zip pour les deux parcours (Gao à 0 séance est sans effet : la dernière escale n'est jamais une étape du voyage) ; registre du zip puis une exécution de contrôle de `build_audio.py` (8 numéros ajoutés, 1145 à 1152, aucun renuméroté ; une nouvelle exécution ne doit rien changer) ; branches sans barre oblique ; ni `docs/FORMAT.md` ni autre document de format que le contrat.
 - **Prochaine version** : `0.3.2`, puis `0.4.0` pour un changement de format de données.
 
 ## Architecture : ce qui est fixé, à ne pas réinventer
@@ -27,6 +28,15 @@ Ce fichier est lu par chaque agent qui travaille dans ce dépôt. Il dit ce qui 
 - **Liste fermée** : types d'étapes, sortes d'automatismes (`kinds`), dessins (`show`) et champs sont ceux du README § 4 cité par le contrat et de son annexe A, vérifiés par `tools/check_lessons.py`. Un besoin nouveau se traite d'abord dans l'application et dans le script de contrôle, ensuite dans l'annexe, enfin dans les leçons. Il n'y a pas de `docs/FORMAT.md` : le contrat est le seul document de format.
 - **Identifiants** : un identifiant de profil, de leçon, de parcours, d'escale ou de phrase (`voix/registre.json`) ne se renomme jamais et ne se renumérote jamais. Les leçons nouvelles s'appellent `<parcours>-s<n>-<mot>` ; `bleu-s0-dizaine` et `orange-s0-amis10` gardent leur nom.
 - **Carte du voyage** : la pinasse avance d'une séance terminée à l'autre (révisions comprises) sur les escales du parcours ; Ségou après 4 séances (voulu : le texte de lecture y arrive).
+
+## Pièges connus, pour ne pas les repayer
+
+- **Pages** : une organisation GitHub a trois noms ; seul l'identifiant (celui de l'adresse) fabrique `https://<id>.github.io/`. Le renommage de l'organisation ne republie pas le site : relancer le workflow (`workflow_dispatch`).
+- **Service worker** : à la toute première ouverture, la page n'est pas contrôlée ; ce que l'application demande elle-même avant le `claim` n'est pas en cache. D'où le préchargement de toutes les leçons à l'installation.
+- **Données** : le suivi, les enregistrements et la voix de Maman sont liés à l'adresse du site. Changer d'adresse après installation sur une tablette, c'est repartir de zéro.
+- **Actions** : un compte GitHub verrouillé pour facturation refuse tout job, même sur un dépôt public.
+- **Windows** : lancer les outils et les tests avec `python -X utf8` (sinon cp1252 altère les textes et `build_audio.py` pollue le registre) ; captures d'écran dans un dossier court (limite de 260 caractères) ; comparer les empreintes depuis `git cat-file blob`, jamais depuis l'arbre de travail (`core.autocrlf`).
+- **Deux lignées d'`app.js`** : ne jamais les fusionner ; mesurer les deux sens en lignes modifiées et réappliquer le plus petit delta, fonction par fonction.
 
 ## Qui écrit quoi (CONTRAT_LECONS.md § 10)
 
