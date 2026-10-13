@@ -17,6 +17,8 @@ Quatre temps, toujours dans le même ordre :
 
 Si aucune nouvelle semaine n'est arrivée, l'application compose seule une **séance de révision** chaque jour : automatismes, défis ratés, rappel espacé de questions déjà vues, relecture ou histoire.
 
+Une séance interrompue (bouton Arrêter, tablette en veille, application fermée) **reprend là où l'enfant s'est arrêté** : même étape, réponses et poissons déjà gagnés conservés. À l'ouverture de son espace, **Kono rappelle le niveau** : ce que l'enfant a fait la dernière fois, ce qu'il réussit bien, ce qu'on va revoir, et la séance du jour.
+
 ## Principes de conception
 
 - **Une seule source, deux supports.** Une séance = un fichier `app/lessons/<id>.json`. La tablette le joue ; `tools/build_print.py` en tire les fiches et la carte Maman ; `tools/build_audio.py` la liste des phrases à enregistrer. Le format est fixé par [`CONTRAT_LECONS.md`](CONTRAT_LECONS.md) et son annexe A, et vérifié par `tools/check_lessons.py`.
@@ -24,7 +26,7 @@ Si aucune nouvelle semaine n'est arrivée, l'application compose seule une **sé
 - **Pour l'enfant, aucun texte pour naviguer.** Icônes et voix. On touche Kono pour le réentendre. Les sous-titres sont cachés par défaut (l'enfant écoute et regarde le dessin) ; ils s'affichent d'office si la tablette n'a pas de voix française.
 - **Calme.** Un seul objet bouge à la fois ; pas de confettis ni de récompenses à chaque réponse ; les poissons dorés récompensent une réponse trouvée après une erreur.
 - **Progression écrite.** `app/progression/ce1.json` et `app/progression/gs.json` : compétences codées par période, alignées sur les programmes 2025, à valider avec l'enseignante. Chaque séance déclare ses compétences ; le rapport du dimanche donne un taux de réussite par compétence.
-- **Données des enfants sur la tablette.** Prénoms, suivi, enregistrements, voix de Maman : rien ne part sur internet. Le rapport est copié à la main par le parent.
+- **Données des enfants sur la tablette.** Prénoms, suivi, enregistrements, voix de Maman : rien ne part sur internet. Le rapport est copié à la main par le parent. L'application demande au navigateur de ne jamais effacer ces données de lui-même ; l'espace parent (Réglages › Mémoire de la tablette) montre l'adresse, le mode d'installation et l'état de cette protection.
 - **Hors ligne.** Dès la première ouverture avec internet, l'application, les parcours, toutes les séances de l'index, les images et les voix sont gardées sur la tablette.
 
 ## Contenu du dépôt
@@ -67,6 +69,8 @@ Le site est publié par GitHub Pages à l'adresse **https://corridor-maison.gith
 7. Bloquer la tablette sur l'application : Paramètres › Sécurité › Épinglage d'écran.
 
 Les mises à jour arrivent seules : à la prochaine ouverture avec internet, la tablette prend la nouvelle version, sans perdre le suivi.
+
+Toujours ouvrir l'application de la même façon, par l'icône installée : un autre navigateur (Samsung Internet, Firefox), la navigation privée ou une autre adresse ont chacun leur propre mémoire et ne voient pas le suivi.
 
 ## Le cycle de chaque semaine
 
@@ -119,12 +123,12 @@ Jetons de texte : `{prenom}` (prénom de l'enfant), `{e}` (accord au féminin). 
 ## Tester
 
 - Localement : `python3 -m http.server 8765 --directory app`, puis `http://localhost:8765/#test` (le mode `#test` accélère tout).
-- `python3 tests/e2e.py 1280x800` (serveur lancé sur le port 8765) : deux profils, CE1 et grande section, jouent toutes les séances publiées de leur parcours puis la séance de révision ; vérifie qu'il n'y a aucune erreur JavaScript et que chaque mode de manipulation, la remise en ordre de l'histoire et une erreur animée ont été joués.
+- `python3 tests/e2e.py 1280x800` (serveur lancé sur le port 8765) : deux profils, CE1 et grande section, jouent toutes les séances publiées de leur parcours puis la séance de révision ; vérifie qu'il n'y a aucune erreur JavaScript, que chaque mode de manipulation, la remise en ordre de l'histoire et une erreur animée ont été joués, qu'une séance arrêtée puis fermée reprend à la bonne étape avec ses réponses, et que le rappel du niveau est dit à l'ouverture.
 - `python3 tests/offline.py` : une seule ouverture avec réseau, puis coupure réelle (serveur arrêté) ; l'accueil et une séance doivent s'ouvrir.
 - `python3 tests/migration.py` : un état de la v0.2 (`tests/etat-v0.2.json`) devient deux profils sans perte ; écrit la comparaison avant/après.
 - Sous Windows, lancer Python avec `-X utf8`.
 
-## Limites connues (v0.3.1)
+## Limites connues (v0.3.2)
 
 - Les images des histoires sont des dessins simples, en attendant le kit de l'illustrateur.
 - Pas de reconnaissance vocale : la lecture à voix haute est enregistrée, un adulte l'écoute et la mesure.

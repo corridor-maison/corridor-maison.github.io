@@ -1,0 +1,45 @@
+=== serveur http.server 8765 --directory app ===
+=== python tests/e2e.py 1280x800 ===
+profils : Ali (ce1, s9gc), Awa (gs, texe)
+bleu-s0-dizaine: OK
+ce1-s1-echange: OK
+ce1-s1-centaine: OK
+ce1-s1-marche: OK
+révision ce1: OK
+orange-s0-amis10: OK
+gs-s1-cache: OK
+gs-s1-collection: OK
+gs-s1-syllabes: OK
+révision gs: OK
+reprise proposée après fermeture : OK (étape 6/28, 1 réponses gardées, rappel dit : oui)
+reprise à la bonne étape : OK (étape 6, 1 réponses, 1 poissons)
+orange-s0-amis10 reprise jusqu'au bout : OK
+historique après reprise : OK (séance orange-s0-amis10 terminée=True, 15 réponses, reprise effacée=True)
+rappel du niveau à l'ouverture : OK · « La dernière fois, tu as fait  Les amis de 10 . Tu réussis bien : Trouver ce qui manque pour faire 10, Comprendre une histoire et la raconter »
+contrôle moteur (étape injectée, profil Contrôle) : boîte de dix en ajout OK
+COUVERTURE : tenframe:add = 1 · tenframe:total = 4 · blocks:fermeture-unites = 6 · blocks:fermeture-dizaines = 1 · jumps:via = 2 · order = 1 · erreur-animee = 4 · reprise = 1 · rappel = 1
+ERREURS JS : aucune
+E2E : OK
+e2e exit code: 0
+=== python tests/offline.py ===
+fichiers de séances en cache après une seule ouverture : 9
+2e ouverture sans réseau : OK (accueil avec le profil)
+séance gs-s1-syllabes sans réseau : OK
+offline exit code: 0
+=== python tests/migration.py ===
+OK  schéma 2, 2 profils
+OK  code parent, voix et réglages conservés
+OK  drapeau de migration effacé après la migration de la base
+OK  case bleu → profil Ali, parcours ce1, couleur bleu, fille=False
+OK  Ali : suivi identique clé par clé (runs, review, done, records, drillMisses, skills, measures)
+OK  Ali : classe CE1 déduite du parcours
+OK  case orange → profil Awa, parcours gs, couleur orange, fille=True
+OK  Awa : suivi identique clé par clé (runs, review, done, records, drillMisses, skills, measures)
+OK  Awa : classe GS déduite du parcours
+OK  2 enregistrements conservés, plus aucun champ child
+OK  enregistrement d'Ali rattaché à son profil, audio intact
+OK  enregistrement d'Awa rattaché à son profil, audio intact
+OK  phrases de Maman : ['bonjour@jgf6', 'fiche', 'fin@d889']
+OK  rapport du dimanche émis par profil
+MIGRATION : OK, aucune perte
+migration exit code: 0
