@@ -113,6 +113,9 @@ body[data-screen="home"], body[data-screen="child"] { background-image: url("dat
 .ticket .t-day { font-family: var(--display); color: var(--c); font-size: 1.1rem; }
 .ticket .t-title { font-size: .92rem; line-height: 1.2; color: var(--muted); }
 .ticket .t-mark { position: absolute; right: 8px; top: 8px; width: 28px; height: 28px; color: var(--good); }
+.ticket.pending { border-style: solid; border-color: var(--c); }
+.ticket.pending .t-mark { color: var(--c); }
+.today .recap { font-size: .95rem; color: var(--muted); line-height: 1.35; }
 .ticket.done { border-style: solid; border-color: var(--good); background: var(--good-soft); }
 .map svg { width: 100%; height: auto; display: block; }
 .passport { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; margin-top: 10px; }

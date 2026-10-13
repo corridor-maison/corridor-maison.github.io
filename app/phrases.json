@@ -52,6 +52,16 @@
  "revisionPart3": "Troisième temps : on relit.",
  "revisionPart4": "Dernier temps : explique.",
  "revisionMethod": "Explique à Maman une chose que tu sais mieux faire maintenant.",
+ "resumeHere": "On reprend là où tu t'es arrêté{e}.",
+ "recapResume": "Tu t'es arrêté{e} au milieu de la séance",
+ "recapResumeAsk": "On reprend là où tu en étais ?",
+ "recapLast": "La dernière fois, tu as fait",
+ "recapFirst": "C'est ta première séance avec moi. Bienvenue à bord !",
+ "recapGood": "Tu réussis bien :",
+ "recapAgain": "On va revoir ensemble :",
+ "recapToday": "Aujourd'hui :",
+ "recapRevision": "Aujourd'hui, on révise ce que tu as appris.",
+ "recapDone": "Tu as tout fait. À demain !",
  "clips": [
   {
    "id": "bonjour",

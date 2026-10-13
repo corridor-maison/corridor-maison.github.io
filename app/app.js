@@ -1,11 +1,11 @@
-/* Corridor à la maison — moteur de séances guidées par la voix (v0.3.1).
+/* Corridor à la maison — moteur de séances guidées par la voix (v0.3.2).
    Guide : Kono, le martin-pêcheur du fleuve Niger. Un profil par enfant, routé par son parcours (app/parcours.json).
    Une séance = un fichier JSON (lessons/*.json), en quatre temps : automatismes, leçon, lecture ou histoire, méthode.
    Le même fichier produit les fiches imprimables (tools/build_print.py) et la liste des phrases à enregistrer (tools/build_audio.py).
    Format des séances : CONTRAT_LECONS.md. */
 'use strict';
 (() => {
-const VERSION = '0.3.1';
+const VERSION = '0.3.2';
 const APPNAME = 'Corridor à la maison';
 const FAST = location.hash === '#test';
 const app = document.getElementById('app');
@@ -22,7 +22,7 @@ const wordOf = n => WORD[n] || n;
 /* ============================ données ============================ */
 const KEY = 'kono-v1';   /* clé interne inchangée depuis la v0.1 : le suivi des tablettes est conservé */
 const THEMES = ['bleu', 'orange', 'vert', 'violet'];
-const kid = () => ({ runs: [], review: [], done: {}, records: {}, drillMisses: {}, skills: {}, measures: [] });
+const kid = () => ({ runs: [], review: [], done: {}, records: {}, drillMisses: {}, skills: {}, measures: [], resume: null });
 /* Un profil par enfant : prénom, garçon ou fille, date de naissance, classe et parcours (confirmés par un parent), couleur, suivi.
    Tout reste dans la tablette. Un identifiant de profil ne change jamais : il nomme les enregistrements et les phrases de Maman. */
 const blank = () => ({ schema: 2, setup: false, pin: '', voice: { name: '', rate: 0.9 }, settings: { subtitles: false, sounds: true }, profiles: [] });
@@ -56,7 +56,14 @@ function fromStore(s) {
 }
 function loadStore() { try { return fromStore(JSON.parse(localStorage.getItem(KEY) || 'null')); } catch (e) { return blank(); } }
 const S = loadStore();
-function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} }
+/* Point de sauvegarde de la séance en cours : à chaque enregistrement, la position, les poissons et le temps passé
+   sont mis à jour dans le profil, pour reprendre là où l'enfant s'est arrêté même si la tablette ferme l'application. */
+function save() {
+  try {
+    if (P && child && child.progress.resume && child.progress.resume.run === P.run) Object.assign(child.progress.resume, { i: P.i, fish: P.fish, gold: P.gold, elapsed: Date.now() - P.run.start, ts: Date.now() });
+    localStorage.setItem(KEY, JSON.stringify(S));
+  } catch (e) {}
+}
 
 const DB = (() => {
   let p = null;
@@ -618,33 +625,73 @@ function screenHome() {
 }
 function nextLesson(p) { return INDEX.filter(l => l.parcours === p.parcours).find(l => !p.progress.done[l.id]) || null; }
 const revisionId = () => 'revision-' + today();
-function screenChild(p) {
+/* La séance à reprendre d'un profil, si elle existe encore et n'est pas finie. */
+function resumeOf(p) {
+  const rs = p.progress.resume;
+  if (!rs || !rs.run || !Array.isArray(rs.steps) || !(rs.i < rs.steps.length)) return null;
+  if (!rs.synthetic && !LESSONS[rs.lesson]) return null;
+  return rs;
+}
+/* Une séance abandonnée (l'enfant en commence une autre) passe dans l'historique comme « arrêtée avant la fin ». */
+function abandonResume(p) {
+  const rs = p.progress.resume; if (!rs) { return; }
+  if (rs.run && !rs.run.end) {
+    const items = (rs.run.items || []).filter(it => it.done);
+    Object.assign(rs.run, { items, end: Date.now(), done: false, fish: items.filter(it => it.ok && it.first).length, gold: items.filter(it => it.ok && !it.first).length });
+    p.progress.runs.push(rs.run);
+  }
+  p.progress.resume = null; save();
+}
+/* Le rappel du niveau : ce que l'enfant a fait la dernière fois, ce qu'il réussit, ce qu'on revoit, ce qu'il fait aujourd'hui. */
+function recapOf(p, rs, nx, canRevise) {
+  const parts = [];
+  if (rs) parts.push(`${PH.recapResume} « ${rs.title} ». ${PH.recapResumeAsk}`);
+  else {
+    const last = p.progress.runs.filter(r => r.done).slice(-1)[0];
+    parts.push(last ? `${PH.recapLast} « ${last.title} ».` : PH.recapFirst);
+  }
+  const st = skillStats(p, 7), lab = k => skillLabel(p.parcours, k);
+  const good = Object.keys(st).filter(k => st[k].n >= 3 && st[k].first / st[k].n >= 0.8).sort((a, b) => st[b].n - st[a].n).slice(0, 2);
+  const again = Object.keys(st).filter(k => st[k].n >= 3 && (st[k].shown + st[k].after) / st[k].n >= 0.5).sort((a, b) => st[b].n - st[a].n).slice(0, 2);
+  if (good.length) parts.push(`${PH.recapGood} ${good.map(lab).join(', ')}.`);
+  if (again.length) parts.push(`${PH.recapAgain} ${again.map(lab).join(', ')}.`);
+  if (!rs) parts.push(nx ? `${PH.recapToday} « ${nx.title} ».` : canRevise ? PH.recapRevision : PH.recapDone);
+  return fill(parts.join(' '));
+}
+function screenChild(p, opts = {}) {
   setChild(p); stopSpeech(); screen('child');
-  const pr = p.progress, list = INDEX.filter(l => l.parcours === p.parcours), nx = nextLesson(p);
+  const pr = p.progress, list = INDEX.filter(l => l.parcours === p.parcours), nx = nextLesson(p), rs = resumeOf(p);
+  if (pr.resume && !rs) abandonResume(p);
   const revDone = pr.done[revisionId()];
   const canRevise = !nx && list.length && !revDone;
   const lastWeek = list.length ? list[list.length - 1].week : '';
   const tickets = list.filter(l => l.week === lastWeek || !pr.done[l.id]);
   const DAY = { lundi: 'Lun', mardi: 'Mar', mercredi: 'Mer', jeudi: 'Jeu', vendredi: 'Ven' };
+  const recap = recapOf(p, rs, nx, canRevise);
   app.innerHTML = `<div class="page child">
   <header class="c-head"><button class="icon-btn" id="back" aria-label="Retour">${UI.back}</button><h2>${esc(kidLabel(p))}</h2><span class="c-count">${FISH(false)}<b>${pr.runs.reduce((a, r) => a + (r.fish || 0) + (r.gold || 0), 0)}</b></span></header>
   <div class="c-grid">
     <div class="card c-map">${mapHTML(p)}</div>
     <div class="c-side">
       <div class="card today">
-      ${nx ? `<p class="muted">Séance du jour</p><h2>${esc(nx.title)}</h2><button class="btn big go" id="start">${UI.play}<span>Monter dans la pinasse</span></button><p class="small muted">Prépare ton crayon et ta ${esc(ficheOf(p))}.</p>`
+      ${rs ? `<p class="muted">Séance commencée</p><h2>${esc(rs.title)}</h2><button class="btn big go" id="resume">${UI.play}<span>Reprendre où je me suis arrêté${p.girl ? 'e' : ''}</span></button><p class="small muted">Étape ${rs.i + 1} sur ${rs.steps.length}, commencée le ${esc(rs.date || '')}.</p>`
+      : nx ? `<p class="muted">Séance du jour</p><h2>${esc(nx.title)}</h2><button class="btn big go" id="start">${UI.play}<span>Monter dans la pinasse</span></button><p class="small muted">Prépare ton crayon et ta ${esc(ficheOf(p))}.</p>`
       : canRevise ? `<p class="muted">Séance du jour</p><h2>Séance de révision</h2><button class="btn big go" id="revise">${UI.play}<span>Monter dans la pinasse</span></button><p class="small muted">On revoit ce que tu as appris.</p>`
       : list.length ? `<h2>À demain !</h2><p class="muted">Toutes les séances sont faites.</p>`
       : `<h2>Pas encore de séance</h2><p class="muted">Les séances de ce parcours arrivent avec la prochaine publication.</p>`}
+      <p class="recap" id="recap" ${subtitlesOn() ? '' : 'hidden'}>${esc(recap)}</p>
       </div>
-      <div class="tickets">${tickets.map(l => { const d = pr.done[l.id]; return `<button class="ticket ${d ? 'done' : ''}" data-l="${l.id}"><span class="t-day">${esc(DAY[(LESSONS[l.id] || {}).day] || l.week)}</span><span class="t-title">${esc(l.title)}</span><span class="t-mark">${d ? UI.check : ''}</span></button>`; }).join('')}</div>
+      <div class="tickets">${tickets.map(l => { const d = pr.done[l.id]; return `<button class="ticket ${d ? 'done' : ''} ${rs && rs.lesson === l.id ? 'pending' : ''}" data-l="${l.id}"><span class="t-day">${esc(DAY[(LESSONS[l.id] || {}).day] || l.week)}</span><span class="t-title">${esc(l.title)}</span><span class="t-mark">${d ? UI.check : rs && rs.lesson === l.id ? UI.play : ''}</span></button>`; }).join('')}</div>
     </div>
   </div></div>`;
   drawMap(app, p);
   $('#back').onclick = screenHome;
-  const st = $('#start'); if (st) st.onclick = () => { audioCtx(); startLesson(nx.id); };
-  const rv = $('#revise'); if (rv) rv.onclick = () => { audioCtx(); startLesson(makeRevision(p).id); };
-  app.querySelectorAll('[data-l]').forEach(b => b.onclick = () => { audioCtx(); startLesson(b.dataset.l); });
+  const go = id => { audioCtx(); if (rs && rs.lesson === id) return startLesson(id, rs); if (rs) abandonResume(p); startLesson(id); };
+  const st = $('#start'); if (st) st.onclick = () => go(nx.id);
+  const rv = $('#revise'); if (rv) rv.onclick = () => { audioCtx(); if (rs) abandonResume(p); startLesson(makeRevision(p).id); };
+  const rb = $('#resume'); if (rb) rb.onclick = () => go(rs.lesson);
+  app.querySelectorAll('[data-l]').forEach(b => b.onclick = () => go(b.dataset.l));
+  if (!opts.quiet) speak(recap);
 }
 
 /* ============================ séance de révision ============================ */
@@ -710,15 +757,25 @@ function expandSteps(lesson) {
   });
   return out;
 }
-async function startLesson(id) {
-  const lesson = LESSONS[id];
-  const steps = expandSteps(lesson);
-  P = { lesson, steps, i: 0, stepToken: 0, fish: 0, gold: 0, fromF: journey(child).f, fromStamps: journey(child).stamps.length,
-    run: { lesson: id, title: lesson.title, week: lesson.week, date: today(), start: Date.now(), end: null, done: false, items: [], recs: 0, drill: null } };
+async function startLesson(id, rs) {
+  const lesson = rs && rs.synthetic ? (LESSONS[id] = rs.synthetic) : LESSONS[id];
+  if (rs) {
+    /* Reprise : mêmes étapes, même position, mêmes réponses déjà données ; l'étape en cours repart de son début. */
+    const items = (rs.run.items || []).filter(it => it.done);
+    rs.run.items = items; rs.run.start = Date.now() - (rs.elapsed || 0);
+    P = { lesson, steps: rs.steps, i: rs.i, stepToken: 0, fish: items.filter(it => it.ok && it.first).length, gold: items.filter(it => it.ok && !it.first).length,
+      fromF: journey(child).f, fromStamps: journey(child).stamps.length, run: rs.run, resumed: true };
+  } else {
+    const steps = expandSteps(lesson);
+    P = { lesson, steps, i: 0, stepToken: 0, fish: 0, gold: 0, fromF: journey(child).f, fromStamps: journey(child).stamps.length,
+      run: { lesson: id, title: lesson.title, week: lesson.week, date: today(), start: Date.now(), end: null, done: false, items: [], recs: 0, drill: null } };
+  }
+  child.progress.resume = { lesson: id, title: lesson.title, date: P.run.date, i: P.i, fish: P.fish, gold: P.gold, elapsed: Date.now() - P.run.start, ts: Date.now(), steps: P.steps, run: P.run, synthetic: lesson.synthetic ? lesson : null };
+  save();
   try { if ('wakeLock' in navigator) wake = await navigator.wakeLock.request('screen'); } catch (e) { wake = null; }
   screen('lesson');
   app.innerHTML = `<div class="lesson">
-    <header class="l-head"><button class="icon-btn" id="quit" aria-label="Arrêter la séance">${UI.home}</button><div class="trail" id="parts"></div><div class="catch" id="catch">${FISH(false)}<b id="nfish">0</b></div></header>
+    <header class="l-head"><button class="icon-btn" id="quit" aria-label="Arrêter la séance">${UI.home}</button><div class="trail" id="parts"></div><div class="catch" id="catch">${FISH(false)}<b id="nfish">${P.fish + P.gold}</b></div></header>
     <div class="l-body">
       <aside class="guide"><button class="kono-btn" id="repeat" aria-label="Réécouter Kono">${KONO}<span class="ear">${UI.ear}</span></button><div class="bubble" id="bubble" hidden></div></aside>
       <main class="l-work" id="work"><section class="stage" id="stage"></section><section class="answer" id="answer"></section></main>
@@ -727,9 +784,11 @@ async function startLesson(id) {
     <div class="quit-ask" id="quitask" hidden><div class="qa-card"><p>${esc(PH.quitAsk)}</p><div class="row" style="justify-content:center"><button class="btn big" id="qa-stay" style="--c:var(--good)" aria-label="Continuer la séance">${UI.play}</button><button class="btn big ghost" id="qa-leave" aria-label="Arrêter la séance">${UI.home}</button></div></div></div></div>`;
   $('#quit').onclick = () => { stopSpeech(); $('#quitask').hidden = false; speak(PH.quitAsk); };
   $('#qa-stay').onclick = () => { stopSpeech(); $('#quitask').hidden = true; if (P && P.repeat) P.repeat(); };
-  $('#qa-leave').onclick = () => { stopSpeech(); saveRun(false); endWake(); P = null; screenChild(child); };
+  /* Arrêter garde la séance au point de sauvegarde : elle sera proposée à la reprise. */
+  $('#qa-leave').onclick = () => { stopSpeech(); save(); endWake(); P = null; screenChild(child, { quiet: true }); };
   $('#next').onclick = () => { if (P.nextHandler) return P.nextHandler(); sfx('next'); P.i++; runStep(); };
   $('#repeat').onclick = () => { if (P && P.repeat) { sfx('tap'); P.repeat(); } };
+  if (rs) { bubble(PH.resumeHere); await speak(PH.resumeHere); if (!P) return; }
   runStep();
 }
 function endWake() { try { if (wake) wake.release(); } catch (e) {} wake = null; }
@@ -770,6 +829,7 @@ async function runStep() {
   if (!P) return;
   stopSpeech(); showNext(false); $('#answer').innerHTML = ''; P.repeat = null; P.nextHandler = null; mood(null); layout(false);
   const st = P.steps[P.i]; if (!st) return;
+  save();   /* point de sauvegarde : la position de l'étape */
   drawParts();
   const my = ++P.stepToken;
   const alive = () => P && P.stepToken === my;
@@ -853,7 +913,7 @@ function makeJudge(st, item, alive, h) {
       if (api.done) return;
       item.answers.push(String(recorded != null ? recorded : val));
       if (forceWhy == null && String(val) === String(st.answer)) {
-        api.done = true; item.ok = true; item.first = tries === 0;
+        api.done = true; item.done = true; item.ok = true; item.first = tries === 0;
         if (item.first) { P.fish++; dropReview(st); } else { P.gold++; addReview(st); }
         save(); bumpFish(!item.first); mood('happy'); h.onRight(); h.after(); h.redraw();
         const msg = (item.first ? pick(PH.good) : fill(PH.gold)) + (st.sol ? ' ' + fill(st.sol) : '');
@@ -864,7 +924,7 @@ function makeJudge(st, item, alive, h) {
       }
       tries++; wrong.push(String(val)); sfx('soft'); mood('oops');
       if (tries >= 3 || h.left() <= 1) {
-        api.done = true; item.ok = false; addReview(st); save();
+        api.done = true; item.done = true; item.ok = false; addReview(st); save();
         h.onReveal(); h.after(); h.redraw();
         const msg = `${PH.revealStart} ${st.sol ? fill(st.sol) : st.answer} ${PH.revealEnd}`;
         bubble(msg, 'try'); await speak(msg); if (alive()) showNext();
@@ -1057,7 +1117,7 @@ function orderStep(st, alive) {
       if (i === placed) {
         placed++; missHere = 0; sfx('pop'); item.answers.push(String(i + 1)); draw();
         if (placed === st.scenes.length) {
-          item.ok = true; item.first = miss === 0; if (item.first) P.fish++; else { P.gold++; addReview(st); } save(); bumpFish(!item.first); mood('happy');
+          item.ok = true; item.done = true; item.first = miss === 0; if (item.first) P.fish++; else { P.gold++; addReview(st); } save(); bumpFish(!item.first); mood('happy');
           bubble(PH.orderDone, 'good'); await speak(PH.orderDone); if (alive()) showNext();
         }
         return;
@@ -1237,6 +1297,7 @@ function paperStep(st, alive) {
         if (!rec) { rec = { id: 'fiche-' + it.id, q: 'Fiche ' + '★'.repeat(it.stars) + ' ' + (it.short || it.q), answer: it.answer, answers: [], ok: false, first: false, paper: true, skill: it.skill || (P.lesson.skills || [])[0] || '' }; P.run.items.push(rec); }
         rec.answers.push(String(v)); rec.ok = ok; rec.first = ok && rec.answers.length === 1;
         const why = ok ? '' : (errText(it.errors && it.errors[String(v)]) || (round >= 2 ? `La réponse était ${it.answer}.` : PH.paperLook));
+        rec.done = ok || round >= 2;
         res[it.id] = { ok, why };
         if (ok) { nOk++; if (rec.first) P.fish++; else P.gold++; } else { nKo++; if (!firstWhy && it.errors && it.errors[String(v)]) firstWhy = why; }
       });
@@ -1340,6 +1401,7 @@ function saveRun(done) {
   P.run.end = Date.now(); P.run.done = done; P.run.fish = P.fish; P.run.gold = P.gold;
   child.progress.runs.push(P.run);
   if (done) child.progress.done[P.lesson.id] = today();
+  child.progress.resume = null;
   save();
 }
 async function endStep(st, alive) {
@@ -1355,7 +1417,7 @@ async function endStep(st, alive) {
   if (journey(child).stamps.length > P.fromStamps) { sfx('gold'); await speak(PH.newEscale); if (!alive()) return; if (await hasClip('bravo_escale')) await playClip('bravo_escale'); if (!alive()) return; }
   await playClip(st.clip);
   if (!alive()) return;
-  showNext(true, 'end'); P.nextHandler = () => { P = null; screenChild(child); };
+  showNext(true, 'end'); P.nextHandler = () => { P = null; screenChild(child, { quiet: true }); };
 }
 
 /* ============================ espace parent ============================ */
@@ -1399,6 +1461,7 @@ async function screenParent(tab) {
       const recsDrill = Object.entries(pr.records).map(([k, r]) => `${esc(k)} : ${r.best} (${r.secs} s, ${esc(r.date)})`).join(' · ');
       return `<div class="card stack"><h3 style="color:var(--${esc(p.couleur)})">${esc(kidLabel(p))} <span class="small muted">· ${esc(parcoursLabel(p))}</span></h3>
       ${unheard ? `<p class="warn">${unheard} enregistrement${unheard > 1 ? 's' : ''} pas encore écouté${unheard > 1 ? 's' : ''}. L'enfant s'applique davantage quand il sait qu'on l'écoute.</p>` : ''}
+      ${resumeOf(p) ? `<p class="warn">Séance à reprendre : « ${esc(resumeOf(p).title)} », étape ${resumeOf(p).i + 1} sur ${resumeOf(p).steps.length}, commencée le ${esc(resumeOf(p).date || '')}. L'enfant la retrouve en touchant son prénom.</p>` : ''}
       ${skillTableHTML(p)}
       ${pr.measures.length ? `<div><h3 style="font-size:1rem">Mesures</h3>${pr.measures.slice().reverse().map(m => `<p class="small" style="margin:2px 0">${esc(m.date)} · ${measureLine(m)}</p>`).join('')}</div>` : ''}
       ${recsDrill ? `<p class="small" style="margin:0"><b>Records d'automatismes :</b> ${recsDrill}</p>` : ''}
@@ -1452,12 +1515,15 @@ async function screenParent(tab) {
     $('#copy').onclick = async () => { try { await navigator.clipboard.writeText(txt); $('#cp').textContent = 'Copié.'; } catch (e) { const t = $('#rep'); t.focus(); t.select(); $('#cp').textContent = 'Sélectionné : utilisez Copier.'; } };
   }
   if (tab === 'reglages') {
+    let persisted = null; try { persisted = navigator.storage && navigator.storage.persisted ? await navigator.storage.persisted() : null; } catch (e) {}
+    const installed = ['standalone', 'fullscreen', 'minimal-ui'].some(m => matchMedia(`(display-mode: ${m})`).matches);
     pane.innerHTML = `<div class="card stack"><h3>Les enfants</h3>
       ${S.profiles.map(p => `<div class="row" style="justify-content:space-between"><span><b style="color:var(--${esc(p.couleur)})">${esc(kidLabel(p))}</b> <span class="small muted">· ${esc(parcoursLabel(p))}${ageOf(p.dob) != null ? ` · ${ageOf(p.dob)} ans` : ''}</span></span><span class="row"><button class="btn soft sm" data-edit="${esc(p.id)}">Modifier</button><button class="link" data-rm="${esc(p.id)}">Supprimer</button></span></div>`).join('') || '<p class="muted small" style="margin:0">Aucun enfant.</p>'}
       <div><button class="btn" id="addp" style="--c:var(--river)">Ajouter un enfant</button></div></div>
     <div class="card stack"><p style="margin:0">Code parent et voix de Kono.</p><div><button class="btn" id="setup" style="--c:var(--river)">Modifier</button></div></div>
     <div class="card stack"><h3>Sauvegarder le suivi</h3><p class="small" style="margin:0">Le suivi vit dans la tablette. Une tablette réinitialisée le perd. Sauvegardez-le de temps en temps dans un fichier (il reste chez vous : rien n'est envoyé). Les enregistrements audio ne sont pas dans ce fichier.</p>
       <div class="row"><button class="btn" id="exp" style="--c:var(--river)">Télécharger la sauvegarde</button><label class="btn ghost" style="--c:var(--river)">Restaurer une sauvegarde<input type="file" id="imp" accept="application/json,.json" hidden></label></div><p class="small" id="impmsg"></p></div>
+    <div class="card stack"><h3>Mémoire de la tablette</h3><p class="small" style="margin:0">Le suivi est rangé dans ce navigateur, à l'adresse <b>${esc(location.origin)}</b>. Un autre navigateur ou une autre adresse ne le voit pas. Application installée : <b>${installed ? 'oui' : 'non (ouverte dans le navigateur)'}</b>. Mémoire protégée contre l'effacement automatique : <b>${persisted === null ? 'inconnu' : persisted ? 'oui' : 'pas encore'}</b>.</p></div>
     <div class="card stack"><h3>Bloquer la tablette sur l'application</h3><p class="small" style="margin:0">Android : Paramètres › Sécurité › Épinglage d'écran. Ouvrez ${APPNAME}, affichez les applications récentes, touchez l'icône de l'application puis « Épingler ».</p></div>
     <div class="card stack"><h3>Remettre le suivi à zéro</h3><p class="small muted" style="margin:0">Efface les séances, les records et les mesures (pas les enregistrements de Maman).</p><div class="row"><input type="text" id="conf" placeholder="Tapez EFFACER"><button class="btn ghost" id="wipe">Effacer le suivi</button></div></div>`;
     $('#setup').onclick = screenSetup;
@@ -1592,6 +1658,8 @@ async function boot() {
   }
   S.profiles.forEach(p => { if (!p.classe) { const pr = parcoursOf(p.parcours); if (pr) p.classe = pr.classe; } });
   await migrateDB();
+  /* Demande au navigateur de ne jamais effacer les données du site de lui-même (suivi, voix de Maman). */
+  try { if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(() => {}); } catch (e) {}
   RECS_CACHE = (await DB.recs()) || [];
   if (!S.setup) screenSetup(); else if (!S.profiles.length) screenProfile(null); else screenHome();
 }

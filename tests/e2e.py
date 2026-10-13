@@ -17,7 +17,7 @@ SH = f"{SHOTS}e2e-{VW}x{VH}-"
 URL = "http://localhost:8765/#test"
 PIN = "1234"
 PROFILES = [("ce1", "Ali", "2019-03-15", False), ("gs", "Awa", "2021-02-10", True)]
-REQUIRED = ["tenframe:add", "tenframe:total", "blocks:fermeture-unites", "blocks:fermeture-dizaines", "jumps:via", "order", "erreur-animee"]
+REQUIRED = ["tenframe:add", "tenframe:total", "blocks:fermeture-unites", "blocks:fermeture-dizaines", "jumps:via", "order", "erreur-animee", "reprise", "rappel"]
 DRILL_JS = r"""() => {
   const e = document.querySelector('.drill .v-expr'); if (!e) return null;
   const q = e.textContent.trim(); const svg = document.querySelector('.drill svg[aria-label]'); const lab = svg ? svg.getAttribute('aria-label') : '';
@@ -69,17 +69,20 @@ async def main():
         profiles = await pg.evaluate("window.__kono.S.profiles.map(p => ({ id: p.id, parcours: p.parcours, name: p.name, couleur: p.couleur }))")
         log.append("profils : " + ", ".join(f"{p['name']} ({p['parcours']}, {p['id']})" for p in profiles))
 
-        async def run_lesson(prof, lid):
+        async def run_lesson(prof, lid, via="ticket", stop=None):
             pc = prof["parcours"]
-            if lid is None:
+            if via == "revise":
                 await pg.click("#revise"); lid = "revision"
-            else:
+            elif via == "resume":
+                await pg.click("#resume")
+            elif via == "ticket":
                 await pg.wait_for_selector(".tickets"); await pg.click(f"[data-l='{lid}']")
             wrong_done = set(); guard = 0; last = None; same = 0; kinds_shot = set()
             while guard < 900:
                 guard += 1; await wait_idle()
                 s = await pg.evaluate(STATE)
                 if s is None: break
+                if stop and stop(s): return "STOP"
                 key = (s["i"], s["t"]); same = same + 1 if key == last else 0; last = key
                 if same > 250: log.append(f"BLOQUÉ {lid} étape {s}"); return False
                 if s["next"] == "end":
@@ -200,7 +203,7 @@ async def main():
                 await shot(f"{prof['parcours']}-carte-fin")
                 if await pg.is_visible("#revise"):
                     await shot(f"{prof['parcours']}-revision-proposee")
-                    ok = await run_lesson(prof, None); log.append(f"révision {prof['parcours']}: {'OK' if ok else 'ÉCHEC'}")
+                    ok = await run_lesson(prof, None, via="revise"); log.append(f"révision {prof['parcours']}: {'OK' if ok else 'ÉCHEC'}")
                     await shot(f"{prof['parcours']}-apres-revision", True)
                 else: log.append(f"révision {prof['parcours']}: NON PROPOSÉE")
                 await pg.click("#back")
@@ -211,6 +214,35 @@ async def main():
             await pg.fill("#p-name", "Contrôle"); await pg.fill("#p-dob", "2021-05-01"); await pg.click("[data-p='gs']"); await pg.click(".swatch[data-t='vert']"); await pg.click("#go"); await pg.wait_for_selector(".kids")
             ctrl = await pg.evaluate("window.__kono.S.profiles.slice(-1)[0].id")
             await pg.click(f".kid[data-c='{ctrl}']"); await pg.wait_for_selector(".tickets")
+            # reprise : six étapes, arrêt par le bouton, fermeture du navigateur (rechargement), reprise là où l'enfant s'est arrêté, fin
+            cp = {"parcours": "gs"}; RL = "orange-s0-amis10"
+            r = await run_lesson(cp, RL, stop=lambda s: s["i"] >= 6)
+            assert r == "STOP", "la séance n'a pas atteint l'étape 6"
+            await pg.click("#quit"); await pg.wait_for_selector("#qa-leave"); await pg.click("#qa-leave"); await pg.wait_for_selector("#resume")
+            rs = await pg.evaluate(f"() => {{ const p = window.__kono.profileOf('{ctrl}'); const r = p.progress.resume; return r && {{ lesson: r.lesson, i: r.i, n: r.steps.length, done: r.run.items.filter(it => it.done).length, items: r.run.items.length }}; }}")
+            await shot("reprise-proposee")
+            await pg.reload(); await pg.wait_for_selector(".kids"); await pg.evaluate("window.__spoken = []")
+            await pg.click(f".kid[data-c='{ctrl}']"); await pg.wait_for_selector(".tickets"); await pg.wait_for_timeout(300)
+            spoken = " ".join(await pg.evaluate("() => window.__spoken || []"))
+            after = await pg.evaluate(f"() => {{ const r = window.__kono.profileOf('{ctrl}').progress.resume; return r && {{ lesson: r.lesson, i: r.i }}; }}")
+            ok_prop = await pg.is_visible("#resume") and after and after["lesson"] == RL and after["i"] == rs["i"] and "au milieu de la séance" in spoken
+            log.append(f"reprise proposée après fermeture : {'OK' if ok_prop else 'ÉCHEC'} (étape {rs and rs['i']}/{rs and rs['n']}, {rs and rs['done']} réponses gardées, rappel dit : {'oui' if 'au milieu de la séance' in spoken else 'non'})")
+            r = await run_lesson(cp, RL, via="resume", stop=lambda s: s["lesson"] == RL and s["i"] == rs["i"] and not getattr(run_lesson, "_checked", False))
+            run_lesson._checked = True
+            st_now = await pg.evaluate("() => { const P = window.__kono.P(); return { i: P.i, items: P.run.items.length, fish: P.fish + P.gold }; }")
+            ok_pos = st_now["i"] == rs["i"] and st_now["items"] == rs["done"]
+            log.append(f"reprise à la bonne étape : {'OK' if ok_pos else 'ÉCHEC'} (étape {st_now['i']}, {st_now['items']} réponses, {st_now['fish']} poissons)")
+            ok = await run_lesson(cp, RL, via=None); log.append(f"{RL} reprise jusqu'au bout : {'OK' if ok else 'ÉCHEC'}")
+            fin = await pg.evaluate(f"() => {{ const p = window.__kono.profileOf('{ctrl}'); const r = p.progress.runs.slice(-1)[0]; return {{ resume: !!p.progress.resume, done: r && r.done, lesson: r && r.lesson, items: r ? r.items.length : 0 }}; }}")
+            ok_fin = ok and not fin["resume"] and fin["done"] and fin["lesson"] == RL and fin["items"] >= rs["done"]
+            log.append(f"historique après reprise : {'OK' if ok_fin else 'ÉCHEC'} (séance {fin['lesson']} terminée={fin['done']}, {fin['items']} réponses, reprise effacée={not fin['resume']})")
+            if ok_prop and ok_pos and ok_fin: cov["reprise"] += 1
+            await pg.click("#back"); await pg.wait_for_selector(".kids"); await pg.evaluate("window.__spoken = []")
+            await pg.click(f".kid[data-c='{ctrl}']"); await pg.wait_for_selector(".tickets"); await pg.wait_for_timeout(300)
+            spoken = " ".join(await pg.evaluate("() => window.__spoken || []"))
+            if "La dernière fois, tu as fait" in spoken and "Aujourd'hui" in spoken: cov["rappel"] += 1
+            log.append(f"rappel du niveau à l'ouverture : {'OK' if cov['rappel'] else 'ÉCHEC'} · « {spoken[:140]} »")
+            await shot("rappel-niveau")
             await pg.evaluate("""() => { window.__kono.LESSONS()['controle-moteur'] = { id: 'controle-moteur', parcours: 'gs', order: 998, week: 'S1', title: 'Contrôle du moteur', domain: 'Contrôle', programme: 'Contrôle', objective: 'Boîte de dix en ajout.', skills: [], escale: 1, synthetic: true, paper: { title: 'Contrôle', levels: [] },
               steps: [ { type: 'manip', mode: 'tenframe', id: 'controle-pose-3', start: 7, goal: 'add', answer: 3, text: 'Il y a 7 jetons. Pose les jetons qui manquent pour faire 10.' }, { type: 'end', clip: 'fin' } ] };
               window.__kono.startLesson('controle-moteur'); }""")
