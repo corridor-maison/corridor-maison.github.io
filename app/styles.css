@@ -110,7 +110,7 @@ body[data-screen="home"], body[data-screen="child"] { background-image: url("dat
 .today p { margin: 0; }
 .today h2 { font-size: 2rem; }
 .btn.go { --c: var(--good); }
-.tickets { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 10px; }
+.tickets { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px; }
 .ticket { border: 2px dashed var(--line); background: var(--paper); border-radius: 16px; padding: 10px 12px; display: grid; grid-template-columns: 44px 1fr; grid-template-rows: auto auto; column-gap: 10px; row-gap: 2px; align-items: center; text-align: left; position: relative; min-height: 86px; }
 .ticket .t-ic { grid-row: 1 / 3; width: 44px; height: 44px; color: var(--c); }
 .ticket .t-ic svg { width: 100%; height: 100%; }
@@ -121,7 +121,7 @@ body[data-screen="home"], body[data-screen="child"] { background-image: url("dat
 .btn.boat-btn { padding: 10px 26px 8px 18px; gap: 4px; }
 .btn.big .go-boat { width: 92px; height: 50px; flex: none; }
 .ticket .t-day { font-family: var(--display); color: var(--c); font-size: 1.1rem; }
-.ticket .t-title { font-size: .92rem; line-height: 1.2; color: var(--muted); padding-right: 26px; }
+.ticket .t-title { font-size: 1rem; line-height: 1.2; color: var(--muted); padding-right: 30px; }
 .ticket .t-mark { position: absolute; right: 8px; top: 8px; width: 28px; height: 28px; color: var(--good); }
 .ticket.pending { border-style: solid; border-color: var(--c); }
 .ticket.pending .t-mark { color: var(--c); }
@@ -471,7 +471,7 @@ body.contraste { min-height: 100vh; }
   .c-grid { gap: 12px; } .c-map { order: 2; } .card { padding: 14px; border-radius: 18px; }
   .today h2 { font-size: 1.3rem; } .t-big { width: 44px; height: 44px; } .t-sel { gap: 10px; }
   .btn.big { font-size: 1.2rem; padding: 12px 20px 10px; min-height: 60px; } .btn.big .go-boat { width: 70px; height: 38px; }
-  .tickets { grid-template-columns: repeat(2, 1fr); gap: 8px; } .ticket { min-height: 72px; padding: 8px; grid-template-columns: 36px 1fr; column-gap: 6px; } .ticket .t-ic { width: 36px; height: 36px; } .ticket .t-day { font-size: 1rem; } .ticket .t-title { font-size: .82rem; }
+  .tickets { grid-template-columns: 1fr; gap: 8px; } .ticket { min-height: 72px; padding: 8px; grid-template-columns: 36px 1fr; column-gap: 6px; } .ticket .t-ic { width: 36px; height: 36px; } .ticket .t-day { font-size: 1rem; } .ticket .t-title { font-size: .82rem; }
   .passport { gap: 5px; } .stamp { font-size: .78rem; padding: 3px 9px; }
   .l-head { padding: 6px 8px 4px; gap: 8px; } .trail { padding: 0 2px; } .trail-river { left: 17px; right: 17px; } .tp { width: 34px; height: 34px; border-width: 2px; } .tp svg { width: 20px; height: 20px; }
   .catch { font-size: 1.05rem; padding: 4px 10px 4px 8px; gap: 4px; } .catch svg { width: 30px; height: 19px; }

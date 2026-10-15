@@ -27,6 +27,10 @@ async def main():
             errs = []; pg.on("pageerror", lambda e: errs.append(str(e)))
             await pg.goto("http://localhost:8769/#test"); await pg.wait_for_selector("#code")
             U = lambda js: pg.evaluate("(U => { " + js + " })(window.__kono.unit)")
+            # --- escales du voyage : la liste exacte, dans l'ordre du courant ; Djenné (sur le Bani) n'en fait pas partie
+            idx = json.loads((APP / "lessons" / "index.json").read_text(encoding="utf-8"))
+            for pid, esc in idx["escales"].items():
+                check(f"escales {pid} : Bamako, Ségou, Mopti, Tombouctou, Gao, dans cet ordre", [e["name"] for e in esc] == ["Bamako", "Ségou", "Mopti", "Tombouctou", "Gao"], str([e["name"] for e in esc]))
             # --- codes d'inscription
             r = await U("return [U.normCode('abc-o1l'), U.normCode(' tst tst tst '), U.normCode('k7f 29q h43'), U.normCode('')];")
             check("normCode : majuscules, sans séparateurs, O→0, I/L→1", r == ["ABC011", "TSTTSTTST", "K7F29QH43", ""], str(r))

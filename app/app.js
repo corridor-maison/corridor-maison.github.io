@@ -5,7 +5,7 @@
    Format des séances : CONTRAT_LECONS.md. */
 'use strict';
 (() => {
-const VERSION = '0.3.6';
+const VERSION = '0.3.7';
 const APPNAME = 'Corridor à la maison';
 const FAST = location.hash === '#test';
 const app = document.getElementById('app');
@@ -521,7 +521,7 @@ function mapHTML(p) {
   <g class="bani"></g>
   <path d="${RIVER}" fill="none" stroke="#8cc0da" stroke-width="20" stroke-linecap="round"/>
   <path class="river" d="${RIVER}" fill="none" stroke="#2f7ea6" stroke-width="3" stroke-dasharray="2 12" stroke-linecap="round"/>
-  <text x="96" y="318" font-family="${FONT}" font-weight="800" font-size="13" fill="#3d7fa3" font-style="italic">fleuve Niger</text>
+  <text x="88" y="322" font-family="${FONT}" font-weight="800" font-size="24" fill="#1f5f80" stroke="#f3e6c8" stroke-width="5" paint-order="stroke" stroke-linejoin="round">fleuve Niger</text>
   <g class="escales"></g><g class="boat-pos">${BOAT}</g></svg>
   <div class="passport">${E.map(e => `<span class="stamp ${j.stamps.includes(e.n) ? 'on' : ''}">${esc(e.name)}</span>`).join('')}</div></div>`;
 }
@@ -529,15 +529,16 @@ function drawMap(root, p, from) {
   const svg = root.querySelector('.map svg'); if (!svg) return;
   const path = svg.querySelector('.river'), L = path.getTotalLength(), g = svg.querySelector('.escales'), E = escalesOf(p.parcours), AT = escAt(E);
   const st = journey(p).stamps;
-  /* Le Bani, affluent venu du sud, rejoint le Niger à Mopti ; Djenné est sur le Bani, en amont du confluent, et n'est pas une escale de la pinasse. */
+  /* Le Bani, affluent venu du sud, rejoint le Niger à Mopti ; Djenné est sur le Bani, en amont du confluent, et n'est pas une escale de la pinasse :
+     une ville se marque d'un losange plein, une escale d'un cercle (creux puis doré quand le tampon est obtenu). */
   const bani = svg.querySelector('.bani'), km = E.findIndex(e => /mopti/i.test(e.name));
   if (bani) {
     if (km >= 0) {
       const m = path.getPointAtLength(L * AT[km]), d = `M${m.x - 70} 330 C ${m.x - 52} 300, ${m.x - 30} 250, ${m.x} ${m.y}`;
       const tmp = document.createElementNS('http://www.w3.org/2000/svg', 'path'); tmp.setAttribute('d', d); const dj = tmp.getPointAtLength(tmp.getTotalLength() * 0.5);
       bani.innerHTML = `<path d="${d}" fill="none" stroke="#8cc0da" stroke-width="12" stroke-linecap="round"/><path d="${d}" fill="none" stroke="#2f7ea6" stroke-width="2.5" stroke-dasharray="2 10" stroke-linecap="round"/>
-        <text x="${m.x - 56}" y="324" font-family="${FONT}" font-weight="800" font-size="13" fill="#3d7fa3" font-style="italic">le Bani</text>
-        <circle cx="${dj.x}" cy="${dj.y}" r="6" fill="#fff" stroke="#22303c" stroke-width="2.5"/><text x="${dj.x + 12}" y="${dj.y + 5}" font-family="${FONT}" font-weight="800" font-size="15" fill="#22303c">Djenné</text>`;
+        <text x="${m.x - 52}" y="326" font-family="${FONT}" font-weight="800" font-size="24" fill="#1f5f80" stroke="#f3e6c8" stroke-width="5" paint-order="stroke" stroke-linejoin="round">le Bani</text>
+        <rect class="ville" x="${dj.x - 6}" y="${dj.y - 6}" width="12" height="12" rx="2" fill="#5a3a22" transform="rotate(45 ${dj.x} ${dj.y})"/><text x="${dj.x + 12}" y="${dj.y + 6}" font-family="${FONT}" font-weight="800" font-size="18" fill="#22303c">Djenné</text>`;
     } else bani.innerHTML = '';
   }
   g.innerHTML = E.map((e, i) => { const pt = path.getPointAtLength(L * AT[i]); const on = st.includes(e.n); return `<circle cx="${pt.x}" cy="${pt.y}" r="${on ? 10 : 8}" fill="${on ? '#e0a100' : '#fff'}" stroke="#22303c" stroke-width="3"/><text x="${pt.x}" y="${pt.y + (i === 3 ? -20 : 32)}" text-anchor="middle" font-family="${FONT}" font-weight="800" font-size="18" fill="#22303c">${esc(e.name)}</text>`; }).join('');
@@ -1869,7 +1870,7 @@ async function boot() {
   }
   home();
 }
-if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) { try { navigator.serviceWorker.register('sw.js').catch(() => {}); } catch (e) {} }
+if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) { try { navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' }).catch(() => {}); } catch (e) {} }
 document.addEventListener('visibilitychange', () => { if (document.hidden) stopSpeech(); });
 window.__kono = { keyOf, sentences, S, P: () => P, AUDIO: () => AUDIO, report, reportData, makeRevision, LESSONS: () => LESSONS, profileOf, startLesson, logError, normCode, ECOLE: () => ECOLE, domainIcon,
   unit: { normCode, keyOf, sentences, fill, ageOf, opts3, genItem, verdict, isRight, masteryOf, skillStats, journey, fromStore, fromV02, newId, recapOf, kid, blank, retrievalPool, applySettings, calm, PH: () => PH, PROG: () => PROG } };   /* pour les tests */
