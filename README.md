@@ -19,15 +19,17 @@ Si aucune nouvelle semaine n'est arrivée, l'application compose seule une **sé
 
 Une séance interrompue (bouton Arrêter, tablette en veille, application fermée) **reprend là où l'enfant s'est arrêté** : même étape, réponses et poissons déjà gagnés conservés. À l'ouverture de son espace, **Kono rappelle le niveau** : ce que l'enfant a fait la dernière fois, ce qu'il réussit bien, ce qu'on va revoir, et la séance du jour.
 
+Dans son espace, l'enfant n'a **rien à lire pour choisir** : chaque séance est un billet avec une image (nombres, problèmes, langage, lecture, révision) ; il touche un billet, Kono nomme la séance, et la pinasse, seul bouton, la lance.
+
 ## Principes de conception
 
 - **Une seule source, deux supports.** Une séance = un fichier `app/lessons/<id>.json`. La tablette le joue ; `tools/build_print.py` en tire les fiches et la carte Maman ; `tools/build_audio.py` la liste des phrases à enregistrer. Le format est fixé par [`CONTRAT_LECONS.md`](CONTRAT_LECONS.md) et son annexe A, et vérifié par `tools/check_lessons.py`.
 - **Accès autorisé par l'école.** L'école remet à chaque famille un code d'inscription (`python3 tools/codes.py nouveau 20 CE1`) ; sans code valide, l'application ne s'ouvre pas. Le dépôt ne contient que les empreintes des codes (`app/ecole.json`), jamais les codes ni un nom d'enfant ; les codes sont dans un fichier remis à l'école, jamais commité. Un code se retire (`retirer C-0007`), et la tablette le refuse à sa prochaine ouverture avec internet. Les tablettes installées avant ce contrôle gardent leur accès ; l'école les régularise avec un code depuis l'espace parent.
 - **Un profil par enfant.** Prénom, garçon ou fille, date de naissance, classe proposée d'après l'âge et confirmée par le parent, couleur choisie par l'enfant. L'application route par **parcours** (`gs`, `ce1`), jamais par couleur ni par prénom. Une tablette venue de la v0.2 est migrée au premier lancement, sans perte.
-- **Pour l'enfant, aucun texte pour naviguer.** Icônes et voix. On touche Kono pour le réentendre. Les sous-titres sont cachés par défaut (l'enfant écoute et regarde le dessin) ; ils s'affichent d'office si la tablette n'a pas de voix française.
+- **Pour l'enfant, aucun texte pour naviguer.** Icônes et voix : une image par domaine sur chaque billet de séance, Kono nomme la séance touchée, un seul bouton (la pinasse) la lance. On touche Kono pour le réentendre. Les sous-titres sont cachés par défaut (l'enfant écoute et regarde le dessin) ; ils s'affichent d'office si la tablette n'a pas de voix française.
 - **Calme.** Un seul objet bouge à la fois ; pas de confettis ni de récompenses à chaque réponse ; les poissons dorés récompensent une réponse trouvée après une erreur.
 - **Progression écrite.** `app/progression/ce1.json` et `app/progression/gs.json` : compétences codées par période, alignées sur les programmes 2025, à valider avec l'enseignante. Chaque séance déclare ses compétences ; le rapport du dimanche donne un taux de réussite par compétence.
-- **Données des enfants sur la tablette.** Prénoms, suivi, enregistrements, voix de Maman : rien ne part sur internet. Le rapport est copié à la main par le parent. L'application demande au navigateur de ne jamais effacer ces données de lui-même ; l'espace parent (Réglages › Mémoire de la tablette) montre l'adresse, le mode d'installation et l'état de cette protection.
+- **Données des enfants sur la tablette.** Prénoms, suivi, enregistrements, voix de Maman : rien ne part sur internet. Le rapport est copié, ou enregistré dans un fichier que le parent dépose à l'école : rien ne part tout seul. L'application demande au navigateur de ne jamais effacer ces données de lui-même ; l'espace parent (Réglages › Mémoire de la tablette) montre l'adresse, le mode d'installation et l'état de cette protection.
 - **Hors ligne.** Dès la première ouverture avec internet, l'application, les parcours, toutes les séances de l'index, les images et les voix sont gardées sur la tablette.
 
 ## Contenu du dépôt
@@ -46,9 +48,11 @@ Une séance interrompue (bouton Arrêter, tablette en veille, application fermé
 | `app/audio/` | Voix enregistrées (`rec/`) ou générées (`gen/`) et leur manifeste |
 | `tools/check_lessons.py` | Contrôle des séances selon le contrat ; rend 0 si tout est conforme ; lancé par le workflow avant toute publication |
 | `tools/build_print.py` | `python3 tools/build_print.py S1` → `print/Fiches_S1.pdf` |
+| `tools/build_review.py` | `python3 tools/build_review.py S1` → `print/Relecture_S1.html` : relecture d'une semaine avant publication (tout ce que l'enfant entend, voit et répond, fiche, carte Maman, contrôles) |
+| `tools/tableau_classe.py` | `python3 tools/tableau_classe.py <dossier>` → tableau par classe pour l'enseignante, à partir des rapports (`rapport-1`) déposés par les familles |
 | `tools/build_audio.py` | Phrases à enregistrer, import des enregistrements, génération des voix, manifeste |
 | `voix/` | Enregistrements humains (`conteur/`, `kono/`) et registre stable des numéros |
-| `tests/` | Bout en bout (profils, séances, révision), hors ligne, migration depuis la v0.2 |
+| `tests/` | Bout en bout (profils, séances, révision), hors ligne, migration depuis la v0.2, outils |
 | `CONTRAT_LECONS.md` | Le contrat des séances : format, listes fermées (annexe A), qui écrit quoi |
 | `CLAUDE.md` | Repères pour tout agent qui travaille dans ce dépôt |
 | `.github/workflows/pages.yml` | Contrôle des séances, puis publication de `app/` sur GitHub Pages à chaque poussée sur `main` |
@@ -79,8 +83,8 @@ Toujours ouvrir l'application de la même façon, par l'icône installée : un a
 
 1. Du lundi au jeudi, une séance par jour.
 2. Le soir, un parent écoute l'enregistrement (Espace parent › Suivi). Le suivi signale les enregistrements pas encore écoutés.
-3. **Dimanche** : Espace parent › Rapport › Copier, sur chaque tablette. Le rapport a un format fixe (format 1), par profil : séances, compétences, automatismes, mesures, enregistrements non écoutés, file de révision, détail.
-4. La semaine suivante est écrite à partir du rapport et de `app/progression/`, selon `CONTRAT_LECONS.md`, puis relue par un adulte (un enseignant pour le pilote).
+3. **Dimanche** : Espace parent › Rapport, sur chaque tablette : Copier (pour l'envoyer) ou **Enregistrer dans un fichier** (format `rapport-1`, à déposer à l'école). Le rapport a un format fixe (format 1), par profil : séances, compétences, automatismes, mesures, enregistrements non écoutés, file de révision, détail. À l'école, `python3 tools/tableau_classe.py <dossier des fichiers>` fait un tableau par classe (séances, compétences, défis à revoir) pour l'enseignante.
+4. La semaine suivante est écrite à partir du rapport et de `app/progression/`, selon `CONTRAT_LECONS.md`, puis **relue par un adulte** (un enseignant pour le pilote) sur `python3 tools/build_review.py S2` → `print/Relecture_S2.html` : chaque séance dans l'ordre de la tablette, ce que Kono dit, ce que l'enfant voit et répond, les erreurs expliquées, la fiche, la carte Maman, et les contrôles (compétences inconnues, images absentes, questions sans erreur expliquée, voix manquantes).
 5. Déposer les fichiers dans `app/lessons/`, mettre à jour `app/lessons/index.json`, vérifier avec `python3 tools/check_lessons.py` (doit rendre 0), lancer `tools/build_print.py` et `tools/build_audio.py`, publier.
 6. Imprimer `print/Fiches_<semaine>.pdf`.
 
@@ -126,15 +130,17 @@ Jetons de texte : `{prenom}` (prénom de l'enfant), `{e}` (accord au féminin). 
 ## Tester
 
 - Localement : `python3 -m http.server 8765 --directory app`, puis `http://localhost:8765/#test` (le mode `#test` accélère tout).
-- `python3 tests/e2e.py 1280x800` (serveur lancé sur le port 8765) : deux profils, CE1 et grande section, jouent toutes les séances publiées de leur parcours puis la séance de révision ; vérifie qu'il n'y a aucune erreur JavaScript, que chaque mode de manipulation, la remise en ordre de l'histoire et une erreur animée ont été joués, qu'une séance arrêtée puis fermée reprend à la bonne étape avec ses réponses, et que le rappel du niveau est dit à l'ouverture.
+- `python3 tests/e2e.py 1280x800` (serveur lancé sur le port 8765) : deux profils, CE1 et grande section, jouent toutes les séances publiées de leur parcours puis la séance de révision ; vérifie qu'il n'y a aucune erreur JavaScript, que chaque mode de manipulation, la remise en ordre de l'histoire et une erreur animée ont été joués, qu'une séance arrêtée puis fermée reprend à la bonne étape avec ses réponses, que le rappel du niveau est dit à l'ouverture, que Kono nomme chaque billet touché avant que la pinasse ne le lance, qu'un code d'inscription faux est refusé, que l'export puis l'import d'un profil ne perdent rien, et que le rapport s'enregistre en fichier `rapport-1` avec les mêmes chiffres que le texte.
+- `python3 tests/outils.py` : `check_lessons.py` et `codes.py verifier` rendent 0 ; `build_review.py` produit la relecture de la semaine avec chaque séance ; `tableau_classe.py` fait un tableau par classe à partir d'un rapport d'exemple et du rapport exporté par le test de bout en bout.
 - `python3 tests/offline.py` : une seule ouverture avec réseau, puis coupure réelle (serveur arrêté) ; l'accueil et une séance doivent s'ouvrir.
 - `python3 tests/migration.py` : un état de la v0.2 (`tests/etat-v0.2.json`) devient deux profils sans perte ; écrit la comparaison avant/après.
 - Sous Windows, lancer Python avec `-X utf8`.
 
-## Limites connues (v0.3.3)
+## Limites connues (v0.3.4)
 
-- Les images des histoires sont des dessins simples, en attendant le kit de l'illustrateur.
+- Les images des histoires et des objets sont des dessins simples, en attendant le kit de l'illustrateur : quatre scènes d'histoire (`marche`, `vent`, `pecheur`, `merci`, SVG au format 240 × 160) et seize images d'objets carrées, à déposer dans `app/img/` ; le moteur les prend telles quelles.
 - Pas de reconnaissance vocale : la lecture à voix haute est enregistrée, un adulte l'écoute et la mesure.
-- Le suivi est propre à chaque tablette (d'où la sauvegarde dans un fichier) ; l'export d'un profil vers une autre tablette n'existe pas encore.
+- Le suivi est propre à chaque tablette : sauvegarde dans un fichier, export d'un profil vers une autre tablette, rapport déposé à l'école en fichier. Pas de remontée automatique vers un dépôt central : c'est une décision de politique de données à prendre avec l'école.
 - Tant qu'aucune voix n'est générée ou enregistrée, c'est la synthèse d'Android qui parle.
+- L'interface est en français seulement.
 - Les séances S1 n'utilisent pas la boîte de dix « en ajout » (`goal: add`) ; le moteur la gère et le test la contrôle sur une étape injectée.

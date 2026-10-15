@@ -18,7 +18,7 @@ SH = f"{SHOTS}e2e-{VW}x{VH}-"
 URL = "http://localhost:8765/#test"
 PIN = "1234"
 PROFILES = [("ce1", "Ali", "2019-03-15", False), ("gs", "Awa", "2021-02-10", True)]
-REQUIRED = ["tenframe:add", "tenframe:total", "blocks:fermeture-unites", "blocks:fermeture-dizaines", "jumps:via", "order", "erreur-animee", "reprise", "rappel", "acces", "profil-export", "journal"]
+REQUIRED = ["tenframe:add", "tenframe:total", "blocks:fermeture-unites", "blocks:fermeture-dizaines", "jumps:via", "order", "erreur-animee", "reprise", "rappel", "acces", "profil-export", "journal", "navigation", "rapport-fichier"]
 DRILL_JS = r"""() => {
   const e = document.querySelector('.drill .v-expr'); if (!e) return null;
   const q = e.textContent.trim(); const svg = document.querySelector('.drill svg[aria-label]'); const lab = svg ? svg.getAttribute('aria-label') : '';
@@ -83,7 +83,14 @@ async def main():
             elif via == "resume":
                 await pg.click("#resume")
             elif via == "ticket":
-                await pg.wait_for_selector(".tickets"); await pg.click(f"[data-l='{lid}']")
+                # navigation sans lecture : toucher un billet le sélectionne et Kono nomme la séance ; la pinasse (bouton unique) la lance
+                await pg.wait_for_selector(".tickets"); await pg.evaluate("window.__spoken = []"); await pg.click(f"[data-l='{lid}']")
+                await pg.wait_for_selector(f".ticket.sel[data-l='{lid}']"); await pg.wait_for_timeout(150)
+                said = " ".join(await pg.evaluate("() => window.__spoken || []")); title = (await pg.inner_text(f".ticket[data-l='{lid}'] .t-title")).strip()
+                if title and title in said and "pinasse" in said: cov["navigation"] += 1
+                else: log.append(f"NAVIGATION {lid} : Kono n'a pas nommé la séance touchée (« {said[:100]} »)")
+                if "ticket-touche" not in shots: await shot("ticket-touche")
+                await pg.click("#today .boat-btn")
             wrong_done = set(); guard = 0; last = None; same = 0; kinds_shot = set()
             while guard < 900:
                 guard += 1; await wait_idle()
@@ -210,6 +217,7 @@ async def main():
                     if not ok: await shot(f"bloque-{l['id']}", True); break
                 await shot(f"{prof['parcours']}-carte-fin")
                 if await pg.is_visible("#revise"):
+                    if not await pg.is_visible("[data-l='revision']"): log.append(f"révision {prof['parcours']}: billet de révision ÉCHEC (absent)")
                     await shot(f"{prof['parcours']}-revision-proposee")
                     ok = await run_lesson(prof, None, via="revise"); log.append(f"révision {prof['parcours']}: {'OK' if ok else 'ÉCHEC'}")
                     await shot(f"{prof['parcours']}-apres-revision", True)
@@ -249,6 +257,7 @@ async def main():
             await pg.click(f".kid[data-c='{ctrl}']"); await pg.wait_for_selector(".tickets"); await pg.wait_for_timeout(300)
             spoken = " ".join(await pg.evaluate("() => window.__spoken || []"))
             if "La dernière fois, tu as fait" in spoken and "Aujourd'hui" in spoken: cov["rappel"] += 1
+            await shot("enfant-billets", True)
             log.append(f"rappel du niveau à l'ouverture : {'OK' if cov['rappel'] else 'ÉCHEC'} · « {spoken[:140]} »")
             await shot("rappel-niveau")
             await pg.evaluate("""() => { window.__kono.LESSONS()['controle-moteur'] = { id: 'controle-moteur', parcours: 'gs', order: 998, week: 'S1', title: 'Contrôle du moteur', domain: 'Contrôle', programme: 'Contrôle', objective: 'Boîte de dix en ajout.', skills: [], escale: 1, synthetic: true, paper: { title: 'Contrôle', levels: [] },
@@ -288,6 +297,13 @@ async def main():
             await pg.click("[data-t='rapport']"); await pg.wait_for_timeout(300)
             rep = await pg.input_value("#rep"); open(SH + "rapport.txt", "w", encoding="utf-8").write(rep)
             log.append(f"rapport : ligne d'inscription {'OK' if 'Inscription : C-9999' in rep else 'ÉCHEC'}")
+            # rapport enregistré dans un fichier (format rapport-1) : mêmes profils, même texte, chiffres présents
+            async with pg.expect_download() as dl: await pg.click("#repfile")
+            rp = await (await dl.value).path(); data = json.load(open(rp, encoding="utf-8")); open(SH + "rapport.json", "w", encoding="utf-8").write(json.dumps(data, ensure_ascii=False, indent=1))
+            p0 = (data.get("profils") or [{}])[0]
+            ok_rf = data.get("format") == "rapport-1" and (data.get("inscription") or {}).get("id") == "C-9999" and len(data.get("profils", [])) == n0 + 1 and data.get("texte") == rep and all(k in p0 for k in ("seances", "competences", "revision", "enregistrements")) and p0["seances"]["terminees"] >= 4 and len(p0["competences"]) >= 2
+            if ok_rf: cov["rapport-fichier"] += 1
+            log.append(f"rapport enregistré dans un fichier : {'OK' if ok_rf else 'ÉCHEC'} ({len(data.get('profils', []))} profils, inscription {(data.get('inscription') or {}).get('id')}, {p0.get('seances', {}).get('terminees')} séances terminées, {len(p0.get('competences', {}))} compétences)")
             sp = await pg.evaluate("() => window.__spoken || []"); open(SH + "spoken.json", "w", encoding="utf-8").write(json.dumps(sp, ensure_ascii=False))
         finally:
             print("\n".join(log))

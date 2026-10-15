@@ -1,0 +1,69 @@
+=== node --check ===
+syntaxe OK
+=== python tools/check_lessons.py ===
+8 leçon(s), 0 erreur(s)
+check_lessons exit code: 0
+=== serveur http.server 8765 --directory app ===
+=== python tests/e2e.py 1280x800 ===
+accès école : code faux refusé OK · code de test accepté
+profils : Ali (ce1, 8jn4), Awa (gs, 4zfu)
+bleu-s0-dizaine: OK
+ce1-s1-echange: OK
+ce1-s1-centaine: OK
+ce1-s1-marche: OK
+révision ce1: OK
+orange-s0-amis10: OK
+gs-s1-cache: OK
+gs-s1-collection: OK
+gs-s1-syllabes: OK
+révision gs: OK
+reprise proposée après fermeture : OK (étape 6/28, 1 réponses gardées, rappel dit : oui)
+reprise à la bonne étape : OK (étape 6, 1 réponses, 1 poissons)
+orange-s0-amis10 reprise jusqu'au bout : OK
+historique après reprise : OK (séance orange-s0-amis10 terminée=True, 15 réponses, reprise effacée=True)
+rappel du niveau à l'ouverture : OK · « La dernière fois, tu as fait  Les amis de 10 . Tu réussis bien : Trouver ce qui manque pour faire 10, Comprendre une histoire et la raconter »
+contrôle moteur (étape injectée, profil Contrôle) : boîte de dix en ajout OK
+rappel de sauvegarde affiché : OK
+journal d'erreurs visible dans Réglages : OK
+export puis import d'un profil : OK (5 séances et 5 faites retrouvées)
+rapport : ligne d'inscription OK
+rapport enregistré dans un fichier : OK (4 profils, inscription C-9999, 5 séances terminées, 9 compétences)
+COUVERTURE : tenframe:add = 1 · tenframe:total = 4 · blocks:fermeture-unites = 7 · blocks:fermeture-dizaines = 1 · jumps:via = 2 · order = 1 · erreur-animee = 4 · reprise = 1 · rappel = 1 · acces = 1 · profil-export = 1 · journal = 1 · navigation = 9 · rapport-fichier = 1
+ERREURS JS : aucune
+E2E : OK
+e2e exit code: 0
+=== python tests/offline.py ===
+fichiers de séances en cache après une seule ouverture : 9
+2e ouverture sans réseau : OK (accueil avec le profil)
+séance gs-s1-syllabes sans réseau : OK
+offline exit code: 0
+=== python tests/migration.py ===
+OK  schéma 2, 2 profils
+OK  code parent, voix et réglages conservés
+OK  drapeau de migration effacé après la migration de la base
+OK  tablette installée avant le contrôle d'accès : accès conservé, à régulariser par l'école
+OK  case bleu → profil Ali, parcours ce1, couleur bleu, fille=False
+OK  Ali : suivi identique clé par clé (runs, review, done, records, drillMisses, skills, measures)
+OK  Ali : classe CE1 déduite du parcours
+OK  case orange → profil Awa, parcours gs, couleur orange, fille=True
+OK  Awa : suivi identique clé par clé (runs, review, done, records, drillMisses, skills, measures)
+OK  Awa : classe GS déduite du parcours
+OK  2 enregistrements conservés, plus aucun champ child
+OK  enregistrement d'Ali rattaché à son profil, audio intact
+OK  enregistrement d'Awa rattaché à son profil, audio intact
+OK  phrases de Maman : ['bonjour@mevf', 'fiche', 'fin@bebr']
+OK  rapport du dimanche émis par profil
+OK  rapport : ligne d'inscription (installation antérieure)
+MIGRATION : OK, aucune perte
+migration exit code: 0
+=== python tests/outils.py ===
+[OK] check_lessons.py rend 0 · 8 leçon(s), 0 erreur(s)
+[OK] codes.py verifier rend 0 · 40 code(s), 40 actif(s), accès code, école « École pilote », 0 erreur(s)
+[OK] build_review.py S1 rend 0 et produit print/Relecture_S1.html · 8 séance(s) de S1 · check_lessons : 0 · 0 avertissement(s) · voix : 0 / 849 phrases avec fichier · print\Relecture_S1.html
+[OK] la relecture contient chaque séance de la semaine, le tableau des étapes et les contrôles · 8 séances
+[OK] tableau_classe.py rend 0 et produit le tableau HTML et le CSV · 3 rapport(s) lu(s), 6 enfant(s), 2 classe(s) : C:\Users\ABDOUL~1.OUS\AppData\Local\Temp\tmp6b6h3ugg\tableau-classes-2026-10-15.html et tableau-classes-2026-10-15.csv
+[OK] le tableau a une section par classe, une ligne par enfant, les compétences et la séance en cours
+[OK] le rapport exporté par le test de bout en bout entre dans le tableau · 4 profils, inscription C-9999
+OUTILS : OK
+outils exit code: 0
+=== code global : 0 ===

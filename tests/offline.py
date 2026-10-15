@@ -30,7 +30,7 @@ async def main():
             print("2e ouverture sans réseau :", "OK (accueil avec le profil)" if home else "LEÇONS INTROUVABLES")
             if home:
                 last = await pg.evaluate("fetch('lessons/index.json').then(r => r.json()).then(i => i.lessons.filter(l => l.parcours === 'gs').slice(-1)[0].id)")
-                await pg.click(".kid[data-c]"); await pg.wait_for_selector(".tickets"); await pg.click(f"[data-l='{last}']"); await pg.wait_for_timeout(800)
+                await pg.click(".kid[data-c]"); await pg.wait_for_selector(".tickets"); await pg.click(f"[data-l='{last}']"); await pg.wait_for_selector(f".ticket.sel[data-l='{last}']"); await pg.click("#today .boat-btn"); await pg.wait_for_timeout(800)
                 ok = await pg.evaluate("() => !!window.__kono.P()")
                 print(f"séance {last} sans réseau :", "OK" if ok else "ÉCHEC")
             await b.close()
