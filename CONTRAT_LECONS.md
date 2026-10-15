@@ -2,6 +2,8 @@
 
 **Version 1 · 11 octobre 2026 · décision du fondateur : profils locaux, sans serveur.**
 
+**Version 1.2 · 15 octobre 2026 · § 10 : `app/ecole.json` (codes d'inscription délivrés par l'école), même propriétaire que `parcours.json`.**
+
 **Version 1.1 · 12 octobre 2026 · annexe A : le catalogue de la v0.3.1 (manipulations, histoire, erreurs objets, dessins), à la demande du fondateur. Le reste est inchangé.**
 
 Ce contrat lie deux parties : l'application (dossier `app/`, dépôt `corridor-maison/corridor-maison.github.io`) et le générateur de leçons (Cowork, ou tout autre modèle). Il s'applique à toute leçon produite à partir de maintenant. Les deux leçons S0 existantes seront mises à ce format par la livraison « profils » de l'application, pas par Cowork.
@@ -105,7 +107,7 @@ Une leçon est acceptée quand `python3 tools/check_lessons.py` rend `0`. Ce scr
 
 | Fichier | Propriétaire | Qui écrit |
 |---|---|---|
-| `app/parcours.json` | L'école, via le fondateur | La session application |
+| `app/parcours.json`, `app/ecole.json` | L'école, via le fondateur | La session application (`tools/codes.py` pour `ecole.json` ; jamais un code en clair ni un nom d'enfant) |
 | `app/lessons/index.json` et `app/lessons/*.json` | Le contenu | Cowork |
 | `voix/registre.json` | La chaîne des voix | `tools/build_audio.py`, lancé par le fondateur |
 | `app/*.js`, `app/*.html`, `app/*.css`, `app/sw.js` | L'application | La session application |

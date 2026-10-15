@@ -5,6 +5,7 @@ un enregistrement et une phrase de Maman dans IndexedDB) devient deux profils, s
 Lancer : python3 tests/migration.py      (démarre et arrête lui-même un serveur sur le port 8767)
 """
 import asyncio, subprocess, time, sys, os, json, pathlib
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent)); from ecole_test import ecole_test
 from playwright.async_api import async_playwright
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 APP = ROOT / "app"
@@ -48,6 +49,7 @@ async def main():
             ok &= check(S.get("schema") == 2 and len(S.get("profiles", [])) == 2, f"schéma 2, {len(S.get('profiles', []))} profils", lines)
             ok &= check(S.get("pin") == STATE["pin"] and S.get("voice") == STATE["voice"] and S.get("settings") == STATE["settings"], "code parent, voix et réglages conservés", lines)
             ok &= check("migrate" not in S, "drapeau de migration effacé après la migration de la base", lines)
+            ok &= check(bool(S.get("ecole", {}).get("grandfathered")), "tablette installée avant le contrôle d'accès : accès conservé, à régulariser par l'école", lines)
             for c, pid, nm in (("bleu", "ce1", "Ali"), ("orange", "gs", "Awa")):
                 pp = prof.get(c)
                 ok &= check(pp is not None and pp["parcours"] == pid and pp["couleur"] == c and pp["name"] == nm and pp["girl"] == STATE["girl"][c], f"case {c} → profil {nm}, parcours {pid}, couleur {c}, fille={STATE['girl'][c]}", lines)
@@ -67,6 +69,7 @@ async def main():
             for ch in STATE["pin"]: await pg.click(f"[data-k='{ch}']")
             await pg.click("[data-t='rapport']"); rep = await pg.input_value("#rep")
             ok &= check(rep.count("== Profil ") == 2 and "parcours ce1" in rep and "parcours gs" in rep, "rapport du dimanche émis par profil", lines)
+            ok &= check("installée avant le contrôle" in rep, "rapport : ligne d'inscription (installation antérieure)", lines)
             json.dump({"avant": {"localStorage": STATE, "indexedDB": before_db}, "apres": {"localStorage": S, "indexedDB": after_db, "rapport": rep}, "verdict": lines},
                       open(f"{SHOTS}migration-avant-apres.json", "w", encoding="utf-8"), ensure_ascii=False, indent=1)
             await b.close()
@@ -75,4 +78,5 @@ async def main():
     print("\n".join(lines)); print("MIGRATION :", "OK, aucune perte" if ok else "ÉCHEC")
     sys.exit(0 if ok else 1)
 if __name__ == "__main__":
-    asyncio.run(main())
+    with ecole_test():
+        asyncio.run(main())
