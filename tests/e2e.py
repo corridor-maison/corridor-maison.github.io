@@ -18,7 +18,12 @@ SH = f"{SHOTS}e2e-{VW}x{VH}-"
 URL = "http://localhost:8765/#test"
 PIN = "1234"
 PROFILES = [("ce1", "Ali", "2019-03-15", False), ("gs", "Awa", "2021-02-10", True)]
-REQUIRED = ["tenframe:add", "tenframe:total", "blocks:fermeture-unites", "blocks:fermeture-dizaines", "jumps:via", "order", "erreur-animee", "reprise", "rappel", "acces", "profil-export", "journal", "navigation", "rapport-fichier"]
+REQUIRED = ["tenframe:add", "tenframe:total", "blocks:fermeture-unites", "blocks:fermeture-dizaines", "jumps:via", "order", "erreur-animee", "reprise", "rappel", "acces", "profil-export", "journal", "navigation", "rapport-fichier", "maitrise", "reglages-affichage"]
+NAMES = r"""() => { const out = []; const vis = el => !!el.getClientRects().length && getComputedStyle(el).visibility !== 'hidden';
+  const nameOf = el => (el.getAttribute('aria-label') || el.getAttribute('title') || (el.labels && [...el.labels].map(l => l.textContent).join(' ')) || (el.closest('label') ? el.closest('label').textContent : '') || el.textContent || el.getAttribute('placeholder') || '').replace(/\s+/g, ' ').trim();
+  document.querySelectorAll('button, [role=button], input:not([type=hidden]), select, textarea').forEach(el => { if (vis(el) && !nameOf(el)) out.push(el.tagName.toLowerCase() + (el.id ? '#' + el.id : '') + (typeof el.className === 'string' && el.className.trim() ? '.' + el.className.trim().split(/\s+/).join('.') : '')); });
+  document.querySelectorAll('img').forEach(i => { if (vis(i) && i.getAttribute('alt') == null) out.push('img sans alt ' + (i.getAttribute('src') || '')); });
+  return out; }"""
 DRILL_JS = r"""() => {
   const e = document.querySelector('.drill .v-expr'); if (!e) return null;
   const q = e.textContent.trim(); const svg = document.querySelector('.drill svg[aria-label]'); const lab = svg ? svg.getAttribute('aria-label') : '';
@@ -42,12 +47,14 @@ async def main():
     async with async_playwright() as p:
         b = await p.chromium.launch(args=["--use-fake-ui-for-media-stream", "--use-fake-device-for-media-stream"])
         ctx = await b.new_context(viewport={"width": VW, "height": VH}, permissions=["microphone"])
-        pg = await ctx.new_page(); errs = []; log = []; cov = collections.Counter(); shots = set()
+        pg = await ctx.new_page(); errs = []; log = []; cov = collections.Counter(); shots = set(); a11y = {}
         pg.on("pageerror", lambda e: errs.append("PAGEERROR " + str(e)))
         pg.on("console", lambda m: errs.append("CONSOLE " + m.text) if m.type == "error" else None)
         async def shot(tag, force=False):
             if tag in shots and not force: return
             shots.add(tag); await pg.screenshot(path=f"{SH}{tag}.png")
+            v = await pg.evaluate(NAMES)   # lecteur d'écran : à chaque capture, tout bouton, champ ou image visible a un nom
+            if v: a11y[tag] = v
         async def typ(v):
             for ch in str(v): await pg.click(f"#answer [data-k='{ch}']")
             await pg.click("#answer [data-k='ok']")
@@ -279,6 +286,15 @@ async def main():
             # rappel de sauvegarde (jamais faite, suivi présent), journal d'erreurs, export puis import d'un profil
             backup = await pg.is_visible("#tobackup"); log.append(f"rappel de sauvegarde affiché : {'OK' if backup else 'ÉCHEC'}")
             await pg.evaluate("window.__kono.logError('essai du journal')")
+            suivi = await pg.inner_text("#pane")
+            if "Maîtrise par compétence" in suivi and "acquis" in suivi: cov["maitrise"] += 1
+            log.append(f"maîtrise par compétence dans le Suivi : {'OK' if cov['maitrise'] else 'ÉCHEC'}")
+            # réglages d'affichage : main gauche, moins d'animations, contraste ; posés puis retirés (les captures suivantes restent standard)
+            await pg.click("[data-t='kono']"); await pg.wait_for_selector("#st-gauch"); await pg.click("#st-gauch"); await pg.click("#st-calme"); await pg.click("#st-contr"); await pg.wait_for_timeout(100)
+            cls = await pg.evaluate("[...document.body.classList]"); await shot("parent-reglages-affichage")
+            if all(c in cls for c in ("gaucher", "calme", "contraste")): cov["reglages-affichage"] += 1
+            log.append(f"réglages d'affichage (main gauche, calme, contraste) : {'OK' if cov['reglages-affichage'] else 'ÉCHEC'} {cls}")
+            await pg.click("#st-gauch"); await pg.click("#st-calme"); await pg.click("#st-contr"); await pg.wait_for_timeout(100)
             await pg.click("[data-t='reglages']"); await pg.wait_for_timeout(300)
             jtxt = await pg.inner_text("#pane")
             if "essai du journal" in jtxt and "1 erreur notée" in jtxt: cov["journal"] += 1
@@ -296,12 +312,12 @@ async def main():
             await shot("parent-reglages")
             await pg.click("[data-t='rapport']"); await pg.wait_for_timeout(300)
             rep = await pg.input_value("#rep"); open(SH + "rapport.txt", "w", encoding="utf-8").write(rep)
-            log.append(f"rapport : ligne d'inscription {'OK' if 'Inscription : C-9999' in rep else 'ÉCHEC'}")
+            log.append(f"rapport : ligne d'inscription {'OK' if 'Inscription : C-9999' in rep else 'ÉCHEC'} · format 2 et rubrique 8 (maîtrise) {'OK' if 'RAPPORT · format 2' in rep and '8. MAÎTRISE' in rep and ' | acquis | ' in rep else 'ÉCHEC'}")
             # rapport enregistré dans un fichier (format rapport-1) : mêmes profils, même texte, chiffres présents
             async with pg.expect_download() as dl: await pg.click("#repfile")
             rp = await (await dl.value).path(); data = json.load(open(rp, encoding="utf-8")); open(SH + "rapport.json", "w", encoding="utf-8").write(json.dumps(data, ensure_ascii=False, indent=1))
             p0 = (data.get("profils") or [{}])[0]
-            ok_rf = data.get("format") == "rapport-1" and (data.get("inscription") or {}).get("id") == "C-9999" and len(data.get("profils", [])) == n0 + 1 and data.get("texte") == rep and all(k in p0 for k in ("seances", "competences", "revision", "enregistrements")) and p0["seances"]["terminees"] >= 4 and len(p0["competences"]) >= 2
+            ok_rf = data.get("format") == "rapport-2" and isinstance(p0.get("maitrise"), dict) and any(v.get("palier") == "acquis" for v in p0["maitrise"].values()) and (data.get("inscription") or {}).get("id") == "C-9999" and len(data.get("profils", [])) == n0 + 1 and data.get("texte") == rep and all(k in p0 for k in ("seances", "competences", "revision", "enregistrements")) and p0["seances"]["terminees"] >= 4 and len(p0["competences"]) >= 2
             if ok_rf: cov["rapport-fichier"] += 1
             log.append(f"rapport enregistré dans un fichier : {'OK' if ok_rf else 'ÉCHEC'} ({len(data.get('profils', []))} profils, inscription {(data.get('inscription') or {}).get('id')}, {p0.get('seances', {}).get('terminees')} séances terminées, {len(p0.get('competences', {}))} compétences)")
             sp = await pg.evaluate("() => window.__spoken || []"); open(SH + "spoken.json", "w", encoding="utf-8").write(json.dumps(sp, ensure_ascii=False))
@@ -309,10 +325,11 @@ async def main():
             print("\n".join(log))
             print("COUVERTURE : " + " · ".join(f"{k} = {cov.get(k, 0)}" for k in REQUIRED))
             print("ERREURS JS :", "\n".join(errs) or "aucune")
+            print("LECTEUR D'ÉCRAN :", "tout nommé sur " + str(len(shots)) + " captures" if not a11y else "SANS NOM : " + " ; ".join(f"{k} → {', '.join(v[:5])}" for k, v in a11y.items()))
         await b.close()
         missing = [k for k in REQUIRED if not cov.get(k)]
         if missing: print("COUVERTURE MANQUANTE :", ", ".join(missing))
-        if errs or not log or missing or any(("ÉCHEC" in l) or ("BLOQUÉ" in l) or ("GARDE" in l) or ("NON PROPOSÉE" in l) for l in log): sys.exit(1)
+        if errs or a11y or not log or missing or any(("ÉCHEC" in l) or ("BLOQUÉ" in l) or ("GARDE" in l) or ("NON PROPOSÉE" in l) for l in log): sys.exit(1)
         print("E2E : OK")
 if __name__ == "__main__":
     with ecole_test():

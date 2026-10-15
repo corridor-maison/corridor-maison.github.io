@@ -49,6 +49,7 @@ with tempfile.TemporaryDirectory() as d:
     t = outs[0].read_text(encoding="utf-8") if outs else ""; c = csvs[0].read_text(encoding="utf-8") if csvs else ""
     check("tableau_classe.py rend 0 et produit le tableau HTML et le CSV", code == 0 and outs and csvs, out)
     check("le tableau a une section par classe, une ligne par enfant, les compétences et la séance en cours", "Classe CE1" in t and "Classe GS" in t and "C-0001" in t and "C-0021" in t and "C.dizaine" in t and "GS.N.amis10" in t and "gs-s1-cache (étape 5 sur 21)" in t and c.count("\n") >= 3)
+    if e2e: check("le tableau montre la maîtrise (rapport-2) pour le rapport du test de bout en bout", "Maîtrise 30 j" in t and any(ch.isdigit() for ch in t.split("Maîtrise 30 j")[-1][:4000]))
     if e2e:
         data = json.loads(e2e[-1].read_text(encoding="utf-8")); ins = (data.get("inscription") or {}).get("id")
         check("le rapport exporté par le test de bout en bout entre dans le tableau", bool(ins) and ins in t and all(p["prenom"] in t for p in data["profils"]), f"{len(data['profils'])} profils, inscription {ins}")
