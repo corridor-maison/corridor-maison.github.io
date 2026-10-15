@@ -63,6 +63,13 @@ async def main():
             await pg.fill("#p-name", "Ali"); await pg.fill("#p-dob", "2019-03-15"); await pg.click("[data-p='ce1']"); await pg.click("#go"); await pg.wait_for_selector(".kids")
             await audit(pg, "accueil"); await phone("accueil")
             await pg.click(".kid[data-c]"); await pg.wait_for_selector(".tickets"); await pg.wait_for_timeout(300); await audit(pg, "espace enfant"); await phone("enfant")
+            # carte : le Bani et Djenné (losange plein, pas un cercle d'escale), noms des fleuves lisibles ; billets : titre sur 3 lignes au plus
+            carte = await pg.evaluate("""() => { const m = document.querySelector('.map'); const t = m.innerText; const lab = [...m.querySelectorAll('text')].filter(x => /Niger|Bani/.test(x.textContent));
+              const fs = lab.map(x => x.getBoundingClientRect().height); const dj = m.querySelector('.bani rect.ville'); const cercles = m.querySelectorAll('.escales circle').length;
+              const titres = [...document.querySelectorAll('.ticket .t-title')].map(x => ({ t: x.textContent, lignes: Math.round(x.getBoundingClientRect().height / parseFloat(getComputedStyle(x).lineHeight)) }));
+              return { bani: !!m.querySelector('.bani path'), djenne: /Djenn/.test(t) && !!dj, noms: lab.length, hauteurMin: Math.min(...fs), escales: cercles, titres }; }""")
+            check("carte : le Bani dessiné, Djenné en losange plein (pas une escale), les deux fleuves nommés et lisibles (≥ 12 px à l'écran), 5 cercles d'escale", carte["bani"] and carte["djenne"] and carte["noms"] == 2 and carte["hauteurMin"] >= 12 and carte["escales"] == 5, str({k: v for k, v in carte.items() if k != 'titres'}))
+            check("billets : chaque titre de séance tient sur 3 lignes au plus", all(x["lignes"] <= 3 for x in carte["titres"]), str(carte["titres"]))
             await pg.click("#today .boat-btn"); await pg.wait_for_selector("#stage"); await pg.wait_for_timeout(300)
             seen = set(); guard = 0
             while guard < 400 and len(seen) < 3:
