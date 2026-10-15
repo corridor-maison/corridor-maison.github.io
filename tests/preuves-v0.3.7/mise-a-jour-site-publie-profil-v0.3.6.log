@@ -1,0 +1,18 @@
+# première passe : la navigation témoin était dans le même onglet (page d'erreur Chrome), échec du script, pas de l'application
+passe 2 (en ligne, profil déjà en cache) : accueil « v0.3.7 » → OK (attendu v0.3.7)
+passe 2 : caches après activation ['kono-0.3.7'] → OK (attendu ['kono-0.3.7'] seul)
+témoin example.com : injoignable → coupure effective
+Traceback (most recent call last):
+    asyncio.run(main())
+playwright._impl._errors.Error: Page.goto: Navigation to "https://corridor-maison.github.io/#test" is interrupted by another navigation to "chrome-error://chromewebdata/"
+Call log:
+
+
+# diagnostic du profil mis à jour
+navigation hors ligne : OK v0.3.7 (cache kono-0.3.7 seul, 41 entrées, 9 séances)
+
+# seconde passe, témoin dans un autre onglet
+passe 2 (en ligne, profil déjà en cache) : accueil « v0.3.7 » → OK (attendu v0.3.7)
+passe 2 : caches après activation ['kono-0.3.7'] → OK (attendu ['kono-0.3.7'] seul)
+témoin example.com : injoignable → coupure effective
+passe 3 (hors ligne) : accueil « v0.3.7 » → OK · carte avec le Bani et Djenné : OK
