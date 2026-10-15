@@ -2,6 +2,8 @@
 
 **Version 1 · 11 octobre 2026 · décision du fondateur : profils locaux, sans serveur.**
 
+**Version 1.3 · 15 octobre 2026 · § 5 : le rapport existe aussi en fichier `rapport-1` ; § 7 : relecture d'une semaine avec `tools/build_review.py` avant publication. Le format des leçons est inchangé.**
+
 **Version 1.2 · 15 octobre 2026 · § 10 : `app/ecole.json` (codes d'inscription délivrés par l'école), même propriétaire que `parcours.json`.**
 
 **Version 1.1 · 12 octobre 2026 · annexe A : le catalogue de la v0.3.1 (manipulations, histoire, erreurs objets, dessins), à la demande du fondateur. Le reste est inchangé.**
@@ -80,13 +82,15 @@ C'est l'entrée de Cowork. Avec la livraison « profils », il sera émis par pr
 
 Suivent, inchangés : les séances, les réponses item par item, les mesures, les automatismes par sorte, la file de révision. Cowork génère la semaine suivante à partir du `parcours` et de ces lignes, jamais à partir du prénom. Jusqu'à cette livraison, `BLEU` vaut `ce1` et `ORANGE` vaut `gs`.
 
+Depuis la v0.3.4, le même rapport s'enregistre aussi en fichier (`rapport-1`, JSON : mêmes chiffres, et le texte lui-même) que la famille dépose à l'école ; `tools/tableau_classe.py` en fait un tableau par classe pour l'enseignante. Cowork continue de lire le texte.
+
 ## 6. Une publication, c'est tout ou rien
 
 Une publication contient, pour chaque parcours actif, les quatre leçons de la semaine et l'index mis à jour. Jamais une semaine partielle : un lundi sans leçon est une panne pour l'enfant. Tant qu'une semaine n'est pas complète, elle reste sur une branche.
 
 ## 7. Acceptation
 
-Une leçon est acceptée quand `python3 tools/check_lessons.py` rend `0`. Ce script arrive avec la livraison « profils ». Il vérifie : le schéma de l'index, l'existence de chaque fichier de leçon et l'inverse, les clés obligatoires, `parcours` connu, `escale` connu, `order` unique par parcours, l'absence de `child`, l'absence de couleur et de prénom en dur dans les textes, les types d'étapes, les `kinds`, les dessins et les champs de l'annexe A dans la liste fermée, les erreurs objets bien formées, et au moins un niveau `seul` par fiche. En attendant le script, cette liste est la revue manuelle.
+Une leçon est acceptée quand `python3 tools/check_lessons.py` rend `0` et qu'un adulte a lu la relecture de la semaine, `python3 tools/build_review.py S<n>` → `print/Relecture_S<n>.html` (ce que Kono dit, ce que l'enfant voit et répond, les erreurs expliquées, la fiche, la carte Maman, et les avertissements : compétence absente de la progression, image absente, question sans erreur expliquée, voix manquantes). Ce script arrive avec la livraison « profils ». Il vérifie : le schéma de l'index, l'existence de chaque fichier de leçon et l'inverse, les clés obligatoires, `parcours` connu, `escale` connu, `order` unique par parcours, l'absence de `child`, l'absence de couleur et de prénom en dur dans les textes, les types d'étapes, les `kinds`, les dessins et les champs de l'annexe A dans la liste fermée, les erreurs objets bien formées, et au moins un niveau `seul` par fiche. En attendant le script, cette liste est la revue manuelle.
 
 ## 8. Ordre de mise en service
 

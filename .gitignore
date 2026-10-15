@@ -2,3 +2,4 @@ print/*.html
 __pycache__/
 .DS_Store
 print/codes-*.csv
+print/tableau-*.csv

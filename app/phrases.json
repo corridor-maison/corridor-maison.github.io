@@ -62,6 +62,7 @@
  "recapToday": "Aujourd'hui :",
  "recapRevision": "Aujourd'hui, on révise ce que tu as appris.",
  "recapDone": "Tu as tout fait. À demain !",
+ "ticketGo": "Touche la pinasse pour commencer.",
  "clips": [
   {
    "id": "bonjour",
