@@ -5,7 +5,7 @@
    Format des séances : CONTRAT_LECONS.md. */
 'use strict';
 (() => {
-const VERSION = '0.3.4';
+const VERSION = '0.3.5';
 const APPNAME = 'Corridor à la maison';
 const FAST = location.hash === '#test';
 const app = document.getElementById('app');
@@ -25,7 +25,7 @@ const THEMES = ['bleu', 'orange', 'vert', 'violet'];
 const kid = () => ({ runs: [], review: [], done: {}, records: {}, drillMisses: {}, skills: {}, measures: [], resume: null });
 /* Un profil par enfant : prénom, garçon ou fille, date de naissance, classe et parcours (confirmés par un parent), couleur, suivi.
    Tout reste dans la tablette. Un identifiant de profil ne change jamais : il nomme les enregistrements et les phrases de Maman. */
-const blank = () => ({ schema: 2, setup: false, pin: '', voice: { name: '', rate: 0.9 }, settings: { subtitles: false, sounds: true }, profiles: [] });
+const blank = () => ({ schema: 2, setup: false, pin: '', voice: { name: '', rate: 0.9 }, settings: { subtitles: false, sounds: true, gaucher: false, calme: false, contraste: false }, profiles: [] });
 function newId(list) {
   const a = 'abcdefghjkmnpqrstuvwxyz23456789', b = new Uint8Array(4);
   try { crypto.getRandomValues(b); } catch (e) { for (let i = 0; i < 4; i++) b[i] = Math.floor(Math.random() * 256); }
@@ -401,7 +401,7 @@ function boardHTML(v, opts = {}) {
   const cols = (v.h != null || v.hundreds) ? ['h', 't', 'u'] : ['t', 'u'];
   return `<div class="board ${opts.counts ? 'counts' : ''}" data-cols="${cols.join('')}">${cols.map(c => {
     const n = v[c] || 0;
-    return `<div class="col col-${c}" data-col="${c}"><div class="col-lab">${COLS[c]}</div><div class="pile">${Array.from({ length: n }, () => pieceHTML(c)).join('')}</div><div class="col-n">${n}</div></div>`;
+    return `<div class="col col-${c}" data-col="${c}" role="group" aria-label="${COLS[c]}"><div class="col-lab">${COLS[c]}</div><div class="pile">${Array.from({ length: n }, () => pieceHTML(c)).join('')}</div><div class="col-n">${n}</div></div>`;
   }).join('')}</div>`;
 }
 function boardCount(board, c) { return board.querySelectorAll(`.col-${c} .pile .pc`).length; }
@@ -529,7 +529,7 @@ function drawMap(root, p, from) {
   g.innerHTML = E.map((e, i) => { const pt = path.getPointAtLength(L * AT[i]); const on = st.includes(e.n); return `<circle cx="${pt.x}" cy="${pt.y}" r="${on ? 10 : 8}" fill="${on ? '#e0a100' : '#fff'}" stroke="#22303c" stroke-width="3"/><text x="${pt.x}" y="${pt.y + (i === 3 ? -20 : 32)}" text-anchor="middle" font-family="${FONT}" font-weight="800" font-size="18" fill="#22303c">${esc(e.name)}</text>`; }).join('');
   const boat = svg.querySelector('.boat-pos'), to = journey(p).f;
   const place = f => { const pt = path.getPointAtLength(L * f); boat.setAttribute('transform', `translate(${pt.x} ${pt.y - 18}) scale(1.7)`); };
-  if (from == null || from === to || FAST) { place(to); return; }
+  if (from == null || from === to || FAST || calm()) { place(to); return; }
   const t0 = performance.now();
   const step = t => { const k = Math.min(1, (t - t0) / 1800); place(from + (to - from) * (1 - Math.pow(1 - k, 3))); if (k < 1) requestAnimationFrame(step); };
   requestAnimationFrame(step);
@@ -561,7 +561,7 @@ function screenEcole(next, msg) {
   setChild(null); stopSpeech(); screen('ecole');
   app.innerHTML = `<div class="page stack">
   <div class="brand">${KONO}<div><h1>${APPNAME}</h1><p class="muted">${esc(msg || `${ECOLE.ecole || 'L\'école'} vous a remis un code d'inscription.`)}</p></div></div>
-  <div class="card stack"><h3>Code d'inscription</h3><input type="text" id="code" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="ex. K7F-29Q-H43" style="font-family:var(--display);font-size:1.5rem;letter-spacing:.12em;text-transform:uppercase"><p class="small muted">Délivré par l'école, une fois par famille. Sans ce code, l'application ne s'ouvre pas. Il reste sur la tablette, rien n'est envoyé.</p></div>
+  <div class="card stack"><h3>Code d'inscription</h3><input type="text" id="code" autocomplete="off" aria-label="Code d'inscription" autocapitalize="characters" spellcheck="false" placeholder="ex. K7F-29Q-H43" style="font-family:var(--display);font-size:1.5rem;letter-spacing:.12em;text-transform:uppercase"><p class="small muted">Délivré par l'école, une fois par famille. Sans ce code, l'application ne s'ouvre pas. Il reste sur la tablette, rien n'est envoyé.</p></div>
   <div class="row"><button class="btn big" id="go" style="--c:var(--river)">Vérifier</button><span id="err" class="small" style="color:var(--try)"></span></div></div>`;
   $('#go').onclick = async () => {
     const ok = await checkCode($('#code').value);
@@ -617,12 +617,15 @@ function logError(m) {
 window.addEventListener('error', e => logError((e.message || 'erreur') + (e.filename ? ` (${String(e.filename).split('/').pop()}:${e.lineno})` : '')));
 window.addEventListener('unhandledrejection', e => logError('promesse : ' + ((e.reason && e.reason.message) || e.reason)));
 
+/* Réglages d'affichage : main gauche, moins d'animations, contraste renforcé. Des classes sur <body>, lues par styles.css. */
+function applySettings() { const s = S.settings || {}; ['gaucher', 'calme', 'contraste'].forEach(k => document.body.classList.toggle(k, !!s[k])); }
+const calm = () => !!(S.settings && S.settings.calme) || !!(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches);
 function screenSetup() {
   setChild(null); stopSpeech(); screen('setup');
   const first = !S.setup;
   app.innerHTML = `<div class="page stack">
   <div class="brand">${KONO}<div><h1>${APPNAME}</h1><p class="muted">${first ? 'Réglage de départ, à faire une seule fois par un parent.' : 'Code parent et voix de Kono.'}</p></div></div>
-  <div class="card stack"><h3>Code parent (4 chiffres)</h3><input type="password" id="pin" inputmode="numeric" maxlength="4" value="${esc(S.pin)}" placeholder="ex. 2468"><p class="small muted">Il protège l'espace parent : suivi, enregistrements, voix de Maman, et l'ajout d'un enfant.</p></div>
+  <div class="card stack"><h3>Code parent (4 chiffres)</h3><input type="password" id="pin" inputmode="numeric" maxlength="4" aria-label="Code parent" value="${esc(S.pin)}" placeholder="ex. 2468"><p class="small muted">Il protège l'espace parent : suivi, enregistrements, voix de Maman, et l'ajout d'un enfant.</p></div>
   <div class="card stack"><h3>La voix de Kono</h3>${voiceControls()}</div>
   <div class="row"><button class="btn big" id="go" style="--c:var(--river)">${first ? 'Enregistrer et ajouter un enfant' : 'Enregistrer'}</button>${first ? '' : '<button class="btn ghost" id="cancel">Annuler</button>'}<span id="err" class="small" style="color:var(--try)"></span></div></div>`;
   bindVoiceControls();
@@ -819,7 +822,10 @@ function makeRevision(p) {
   const drill = findLast('drill'), reading = findLast('reading'), story = findLast('story');
   /* L'explication de la méthode est enregistrée si les séances du parcours le font déjà ; sinon elle se dit à Maman. */
   const records = mine.some(L => L.steps.some(x => x.type === 'record' && (x.kind || 'methode') === 'methode'));
-  const retr = shuffle(retrievalPool(p)).slice(0, 3);
+  /* Les défis de rappel visent d'abord les compétences fragiles (maîtrise sur 30 jours), puis en cours, puis peu travaillées, puis acquises. */
+  const m = masteryOf(p), RANK = { fragile: 0, 'en-cours': 1, peu: 2, acquis: 3 };
+  const rank = s => RANK[(m[s.skill || lessonSkill(s.origin)] || { level: 'peu' }).level];
+  const retr = shuffle(retrievalPool(p)).sort((a, b) => rank(a) - rank(b)).slice(0, 3);
   const steps = [{ type: 'maman', clip: 'bonjour' },
     { type: 'say', text: PH.revisionIntro, show: [{ kind: 'title', text: 'Séance de révision' }] }];
   if (drill) steps.push({ type: 'part', n: 1, title: drill.title, text: PH.revisionPart1 }, drill);
@@ -881,7 +887,7 @@ async function startLesson(id, rs) {
   try { if ('wakeLock' in navigator) wake = await navigator.wakeLock.request('screen'); } catch (e) { wake = null; }
   screen('lesson');
   app.innerHTML = `<div class="lesson">
-    <header class="l-head"><button class="icon-btn" id="quit" aria-label="Arrêter la séance">${UI.home}</button><div class="trail" id="parts"></div><div class="catch" id="catch">${FISH(false)}<b id="nfish">${P.fish + P.gold}</b></div></header>
+    <header class="l-head"><button class="icon-btn" id="quit" aria-label="Arrêter la séance">${UI.home}</button><div class="trail" id="parts"></div><div class="catch" id="catch" role="status" aria-label="Poissons pêchés">${FISH(false)}<b id="nfish">${P.fish + P.gold}</b></div></header>
     <div class="l-body">
       <aside class="guide"><button class="kono-btn" id="repeat" aria-label="Réécouter Kono">${KONO}<span class="ear">${UI.ear}</span></button><div class="bubble" id="bubble" hidden></div></aside>
       <main class="l-work" id="work"><section class="stage" id="stage"></section><section class="answer" id="answer"></section></main>
@@ -1009,6 +1015,15 @@ function keyInput(get, set, onOk) {
 const errText = e => fill(typeof e === 'string' ? e : (e && e.text) || '');
 const errShow = e => (e && typeof e === 'object' && e.show) || null;
 
+/* Le cœur du juge, sans écran, pour une réponse fausse : tries = essais faux, celui-ci compris ; left = options encore possibles.
+   Rend « reveal » (on montre la réponse) ou « retry » avec l'explication de l'erreur typique, sinon l'aide du moment, sinon « Regarde encore ». */
+function verdict(st, val, tries, left, forceWhy) {
+  if (tries >= 3 || left <= 1) return { kind: 'reveal' };
+  const e = forceWhy != null ? forceWhy : (st.errors && st.errors[String(val)]);
+  return { kind: 'retry', why: errText(e) || fill((st.hints && st.hints[Math.min(tries - 1, st.hints.length - 1)]) || PH.lookAgain), show: errShow(e), typed: !!e };
+}
+const isRight = (st, val) => String(val) === String(st.answer);
+
 /* Juge commun à toutes les questions : 3 essais, explication de chaque erreur typique, puis la réponse montrée. */
 function makeJudge(st, item, alive, h) {
   let tries = 0; const wrong = [];
@@ -1018,7 +1033,7 @@ function makeJudge(st, item, alive, h) {
     async submit(val, recorded, forceWhy) {
       if (api.done) return;
       item.answers.push(String(recorded != null ? recorded : val));
-      if (forceWhy == null && String(val) === String(st.answer)) {
+      if (forceWhy == null && isRight(st, val)) {
         api.done = true; item.done = true; item.ok = true; item.first = tries === 0;
         if (item.first) { P.fish++; dropReview(st); } else { P.gold++; addReview(st); }
         save(); bumpFish(!item.first); mood('happy'); h.onRight(); h.after(); h.redraw();
@@ -1029,18 +1044,17 @@ function makeJudge(st, item, alive, h) {
         return;
       }
       tries++; wrong.push(String(val)); sfx('soft'); mood('oops');
-      if (tries >= 3 || h.left() <= 1) {
+      const v = verdict(st, val, tries, h.left(), forceWhy);
+      if (v.kind === 'reveal') {
         api.done = true; item.done = true; item.ok = false; addReview(st); save();
         h.onReveal(); h.after(); h.redraw();
         const msg = `${PH.revealStart} ${st.sol ? fill(st.sol) : st.answer} ${PH.revealEnd}`;
         bubble(msg, 'try'); await speak(msg); if (alive()) showNext();
         return;
       }
-      const e = forceWhy != null ? forceWhy : (st.errors && st.errors[String(val)]);
-      const why = errText(e) || fill((st.hints && st.hints[Math.min(tries - 1, st.hints.length - 1)]) || PH.lookAgain);
-      const show = errShow(e); if (show) stage(show);
+      if (v.show) stage(v.show);
       h.redraw();
-      const msg = PH.notYet + ' ' + (tries > 1 ? PH.otherWay + ' ' : '') + why;
+      const msg = PH.notYet + ' ' + (tries > 1 ? PH.otherWay + ' ' : '') + v.why;
       bubble(msg, 'try'); await speak(msg);
       if (alive() && !api.done) mood('think');
     },
@@ -1134,7 +1148,7 @@ function manipBlocks(st, alive) {
   const v = { t: st.t || 0, u: st.u || 0 }; if (st.hundreds) { v.h = st.h || 0; v.hundreds = true; }
   const addCls = st.addTens ? 't' : 'u', nAdd = st.addTens || st.add || 0;
   $('#stage').className = 'stage';
-  $('#stage').innerHTML = `<div class="blocks-manip">${boardHTML(v)}<div class="tray" aria-label="à poser"><div class="pile">${Array.from({ length: nAdd }, () => pieceHTML(addCls)).join('')}</div></div></div>`;
+  $('#stage').innerHTML = `<div class="blocks-manip">${boardHTML(v)}<div class="tray" role="button" tabindex="0" aria-label="Unités à poser : touche pour en poser une"><div class="pile">${Array.from({ length: nAdd }, () => pieceHTML(addCls)).join('')}</div></div></div>`;
   const board = $('#stage .board'), tray = $('#stage .tray .pile');
   let busy = false, asked = false, saidTen = false, saidHundred = false;
   bubble(fill(st.text));
@@ -1157,6 +1171,7 @@ function manipBlocks(st, alive) {
     await moveTo(pc, board.querySelector(`.col-${addCls} .pile`), addCls);
     boardRefresh(board); busy = false; ready();
   };
+  tray.parentElement.onkeydown = e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); tray.parentElement.onclick(); } };
   board.onclick = async e => {
     if (busy) return;
     const col = e.target.closest('.col'); if (!col) return;
@@ -1182,15 +1197,18 @@ function manipJumps(st, alive) {
     }
     path.forEach(n => { s += `<circle cx="${X(n)}" cy="${y}" r="9" fill="var(--c)" stroke="#fff" stroke-width="3"/>`; });
     s += `<g transform="translate(${X(cur())} ${y - 22}) scale(.9)">${BOAT}</g>`;
-    const hits = Array.from({ length: to - from + 1 }, (_, k) => `<rect class="hit" data-n="${from + k}" x="${X(from + k) - (x1 - x0) / (to - from) / 2}" y="${y - 70}" width="${(x1 - x0) / (to - from)}" height="130" fill="transparent"/>`).join('');
+    const hits = Array.from({ length: to - from + 1 }, (_, k) => `<rect class="hit" data-n="${from + k}" role="button" tabindex="0" aria-label="${from + k}" x="${X(from + k) - (x1 - x0) / (to - from) / 2}" y="${y - 70}" width="${(x1 - x0) / (to - from)}" height="130" fill="transparent"/>`).join('');
     return `<svg class="v-svg jumps" viewBox="0 0 ${W} 190" role="img" aria-label="ligne des nombres de ${from} à ${to}"><defs><marker id="arj" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="var(--c)"/></marker></defs>${s}${hits}</svg>`;
   };
   const draw = () => {
     $('#stage').innerHTML = `<div class="jumps-wrap">${visual(st.show)}${svg()}</div>`;
-    $('#stage').querySelectorAll('.hit').forEach(r => r.onclick = () => {
-      if (J.done) return; const n = Number(r.dataset.n);
-      if (n <= cur()) { sfx('soft'); return; }
-      path.push(n); sfx('hop'); fresh = true; draw(); fresh = false;
+    $('#stage').querySelectorAll('.hit').forEach(r => {
+      r.onclick = () => {
+        if (J.done) return; const n = Number(r.dataset.n);
+        if (n <= cur()) { sfx('soft'); return; }
+        path.push(n); sfx('hop'); fresh = true; draw(); fresh = false;
+      };
+      r.onkeydown = e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); r.onclick(); } };
     });
     $('#answer').innerHTML = J.done ? '' : checkBtn(`<button class="btn big ghost" id="undo" aria-label="Annuler le dernier saut">${UI.undo}</button>`);
     const u = $('#undo'); if (u) u.onclick = () => { if (path.length > 1) { path.pop(); sfx('unpop'); draw(); } };
@@ -1569,6 +1587,7 @@ async function screenParent(tab) {
       ${unheard ? `<p class="warn">${unheard} enregistrement${unheard > 1 ? 's' : ''} pas encore écouté${unheard > 1 ? 's' : ''}. L'enfant s'applique davantage quand il sait qu'on l'écoute.</p>` : ''}
       ${resumeOf(p) ? `<p class="warn">Séance à reprendre : « ${esc(resumeOf(p).title)} », étape ${resumeOf(p).i + 1} sur ${resumeOf(p).steps.length}, commencée le ${esc(resumeOf(p).date || '')}. L'enfant la retrouve en touchant son prénom.</p>` : ''}
       ${skillTableHTML(p)}
+      ${masteryTableHTML(p)}
       ${pr.measures.length ? `<div><h3 style="font-size:1rem">Mesures</h3>${pr.measures.slice().reverse().map(m => `<p class="small" style="margin:2px 0">${esc(m.date)} · ${measureLine(m)}</p>`).join('')}</div>` : ''}
       ${recsDrill ? `<p class="small" style="margin:0"><b>Records d'automatismes :</b> ${recsDrill}</p>` : ''}
       <h3 style="font-size:1rem">Enregistrements</h3>
@@ -1611,15 +1630,20 @@ async function screenParent(tab) {
       <label class="toggle"><input type="checkbox" id="st-sub" ${S.settings.subtitles ? 'checked' : ''}> Afficher les sous-titres sous Kono</label>
       <p class="small muted" style="margin:0">Par défaut, ils sont cachés : l'enfant écoute au lieu de lire ce qu'on lui dit, et regarde le dessin. Ils s'affichent d'office si la tablette n'a pas de voix française.</p>
       <label class="toggle"><input type="checkbox" id="st-snd" ${S.settings.sounds ? 'checked' : ''}> Petits sons quand l'enfant pose, valide ou trouve</label></div>
+      <div class="card stack"><h3>Pour l'enfant</h3>
+      <label class="toggle"><input type="checkbox" id="st-gauch" ${S.settings.gaucher ? 'checked' : ''}> Main gauche : le clavier et la flèche à gauche, Kono à droite</label>
+      <label class="toggle"><input type="checkbox" id="st-calme" ${S.settings.calme ? 'checked' : ''}> Moins d'animations : Kono reste calme, rien ne clignote ni ne saute</label>
+      <label class="toggle"><input type="checkbox" id="st-contr" ${S.settings.contraste ? 'checked' : ''}> Contraste renforcé : texte plus noir, bords plus marqués</label></div>
       <div class="card stack"><h3>La voix de Kono</h3>${voiceControls()}</div>`;
     $('#st-sub').onchange = e => { S.settings.subtitles = e.target.checked; save(); };
     $('#st-snd').onchange = e => { S.settings.sounds = e.target.checked; save(); };
+    [['st-gauch', 'gaucher'], ['st-calme', 'calme'], ['st-contr', 'contraste']].forEach(([id, k]) => { $('#' + id).onchange = e => { S.settings[k] = e.target.checked; save(); applySettings(); }; });
     bindVoiceControls();
   }
   if (tab === 'rapport') {
     RECS_CACHE = (await DB.recs()) || [];
     const txt = report();
-    pane.innerHTML = `<div class="card stack"><p style="margin:0">Le dimanche : copier le rapport pour l'envoyer, ou l'enregistrer dans un fichier à déposer à l'école, qui en fait un tableau par classe. Son format ne change pas d'une semaine à l'autre, pour pouvoir comparer.</p><textarea id="rep" readonly>${esc(txt)}</textarea><div class="row"><button class="btn" id="copy" style="--c:var(--river)">Copier le rapport</button><button class="btn ghost" id="repfile" style="--c:var(--river)">Enregistrer dans un fichier</button><span id="cp" class="small muted"></span></div></div>`;
+    pane.innerHTML = `<div class="card stack"><p style="margin:0">Le dimanche : copier le rapport pour l'envoyer, ou l'enregistrer dans un fichier à déposer à l'école, qui en fait un tableau par classe. Son format ne change pas d'une semaine à l'autre, pour pouvoir comparer.</p><textarea id="rep" readonly aria-label="Rapport">${esc(txt)}</textarea><div class="row"><button class="btn" id="copy" style="--c:var(--river)">Copier le rapport</button><button class="btn ghost" id="repfile" style="--c:var(--river)">Enregistrer dans un fichier</button><span id="cp" class="small muted"></span></div></div>`;
     $('#copy').onclick = async () => { try { await navigator.clipboard.writeText(txt); $('#cp').textContent = 'Copié.'; } catch (e) { const t = $('#rep'); t.focus(); t.select(); $('#cp').textContent = 'Sélectionné : utilisez Copier.'; } };
     $('#repfile').onclick = () => { download(`corridor-rapport-${S.ecole && S.ecole.id ? S.ecole.id : 'libre'}-${today()}.json`, JSON.stringify(reportData(txt), null, 1), 'application/json'); $('#cp').textContent = 'Fichier enregistré.'; };
   }
@@ -1732,9 +1756,25 @@ function skillTableHTML(p) {
   if (!codes.length) return '';
   return `<div><h3 style="font-size:1rem">Compétences, 7 derniers jours</h3><div class="table-wrap"><table class="t"><tr><th>Compétence</th><th>Essais</th><th>1er essai</th><th>Après aide</th><th>Montrée</th></tr>${codes.map(k => `<tr><td>${esc(skillLabel(p.parcours, k))}</td><td>${st[k].n}</td><td>${pc(st[k].first, st[k].n)}</td><td>${pc(st[k].after, st[k].n)}</td><td>${pc(st[k].shown, st[k].n)}</td></tr>`).join('')}</table></div></div>`;
 }
+/* Maîtrise par compétence, sur 30 jours : part des réponses trouvées, une réponse trouvée après aide comptant moitié.
+   Quatre paliers : acquis (80 % et plus), en cours (50 à 79 %), fragile (moins de 50 %), peu travaillé (moins de 3 essais).
+   Sert au Suivi, au rapport (rubrique 8) et à la séance de révision, qui vise d'abord les compétences fragiles. */
+const MASTERY = { acquis: 'acquis', 'en-cours': 'en cours', fragile: 'fragile', peu: 'peu travaillé' };
+function masteryOf(p, days = 30) {
+  const st = skillStats(p, days), out = {};
+  Object.keys(st).forEach(k => { const s = st[k], score = s.n ? (s.first + 0.5 * s.after) / s.n : 0; out[k] = { n: s.n, score, level: s.n < 3 ? 'peu' : score >= 0.8 ? 'acquis' : score >= 0.5 ? 'en-cours' : 'fragile' }; });
+  return out;
+}
+function masteryTableHTML(p) {
+  const m = masteryOf(p), all = ((PROG[p.parcours] || {}).skills || []), seen = all.filter(s => m[s.code]), extra = Object.keys(m).filter(k => !all.some(s => s.code === k));
+  const rows = seen.map(s => [s.code, s.label]).concat(extra.map(k => [k, k]));
+  if (!rows.length) return '';
+  const left = all.length - seen.length;
+  return `<div><h3 style="font-size:1rem">Maîtrise par compétence, 30 derniers jours</h3><div class="table-wrap"><table class="t"><tr><th>Compétence</th><th>Palier</th><th>Réussite</th><th>Essais</th></tr>${rows.map(([k, lab]) => `<tr><td>${esc(lab)}</td><td><span class="pill m-${m[k].level}">${MASTERY[m[k].level]}</span></td><td>${Math.round(100 * m[k].score)} %</td><td>${m[k].n}</td></tr>`).join('')}</table></div>${left ? `<p class="small muted" style="margin:4px 0 0">${left} compétence${left > 1 ? 's' : ''} de la progression pas encore travaillée${left > 1 ? 's' : ''}.</p>` : ''}</div>`;
+}
 let RECS_CACHE = [];
 function report() {
-  const L = [`${APPNAME.toUpperCase()} · RAPPORT · format 1`, `Date : ${today()} · version ${VERSION}`, ecoleLine()];
+  const L = [`${APPNAME.toUpperCase()} · RAPPORT · format 2`, `Date : ${today()} · version ${VERSION}`, ecoleLine()];
   if (!S.profiles.length) L.push('', 'Aucun enfant.');
   S.profiles.forEach(p => {
     const pr = p.progress, since = Date.now() - 7 * DAY_MS, runs = pr.runs.filter(r => r.start >= since), age = ageOf(p.dob);
@@ -1759,20 +1799,25 @@ function report() {
       L.push(`   - ${r.date} · ${r.title} · ${Math.max(1, Math.round(((r.end || r.start) - r.start) / 60000))} min · ${r.done ? 'terminée' : 'arrêtée avant la fin'} · enregistrements : ${r.recs || 0}${r.drill ? ` · automatismes ${r.drill.score}/${r.drill.count} en ${r.drill.secs} s${r.drill.record ? ' (record)' : ''}` : ''}`);
       r.items.forEach(it => L.push(`      ${it.ok ? (it.first ? 'OK 1er essai' : 'OK après erreur') : (it.answers.length ? 'MONTRÉE' : 'non fait')} | ${it.skill || '-'} | ${it.q} | réponses : ${it.answers.join(' → ') || '—'} | attendu : ${it.answer}`));
     });
+    L.push('8. MAÎTRISE (30 derniers jours) · code | palier | réussite | essais');
+    const ma = masteryOf(p), mk = Object.keys(ma).sort();
+    if (!mk.length) L.push('   aucune');
+    mk.forEach(k => L.push(`   ${k} | ${MASTERY[ma[k].level]} | ${Math.round(100 * ma[k].score)} % | ${ma[k].n}`));
   });
   return L.join('\n');
 }
 
 /* Le même rapport, en données : le fichier que la famille dépose à l'école ; tools/tableau_classe.py en fait un tableau par classe.
-   Format rapport-1 : les mêmes chiffres que le texte, et le texte lui-même. */
+   Format rapport-2 : les mêmes chiffres que le texte (format 2), et le texte lui-même ; rapport-1 était sans la maîtrise. */
 function reportData(txt) {
   const since = Date.now() - 7 * DAY_MS, mins = runs => runs.reduce((a, r) => a + Math.max(1, Math.round(((r.end || r.start) - r.start) / 60000)), 0);
-  return { app: 'corridor-a-la-maison', format: 'rapport-1', version: VERSION, date: today(), ecole: ECOLE.ecole || '', inscription: S.ecole && S.ecole.id ? { id: S.ecole.id, classe: S.ecole.classe || '' } : null, acces: ecoleLine(), texte: txt || report(),
+  return { app: 'corridor-a-la-maison', format: 'rapport-2', version: VERSION, date: today(), ecole: ECOLE.ecole || '', inscription: S.ecole && S.ecole.id ? { id: S.ecole.id, classe: S.ecole.classe || '' } : null, acces: ecoleLine(), texte: txt || report(),
     profils: S.profiles.map(p => {
       const pr = p.progress, runs = pr.runs.filter(r => r.start >= since), st = skillStats(p, 7), rr = RECS_CACHE.filter(r => r.profile === p.id), rs = resumeOf(p);
       return { id: p.id, prenom: kidLabel(p), parcours: p.parcours, classe: p.classe || (parcoursOf(p.parcours) || {}).classe || '', age: ageOf(p.dob),
         seances: { terminees: runs.filter(r => r.done).length, arretees: runs.filter(r => !r.done).length, minutes: mins(runs), total: Object.keys(pr.done).length, derniere: pr.runs.length ? pr.runs[pr.runs.length - 1].date : null },
         competences: Object.fromEntries(Object.keys(st).sort().map(k => [k, { libelle: skillLabel(p.parcours, k), essais: st[k].n, premier: st[k].first, apres: st[k].after, montree: st[k].shown }])),
+        maitrise: Object.fromEntries(Object.entries(masteryOf(p)).map(([k, v]) => [k, { palier: v.level, reussite: Math.round(100 * v.score), essais: v.n }])),
         records: pr.records, mesures: pr.measures.slice(-8), enregistrements: { total: rr.length, nonEcoutes: rr.filter(r => !r.heard).length },
         revision: pr.review.map(r => r.id), reprise: rs ? { seance: rs.lesson, etape: rs.i + 1, sur: rs.steps.length } : null };
     }) };
@@ -1800,6 +1845,7 @@ async function boot() {
   /* Demande au navigateur de ne jamais effacer les données du site de lui-même (suivi, voix de Maman). */
   try { if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(() => {}); } catch (e) {}
   RECS_CACHE = (await DB.recs()) || [];
+  applySettings();
   const home = () => { if (!S.setup) screenSetup(); else if (!S.profiles.length) screenProfile(null); else screenHome(); };
   if (accessRequired()) {
     if (!S.ecole) {
@@ -1811,6 +1857,7 @@ async function boot() {
 }
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) { try { navigator.serviceWorker.register('sw.js').catch(() => {}); } catch (e) {} }
 document.addEventListener('visibilitychange', () => { if (document.hidden) stopSpeech(); });
-window.__kono = { keyOf, sentences, S, P: () => P, AUDIO: () => AUDIO, report, reportData, makeRevision, LESSONS: () => LESSONS, profileOf, startLesson, logError, normCode, ECOLE: () => ECOLE, domainIcon };   /* pour les tests */
+window.__kono = { keyOf, sentences, S, P: () => P, AUDIO: () => AUDIO, report, reportData, makeRevision, LESSONS: () => LESSONS, profileOf, startLesson, logError, normCode, ECOLE: () => ECOLE, domainIcon,
+  unit: { normCode, keyOf, sentences, fill, ageOf, opts3, genItem, verdict, isRight, masteryOf, skillStats, journey, fromStore, fromV02, newId, recapOf, kid, blank, retrievalPool, applySettings, calm, PH: () => PH, PROG: () => PROG } };   /* pour les tests */
 boot();
 })();
