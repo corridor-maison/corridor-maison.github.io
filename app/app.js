@@ -5,7 +5,7 @@
    Format des séances : CONTRAT_LECONS.md. */
 'use strict';
 (() => {
-const VERSION = '0.3.3';
+const VERSION = '0.3.4';
 const APPNAME = 'Corridor à la maison';
 const FAST = location.hash === '#test';
 const app = document.getElementById('app');
@@ -324,6 +324,17 @@ const PART_ICON = {
   3: '<svg viewBox="0 0 48 48" aria-hidden="true"><path d="M24 13 C18 9 11 9 6 11 V38 C11 36 18 36 24 40 C30 36 37 36 42 38 V11 C37 9 30 9 24 13 Z M24 13 V40" fill="none" stroke="currentColor" stroke-width="4" stroke-linejoin="round"/></svg>',
   4: '<svg viewBox="0 0 48 48" aria-hidden="true"><path d="M8 12 H40 V32 H22 L13 40 V32 H8 Z" fill="none" stroke="currentColor" stroke-width="4.5" stroke-linejoin="round"/><path d="M16 22 H32" stroke="currentColor" stroke-width="4.5" stroke-linecap="round"/></svg>',
 };
+/* Une image par séance, d'après son domaine : l'enfant qui ne lit pas encore reconnaît la séance, et Kono la nomme au toucher. */
+const DOMAIN_ICON = {
+  nombres: '<svg viewBox="0 0 48 48" aria-hidden="true"><rect x="4" y="13" width="40" height="22" rx="3" fill="none" stroke="currentColor" stroke-width="3.5"/><path d="M12 13 V35 M20 13 V35 M28 13 V35 M36 13 V35 M4 24 H44" stroke="currentColor" stroke-width="2.5"/><circle cx="8" cy="18.5" r="2.6" fill="currentColor"/><circle cx="16" cy="18.5" r="2.6" fill="currentColor"/><circle cx="24" cy="18.5" r="2.6" fill="currentColor"/></svg>',
+  problemes: '<svg viewBox="0 0 48 48" aria-hidden="true"><path d="M7 19 H41 L37 40 H11 Z" fill="none" stroke="currentColor" stroke-width="4" stroke-linejoin="round"/><path d="M15 19 L24 7 L33 19" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/><path d="M17 26 V33 M24 26 V33 M31 26 V33" stroke="currentColor" stroke-width="3" stroke-linecap="round"/></svg>',
+  'langage oral': '<svg viewBox="0 0 48 48" aria-hidden="true"><path d="M8 10 H40 V31 H22 L13 39 V31 H8 Z" fill="none" stroke="currentColor" stroke-width="4" stroke-linejoin="round"/><circle cx="16" cy="20.5" r="2.8" fill="currentColor"/><circle cx="24" cy="20.5" r="2.8" fill="currentColor"/><circle cx="32" cy="20.5" r="2.8" fill="currentColor"/></svg>',
+  lecture: '<svg viewBox="0 0 48 48" aria-hidden="true"><path d="M24 13 C18 9 11 9 6 11 V38 C11 36 18 36 24 40 C30 36 37 36 42 38 V11 C37 9 30 9 24 13 Z M24 13 V40" fill="none" stroke="currentColor" stroke-width="4" stroke-linejoin="round"/></svg>',
+  revision: '<svg viewBox="0 0 48 48" aria-hidden="true"><path d="M36 22 a13 13 0 1 1 -4 -10" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round"/><path d="M34 4 V14 H24" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  autre: '<svg viewBox="0 0 48 48" aria-hidden="true"><circle cx="24" cy="24" r="9" fill="currentColor"/><path d="M24 4 V10 M24 38 V44 M4 24 H10 M38 24 H44 M10 10 L14 14 M34 34 L38 38 M10 38 L14 34 M34 14 L38 10" stroke="currentColor" stroke-width="4" stroke-linecap="round"/></svg>',
+};
+const domainKey = d => String(d || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+const domainIcon = L => DOMAIN_ICON[domainKey(L && L.domain)] || DOMAIN_ICON.autre;
 const BOAT = `<g class="boat"><path d="M-32 0 Q0 15 32 0 L26 8 Q0 18 -26 8 Z" fill="#5a3a22"/><path d="M-13 1 Q-13 -13 0 -13 Q13 -13 13 1" fill="#fbe8d9" stroke="#c35713" stroke-width="3"/><path d="M-30 1 L-38 -6 M30 1 L38 -6" stroke="#5a3a22" stroke-width="4" stroke-linecap="round"/></g>`;
 const FONT = 'Nunito, Andika, sans-serif';
 function vNumberline(v) {
@@ -745,29 +756,47 @@ function screenChild(p, opts = {}) {
   const tickets = list.filter(l => l.week === lastWeek || !pr.done[l.id]);
   const DAY = { lundi: 'Lun', mardi: 'Mar', mercredi: 'Mer', jeudi: 'Jeu', vendredi: 'Ven' };
   const recap = recapOf(p, rs, nx, canRevise);
+  /* Navigation sans lecture : chaque billet porte une image et Kono nomme la séance quand l'enfant la touche ;
+     un seul bouton, la pinasse, lance la séance choisie (la reprise, sinon celle du jour, sinon la révision). */
+  let sel = rs ? rs.lesson : nx ? nx.id : canRevise ? 'revision' : null;
+  const titleOf = id => id === 'revision' ? 'Séance de révision' : ((INDEX.find(l => l.id === id) || LESSONS[id] || {}).title || '');
+  const iconOf = id => id === 'revision' ? DOMAIN_ICON.revision : domainIcon(LESSONS[id]);
+  const todayHTML = () => {
+    if (!sel) return list.length ? `<h2>À demain !</h2><p class="muted">Toutes les séances sont faites.</p>` : `<h2>Pas encore de séance</h2><p class="muted">Les séances de ce parcours arrivent avec la prochaine publication.</p>`;
+    const resuming = !!(rs && rs.lesson === sel), bid = resuming ? 'resume' : sel === 'revision' ? 'revise' : 'start';
+    const lab = `${resuming ? 'Reprendre' : 'Commencer'} « ${titleOf(sel)} »`;
+    return `<p class="muted">${resuming ? 'Séance commencée' : sel !== 'revision' && pr.done[sel] ? 'Séance déjà faite, à refaire' : 'Séance du jour'}</p>
+      <div class="t-sel"><span class="t-big">${iconOf(sel)}</span><h2>${esc(titleOf(sel))}</h2></div>
+      <button class="btn big go boat-btn" id="${bid}" aria-label="${esc(lab)}" title="${esc(lab)}"><svg class="go-boat" viewBox="-40 -22 80 44" aria-hidden="true">${BOAT}</svg>${UI.play}</button>
+      <p class="small muted">${resuming ? `Étape ${rs.i + 1} sur ${rs.steps.length}, commencée le ${esc(rs.date || '')}.` : sel === 'revision' ? 'On revoit ce que tu as appris.' : `Prépare ton crayon et ta ${esc(ficheOf(p))}.`}</p>`;
+  };
+  const ticketHTML = (id, day, title, done, icon) => `<button class="ticket ${done ? 'done' : ''} ${rs && rs.lesson === id ? 'pending' : ''} ${sel === id ? 'sel' : ''}" data-l="${esc(id)}" aria-label="${esc(day ? `Séance de ${day} : ${title}` : title)}"><span class="t-ic">${icon}</span><span class="t-day">${esc(DAY[day] || (id === 'revision' ? 'Rév.' : lastWeek))}</span><span class="t-title">${esc(title)}</span><span class="t-mark">${done ? UI.check : rs && rs.lesson === id ? UI.play : ''}</span></button>`;
   app.innerHTML = `<div class="page child">
-  <header class="c-head"><button class="icon-btn" id="back" aria-label="Retour">${UI.back}</button><h2>${esc(kidLabel(p))}</h2><span class="c-count">${FISH(false)}<b>${pr.runs.reduce((a, r) => a + (r.fish || 0) + (r.gold || 0), 0)}</b></span></header>
+  <header class="c-head"><button class="icon-btn" id="back" aria-label="Retour">${UI.back}</button><h2>${esc(kidLabel(p))}</h2><span class="c-count" aria-label="Poissons pêchés">${FISH(false)}<b>${pr.runs.reduce((a, r) => a + (r.fish || 0) + (r.gold || 0), 0)}</b></span></header>
   <div class="c-grid">
     <div class="card c-map">${mapHTML(p)}</div>
     <div class="c-side">
-      <div class="card today">
-      ${rs ? `<p class="muted">Séance commencée</p><h2>${esc(rs.title)}</h2><button class="btn big go" id="resume">${UI.play}<span>Reprendre où je me suis arrêté${p.girl ? 'e' : ''}</span></button><p class="small muted">Étape ${rs.i + 1} sur ${rs.steps.length}, commencée le ${esc(rs.date || '')}.</p>`
-      : nx ? `<p class="muted">Séance du jour</p><h2>${esc(nx.title)}</h2><button class="btn big go" id="start">${UI.play}<span>Monter dans la pinasse</span></button><p class="small muted">Prépare ton crayon et ta ${esc(ficheOf(p))}.</p>`
-      : canRevise ? `<p class="muted">Séance du jour</p><h2>Séance de révision</h2><button class="btn big go" id="revise">${UI.play}<span>Monter dans la pinasse</span></button><p class="small muted">On revoit ce que tu as appris.</p>`
-      : list.length ? `<h2>À demain !</h2><p class="muted">Toutes les séances sont faites.</p>`
-      : `<h2>Pas encore de séance</h2><p class="muted">Les séances de ce parcours arrivent avec la prochaine publication.</p>`}
-      <p class="recap" id="recap" ${subtitlesOn() ? '' : 'hidden'}>${esc(recap)}</p>
-      </div>
-      <div class="tickets">${tickets.map(l => { const d = pr.done[l.id]; return `<button class="ticket ${d ? 'done' : ''} ${rs && rs.lesson === l.id ? 'pending' : ''}" data-l="${l.id}"><span class="t-day">${esc(DAY[(LESSONS[l.id] || {}).day] || l.week)}</span><span class="t-title">${esc(l.title)}</span><span class="t-mark">${d ? UI.check : rs && rs.lesson === l.id ? UI.play : ''}</span></button>`; }).join('')}</div>
+      <div class="card today"><div id="today">${todayHTML()}</div><p class="recap" id="recap" ${subtitlesOn() ? '' : 'hidden'}>${esc(recap)}</p></div>
+      <div class="tickets">${tickets.map(l => ticketHTML(l.id, (LESSONS[l.id] || {}).day || '', l.title, !!pr.done[l.id], domainIcon(LESSONS[l.id]))).join('')}${canRevise ? ticketHTML('revision', '', 'Séance de révision', false, DOMAIN_ICON.revision) : ''}</div>
     </div>
   </div></div>`;
   drawMap(app, p);
   $('#back').onclick = screenHome;
-  const go = id => { audioCtx(); if (rs && rs.lesson === id) return startLesson(id, rs); if (rs) abandonResume(p); startLesson(id); };
-  const st = $('#start'); if (st) st.onclick = () => go(nx.id);
-  const rv = $('#revise'); if (rv) rv.onclick = () => { audioCtx(); if (rs) abandonResume(p); startLesson(makeRevision(p).id); };
-  const rb = $('#resume'); if (rb) rb.onclick = () => go(rs.lesson);
-  app.querySelectorAll('[data-l]').forEach(b => b.onclick = () => go(b.dataset.l));
+  const go = id => {
+    audioCtx();
+    if (id === 'revision') { if (rs) abandonResume(p); return startLesson(makeRevision(p).id); }
+    if (rs && rs.lesson === id) return startLesson(id, rs);
+    if (rs) abandonResume(p);
+    startLesson(id);
+  };
+  const bind = () => ['start', 'revise', 'resume'].forEach(k => { const b = $('#' + k); if (b) b.onclick = () => go(sel); });
+  bind();
+  app.querySelectorAll('[data-l]').forEach(b => b.onclick = () => {
+    sfx('tap'); sel = b.dataset.l;
+    app.querySelectorAll('[data-l]').forEach(x => x.classList.toggle('sel', x.dataset.l === sel));
+    $('#today').innerHTML = todayHTML(); bind();
+    speak(`${titleOf(sel)}. ${PH.ticketGo || 'Touche la pinasse pour commencer.'}`);
+  });
   if (!opts.quiet) speak(recap);
 }
 
@@ -1590,8 +1619,9 @@ async function screenParent(tab) {
   if (tab === 'rapport') {
     RECS_CACHE = (await DB.recs()) || [];
     const txt = report();
-    pane.innerHTML = `<div class="card stack"><p style="margin:0">À copier et à envoyer le dimanche : les séances de la semaine suivante sont réglées sur ce rapport. Son format ne change pas d'une semaine à l'autre, pour pouvoir comparer.</p><textarea id="rep" readonly>${esc(txt)}</textarea><div class="row"><button class="btn" id="copy" style="--c:var(--river)">Copier le rapport</button><span id="cp" class="small muted"></span></div></div>`;
+    pane.innerHTML = `<div class="card stack"><p style="margin:0">Le dimanche : copier le rapport pour l'envoyer, ou l'enregistrer dans un fichier à déposer à l'école, qui en fait un tableau par classe. Son format ne change pas d'une semaine à l'autre, pour pouvoir comparer.</p><textarea id="rep" readonly>${esc(txt)}</textarea><div class="row"><button class="btn" id="copy" style="--c:var(--river)">Copier le rapport</button><button class="btn ghost" id="repfile" style="--c:var(--river)">Enregistrer dans un fichier</button><span id="cp" class="small muted"></span></div></div>`;
     $('#copy').onclick = async () => { try { await navigator.clipboard.writeText(txt); $('#cp').textContent = 'Copié.'; } catch (e) { const t = $('#rep'); t.focus(); t.select(); $('#cp').textContent = 'Sélectionné : utilisez Copier.'; } };
+    $('#repfile').onclick = () => { download(`corridor-rapport-${S.ecole && S.ecole.id ? S.ecole.id : 'libre'}-${today()}.json`, JSON.stringify(reportData(txt), null, 1), 'application/json'); $('#cp').textContent = 'Fichier enregistré.'; };
   }
   if (tab === 'reglages') {
     let persisted = null; try { persisted = navigator.storage && navigator.storage.persisted ? await navigator.storage.persisted() : null; } catch (e) {}
@@ -1733,6 +1763,21 @@ function report() {
   return L.join('\n');
 }
 
+/* Le même rapport, en données : le fichier que la famille dépose à l'école ; tools/tableau_classe.py en fait un tableau par classe.
+   Format rapport-1 : les mêmes chiffres que le texte, et le texte lui-même. */
+function reportData(txt) {
+  const since = Date.now() - 7 * DAY_MS, mins = runs => runs.reduce((a, r) => a + Math.max(1, Math.round(((r.end || r.start) - r.start) / 60000)), 0);
+  return { app: 'corridor-a-la-maison', format: 'rapport-1', version: VERSION, date: today(), ecole: ECOLE.ecole || '', inscription: S.ecole && S.ecole.id ? { id: S.ecole.id, classe: S.ecole.classe || '' } : null, acces: ecoleLine(), texte: txt || report(),
+    profils: S.profiles.map(p => {
+      const pr = p.progress, runs = pr.runs.filter(r => r.start >= since), st = skillStats(p, 7), rr = RECS_CACHE.filter(r => r.profile === p.id), rs = resumeOf(p);
+      return { id: p.id, prenom: kidLabel(p), parcours: p.parcours, classe: p.classe || (parcoursOf(p.parcours) || {}).classe || '', age: ageOf(p.dob),
+        seances: { terminees: runs.filter(r => r.done).length, arretees: runs.filter(r => !r.done).length, minutes: mins(runs), total: Object.keys(pr.done).length, derniere: pr.runs.length ? pr.runs[pr.runs.length - 1].date : null },
+        competences: Object.fromEntries(Object.keys(st).sort().map(k => [k, { libelle: skillLabel(p.parcours, k), essais: st[k].n, premier: st[k].first, apres: st[k].after, montree: st[k].shown }])),
+        records: pr.records, mesures: pr.measures.slice(-8), enregistrements: { total: rr.length, nonEcoutes: rr.filter(r => !r.heard).length },
+        revision: pr.review.map(r => r.id), reprise: rs ? { seance: rs.lesson, etape: rs.i + 1, sur: rs.steps.length } : null };
+    }) };
+}
+
 /* ============================ démarrage ============================ */
 /* Après une mise à jour depuis la v0.2 : les enregistrements et les phrases de Maman passent sous l'identifiant du profil. */
 async function migrateDB() {
@@ -1766,6 +1811,6 @@ async function boot() {
 }
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) { try { navigator.serviceWorker.register('sw.js').catch(() => {}); } catch (e) {} }
 document.addEventListener('visibilitychange', () => { if (document.hidden) stopSpeech(); });
-window.__kono = { keyOf, sentences, S, P: () => P, AUDIO: () => AUDIO, report, makeRevision, LESSONS: () => LESSONS, profileOf, startLesson, logError, normCode, ECOLE: () => ECOLE };   /* pour les tests */
+window.__kono = { keyOf, sentences, S, P: () => P, AUDIO: () => AUDIO, report, reportData, makeRevision, LESSONS: () => LESSONS, profileOf, startLesson, logError, normCode, ECOLE: () => ECOLE, domainIcon };   /* pour les tests */
 boot();
 })();

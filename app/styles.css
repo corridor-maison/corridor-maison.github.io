@@ -109,9 +109,17 @@ body[data-screen="home"], body[data-screen="child"] { background-image: url("dat
 .today h2 { font-size: 2rem; }
 .btn.go { --c: var(--good); }
 .tickets { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 10px; }
-.ticket { border: 2px dashed var(--line); background: var(--paper); border-radius: 16px; padding: 10px 12px; display: flex; flex-direction: column; align-items: flex-start; gap: 2px; text-align: left; position: relative; min-height: 86px; }
+.ticket { border: 2px dashed var(--line); background: var(--paper); border-radius: 16px; padding: 10px 12px; display: grid; grid-template-columns: 44px 1fr; grid-template-rows: auto auto; column-gap: 10px; row-gap: 2px; align-items: center; text-align: left; position: relative; min-height: 86px; }
+.ticket .t-ic { grid-row: 1 / 3; width: 44px; height: 44px; color: var(--c); }
+.ticket .t-ic svg { width: 100%; height: 100%; }
+.ticket.sel { border-style: solid; border-color: var(--c); box-shadow: 0 0 0 4px var(--c-soft); }
+.t-sel { display: flex; align-items: center; gap: 14px; }
+.t-big { width: 64px; height: 64px; color: var(--c); flex: none; }
+.t-big svg { width: 100%; height: 100%; }
+.btn.boat-btn { padding: 10px 26px 8px 18px; gap: 4px; }
+.btn.big .go-boat { width: 92px; height: 50px; flex: none; }
 .ticket .t-day { font-family: var(--display); color: var(--c); font-size: 1.1rem; }
-.ticket .t-title { font-size: .92rem; line-height: 1.2; color: var(--muted); }
+.ticket .t-title { font-size: .92rem; line-height: 1.2; color: var(--muted); padding-right: 26px; }
 .ticket .t-mark { position: absolute; right: 8px; top: 8px; width: 28px; height: 28px; color: var(--good); }
 .ticket.pending { border-style: solid; border-color: var(--c); }
 .ticket.pending .t-mark { color: var(--c); }
