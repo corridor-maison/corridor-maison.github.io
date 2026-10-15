@@ -1,0 +1,247 @@
+{
+ "schema": 1,
+ "acces": "code",
+ "ecole": "École pilote",
+ "codes": [
+  {
+   "id": "C-0001",
+   "h": "fa030ef20e0fae5c1dc9ebcb362d9438dd950dc527aa7cbb0a0c149344d87d13",
+   "cree": "2026-10-15",
+   "classe": "CE1"
+  },
+  {
+   "id": "C-0002",
+   "h": "a231bed2f930ea2c3dc79dd1918632d9c761002480fe16ddb553e960ccecbb6e",
+   "cree": "2026-10-15",
+   "classe": "CE1"
+  },
+  {
+   "id": "C-0003",
+   "h": "877e3c3faf96d9aaaa7905fbacbed7bb2f4a89b619d06962ea4a05217a04eecc",
+   "cree": "2026-10-15",
+   "classe": "CE1"
+  },
+  {
+   "id": "C-0004",
+   "h": "8c1f96fac99c6aca2a791db1664e8262e287e2d66fcb83d6bb31c07a3c93acaa",
+   "cree": "2026-10-15",
+   "classe": "CE1"
+  },
+  {
+   "id": "C-0005",
+   "h": "fb2bef63b70cca5cf4242cea5de9d2ed35e906ccb20e62193b29f2c59e6a3446",
+   "cree": "2026-10-15",
+   "classe": "CE1"
+  },
+  {
+   "id": "C-0006",
+   "h": "f391c16a4c5f320be6978e79b25c731753f29a2d29aed755c8f0ced3bc01f334",
+   "cree": "2026-10-15",
+   "classe": "CE1"
+  },
+  {
+   "id": "C-0007",
+   "h": "38165d2f0df66a5e8bf4ae3b24207785b77843e652313321ba642656d68ee42e",
+   "cree": "2026-10-15",
+   "classe": "CE1"
+  },
+  {
+   "id": "C-0008",
+   "h": "9cc9fce87d11a28384872124a30376de6ba1541e5912d432f1d2deeda264289b",
+   "cree": "2026-10-15",
+   "classe": "CE1"
+  },
+  {
+   "id": "C-0009",
+   "h": "5313a7964878f8061067ab39a8af3a23bf347a260aec2a88343666298dd590f3",
+   "cree": "2026-10-15",
+   "classe": "CE1"
+  },
+  {
+   "id": "C-0010",
+   "h": "4bcf7eee5441f5c9dd69c8be54e177c53e6871069c5f66108692030e8af5ad71",
+   "cree": "2026-10-15",
+   "classe": "CE1"
+  },
+  {
+   "id": "C-0011",
+   "h": "a3e36d88a4c211188b34bf4a0a2355fcae501c7ebf69b3d87ae20f87e2bc94d6",
+   "cree": "2026-10-15",
+   "classe": "CE1"
+  },
+  {
+   "id": "C-0012",
+   "h": "5a2296ec9b00eac33c22c314becd151567f4f026947b6da675fff7fbcd37df4f",
+   "cree": "2026-10-15",
+   "classe": "CE1"
+  },
+  {
+   "id": "C-0013",
+   "h": "048d3050f77959c695694bdc7c6acd412fb8f39c53a178c83405e4b157fc7777",
+   "cree": "2026-10-15",
+   "classe": "CE1"
+  },
+  {
+   "id": "C-0014",
+   "h": "e64eca68167bc19ffed2115446014217ca18e65a716b34a1ae7d9aad74ca8ed8",
+   "cree": "2026-10-15",
+   "classe": "CE1"
+  },
+  {
+   "id": "C-0015",
+   "h": "171bae4d27c31e43ffecb73770d5dd4de460d66812b564aee0b8a7ba1aabeadf",
+   "cree": "2026-10-15",
+   "classe": "CE1"
+  },
+  {
+   "id": "C-0016",
+   "h": "d6d46b27e5ac413a20629b3ec42552699ec740880de9bf5acf5e89ce01e84efd",
+   "cree": "2026-10-15",
+   "classe": "CE1"
+  },
+  {
+   "id": "C-0017",
+   "h": "9f625783840e5140445ae5042f90414d8c15a5e706dfc485d4d67bd102135642",
+   "cree": "2026-10-15",
+   "classe": "CE1"
+  },
+  {
+   "id": "C-0018",
+   "h": "4743ba06a4fd4fd01f9023ac01e5a7a08d689af811ddcfb7efec9287b661118a",
+   "cree": "2026-10-15",
+   "classe": "CE1"
+  },
+  {
+   "id": "C-0019",
+   "h": "8a0dcc1cbad6a54e71c38ebd973778525572fe0e6cc097501b3181a01c0cd0d8",
+   "cree": "2026-10-15",
+   "classe": "CE1"
+  },
+  {
+   "id": "C-0020",
+   "h": "c169ef8589f368cc4d8fcc4c0192406f1eec26d9c8bab5d958082f5907b73f68",
+   "cree": "2026-10-15",
+   "classe": "CE1"
+  },
+  {
+   "id": "C-0021",
+   "h": "85f1a2c1c7fb5745286d25c69fc2cd0804ee1bf4e33ddd2c9967771eeab42eae",
+   "cree": "2026-10-15",
+   "classe": "GS"
+  },
+  {
+   "id": "C-0022",
+   "h": "022eac26fd7840417aaa99c4fd3624d3b2699dec87708c9a218f5653ac1d1685",
+   "cree": "2026-10-15",
+   "classe": "GS"
+  },
+  {
+   "id": "C-0023",
+   "h": "bfd4eb51dd08904d663195f056a477689b0e37d2dcadaec56e6f08ce7e0b8c75",
+   "cree": "2026-10-15",
+   "classe": "GS"
+  },
+  {
+   "id": "C-0024",
+   "h": "8d2945a00f2c1dc7607bcfb09a6c0fe0e5124d08637beb651097111ad1f3e0f9",
+   "cree": "2026-10-15",
+   "classe": "GS"
+  },
+  {
+   "id": "C-0025",
+   "h": "8f180b992c5f21ed7993acb1acd7989bac13eb514f23927fc471e58ce377691e",
+   "cree": "2026-10-15",
+   "classe": "GS"
+  },
+  {
+   "id": "C-0026",
+   "h": "e66f81ecdf40963034e98a07928cbfc4d8a24a3d7375dd65bd46354f6c076e38",
+   "cree": "2026-10-15",
+   "classe": "GS"
+  },
+  {
+   "id": "C-0027",
+   "h": "a0cf4755b1f5ee927ea00dab7a783e68a6b6ed143a4a13ff7bd05ecc103a2e58",
+   "cree": "2026-10-15",
+   "classe": "GS"
+  },
+  {
+   "id": "C-0028",
+   "h": "5e3543763ffdfda4b1cb443e7dffbc1c5954976c2cf3bd028640cf10185b97d5",
+   "cree": "2026-10-15",
+   "classe": "GS"
+  },
+  {
+   "id": "C-0029",
+   "h": "2506d437601f7f2163043d53550a976e293f6edf0e8666d3ad876e80efe42b94",
+   "cree": "2026-10-15",
+   "classe": "GS"
+  },
+  {
+   "id": "C-0030",
+   "h": "c53790c6d70a0873f09dad3568cdb3f05a8abe06addb31fea3b0a11f27b27070",
+   "cree": "2026-10-15",
+   "classe": "GS"
+  },
+  {
+   "id": "C-0031",
+   "h": "7e5074dec0841c303f71490997d2d57ae8af465befc318ab8316f7fa4c03a4fd",
+   "cree": "2026-10-15",
+   "classe": "GS"
+  },
+  {
+   "id": "C-0032",
+   "h": "404f3a1295c9bd2ecfa292bb661cce8735ec16d08428e8f044b9adc86f11f691",
+   "cree": "2026-10-15",
+   "classe": "GS"
+  },
+  {
+   "id": "C-0033",
+   "h": "8d7c7a5ec6ca551ba463d8da163ca537f20d750c056565f8ec9fba433d3821e6",
+   "cree": "2026-10-15",
+   "classe": "GS"
+  },
+  {
+   "id": "C-0034",
+   "h": "843080d857217a58647e6aa45773d7002788006cf37eef18b22f3b00bd7a4559",
+   "cree": "2026-10-15",
+   "classe": "GS"
+  },
+  {
+   "id": "C-0035",
+   "h": "d42649ebd358e0dbb049655983a4d30d8ac59e44f4b4c63a518f2b38fbb7c5be",
+   "cree": "2026-10-15",
+   "classe": "GS"
+  },
+  {
+   "id": "C-0036",
+   "h": "630bebf47728e60670d990b4f3d8f35569a9eb3597a338bc15e61ea97d20f99c",
+   "cree": "2026-10-15",
+   "classe": "GS"
+  },
+  {
+   "id": "C-0037",
+   "h": "b44370f282651b3ccbca34b63b6fa13ead81bb960783b171f720583a75d6b8ff",
+   "cree": "2026-10-15",
+   "classe": "GS"
+  },
+  {
+   "id": "C-0038",
+   "h": "c2c0a87cb582200845fc49cf5aedaddfc3821d2911c073ef34dbedb5e92f249a",
+   "cree": "2026-10-15",
+   "classe": "GS"
+  },
+  {
+   "id": "C-0039",
+   "h": "d014ad68fd7b4b7e3ab09e80d2cfbea86fc68b89afdf9c431cc9931162451a9a",
+   "cree": "2026-10-15",
+   "classe": "GS"
+  },
+  {
+   "id": "C-0040",
+   "h": "1e19c0066f92c972fcd0ba00f16afea5faadc9f6d80a4fd3631e325e59b29d0b",
+   "cree": "2026-10-15",
+   "classe": "GS"
+  }
+ ]
+}

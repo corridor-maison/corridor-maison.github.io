@@ -1,10 +1,10 @@
 /* Hors ligne : l'application, les images et les leçons sont gardées sur la tablette.
    Les leçons, les phrases et le moteur sont d'abord demandés au réseau (pour recevoir la semaine suivante et les mises à jour),
    puis pris dans le cache s'il n'y a pas de connexion. */
-const CACHE = 'kono-0.3.2';
+const CACHE = 'kono-0.3.3';
 const CORE = ['./', 'index.html', 'styles.css', 'app.js', 'manifest.webmanifest',
   'fonts/andika-400.woff2', 'fonts/andika-700.woff2', 'fonts/nunito-800.woff2',
-  'icons/icon-192.png', 'icons/icon-512.png', 'parcours.json', 'lessons/index.json', 'phrases.json', 'audio/manifest.json',
+  'icons/icon-192.png', 'icons/icon-512.png', 'parcours.json', 'ecole.json', 'lessons/index.json', 'phrases.json', 'audio/manifest.json',
   'progression/ce1.json', 'progression/gs.json',
   'img/ananas.svg', 'img/ballon.svg', 'img/baobab.svg', 'img/bateau.svg', 'img/bol.svg', 'img/calebasse.svg', 'img/chat.svg', 'img/domino.svg', 'img/jeton.svg', 'img/lapin.svg', 'img/mangue.svg', 'img/panier.svg', 'img/poisson.svg', 'img/sac.svg', 'img/soleil.svg', 'img/velo.svg'];
 
@@ -21,7 +21,7 @@ self.addEventListener('install', e => {
 self.addEventListener('activate', e => {
   e.waitUntil(caches.keys().then(keys => Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k)))).then(() => self.clients.claim()));
 });
-const FRESH = p => p.includes('/lessons/') || p.endsWith('parcours.json') || p.includes('/progression/') || p.endsWith('manifest.json') || p.endsWith('phrases.json') || p.endsWith('app.js') || p.endsWith('styles.css');
+const FRESH = p => p.includes('/lessons/') || p.endsWith('parcours.json') || p.endsWith('ecole.json') || p.includes('/progression/') || p.endsWith('manifest.json') || p.endsWith('phrases.json') || p.endsWith('app.js') || p.endsWith('styles.css');
 self.addEventListener('fetch', e => {
   const req = e.request;
   if (req.method !== 'GET' || new URL(req.url).origin !== location.origin) return;

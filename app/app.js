@@ -1,11 +1,11 @@
-/* Corridor à la maison — moteur de séances guidées par la voix (v0.3.2).
+/* Corridor à la maison — moteur de séances guidées par la voix (v0.3.3).
    Guide : Kono, le martin-pêcheur du fleuve Niger. Un profil par enfant, routé par son parcours (app/parcours.json).
    Une séance = un fichier JSON (lessons/*.json), en quatre temps : automatismes, leçon, lecture ou histoire, méthode.
    Le même fichier produit les fiches imprimables (tools/build_print.py) et la liste des phrases à enregistrer (tools/build_audio.py).
    Format des séances : CONTRAT_LECONS.md. */
 'use strict';
 (() => {
-const VERSION = '0.3.2';
+const VERSION = '0.3.3';
 const APPNAME = 'Corridor à la maison';
 const FAST = location.hash === '#test';
 const app = document.getElementById('app');
@@ -88,7 +88,7 @@ const DB = (() => {
 })();
 
 let CLIPS = [];
-let LESSONS = {}, INDEX = [], ESCALES = {}, PARCOURS = [], PH = {}, AUDIO = { files: {} }, PROG = {};
+let LESSONS = {}, INDEX = [], ESCALES = {}, PARCOURS = [], PH = {}, AUDIO = { files: {} }, PROG = {}, ECOLE = { acces: 'libre', codes: [] };
 async function getJSON(u) { const r = await fetch(u, { cache: 'no-cache' }); if (!r.ok) throw new Error(u); return r.json(); }
 const parcoursOf = id => PARCOURS.find(p => p.id === id) || null;
 const escalesOf = pid => ESCALES[pid] || [];
@@ -109,6 +109,8 @@ async function loadAll() {
   try { AUDIO = await getJSON('audio/manifest.json'); if (!AUDIO.files) AUDIO.files = {}; } catch (e) { AUDIO = { files: {} }; }
   /* La progression de chaque parcours (codes de compétences), quand elle est publiée. */
   for (const p of PARCOURS) { try { PROG[p.id] = await getJSON(`progression/${p.id}.json`); } catch (e) { PROG[p.id] = { skills: [], drillKinds: {} }; } }
+  /* L'école : mode d'accès et empreintes des codes d'inscription (jamais les codes eux-mêmes). */
+  try { ECOLE = await getJSON('ecole.json'); if (!Array.isArray(ECOLE.codes)) ECOLE.codes = []; } catch (e) { ECOLE = { acces: 'libre', codes: [] }; }
 }
 const skillLabel = (pid, code) => { const s = ((PROG[pid] || {}).skills || []).find(x => x.code === code); return s ? s.label : code; };
 
@@ -530,6 +532,80 @@ const FICHE = { bleu: 'bleue', orange: 'orange', vert: 'verte', violet: 'violett
 function ficheOf(p) { const pr = p && parcoursOf(p.parcours); return 'fiche' + (pr && FICHE[pr.couleur] ? ' ' + FICHE[pr.couleur] : ''); }
 function screen(nameOf) { document.body.dataset.screen = nameOf; window.scrollTo(0, 0); }
 
+/* ============================ accès autorisé par l'école ============================ */
+/* L'école remet un code d'inscription à chaque famille. Le dépôt ne contient que l'empreinte SHA-256 des codes :
+   ni les codes, ni un nom d'enfant. La vérification se fait sur la tablette, hors ligne. Une tablette installée
+   avant ce contrôle garde son accès ; l'école la régularise avec un code depuis l'espace parent. */
+const normCode = s => String(s || '').toUpperCase().replace(/[^0-9A-Z]/g, '').replace(/O/g, '0').replace(/[IL]/g, '1');
+async function sha256Hex(s) { const b = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(s)); return Array.from(new Uint8Array(b), x => x.toString(16).padStart(2, '0')).join(''); }
+const accessRequired = () => !!(ECOLE && ECOLE.acces === 'code');
+const codeStillValid = h => (ECOLE.codes || []).some(c => c.h === h && !c.revoque);
+async function checkCode(raw) {
+  const code = normCode(raw); if (code.length < 6) return null;
+  const h = await sha256Hex(code);
+  const e = (ECOLE.codes || []).find(c => c.h === h && !c.revoque);
+  return e ? { id: e.id, classe: e.classe || '', h, date: today() } : null;
+}
+function screenEcole(next, msg) {
+  setChild(null); stopSpeech(); screen('ecole');
+  app.innerHTML = `<div class="page stack">
+  <div class="brand">${KONO}<div><h1>${APPNAME}</h1><p class="muted">${esc(msg || `${ECOLE.ecole || 'L\'école'} vous a remis un code d'inscription.`)}</p></div></div>
+  <div class="card stack"><h3>Code d'inscription</h3><input type="text" id="code" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="ex. K7F-29Q-H43" style="font-family:var(--display);font-size:1.5rem;letter-spacing:.12em;text-transform:uppercase"><p class="small muted">Délivré par l'école, une fois par famille. Sans ce code, l'application ne s'ouvre pas. Il reste sur la tablette, rien n'est envoyé.</p></div>
+  <div class="row"><button class="btn big" id="go" style="--c:var(--river)">Vérifier</button><span id="err" class="small" style="color:var(--try)"></span></div></div>`;
+  $('#go').onclick = async () => {
+    const ok = await checkCode($('#code').value);
+    if (!ok) { $('#err').textContent = 'Code inconnu. Vérifiez-le avec l\'école.'; return; }
+    S.ecole = ok; save(); next();
+  };
+}
+function ecoleLine() {
+  if (!accessRequired()) return 'Inscription : accès libre (aucun contrôle de l\'école)';
+  if (!S.ecole || !S.ecole.id) return 'Inscription : installée avant le contrôle d\'accès de l\'école, à régulariser avec un code';
+  return `Inscription : ${S.ecole.id}${S.ecole.classe ? ' · classe ' + S.ecole.classe : ''}${ECOLE.ecole ? ' · ' + ECOLE.ecole : ''}`;
+}
+
+/* ============================ export et import d'un profil ============================ */
+/* Un profil se déplace vers une autre tablette par un fichier : suivi, phrases de Maman et enregistrements de l'enfant. */
+const blobToB64 = b => new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(String(r.result).split(',')[1] || ''); r.onerror = rej; r.readAsDataURL(b); });
+const b64ToBlob = (s, type) => { const bin = atob(s || ''); const a = new Uint8Array(bin.length); for (let i = 0; i < bin.length; i++) a[i] = bin.charCodeAt(i); return new Blob([a], { type: type || 'audio/webm' }); };
+function download(name, data, type) { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([data], { type })); a.download = name; document.body.appendChild(a); a.click(); a.remove(); }
+async function exportProfile(p) {
+  if (!p) return;
+  const keys = (await DB.clipKeys()) || []; const clips = [];
+  for (const k of keys) if (String(k).endsWith('@' + p.id)) { const b = await DB.getClip(k); if (b) clips.push({ phrase: String(k).split('@')[0], type: b.type, b64: await blobToB64(b) }); }
+  const recs = [];
+  for (const r of (await DB.recs()) || []) if (r.profile === p.id) { const o = Object.assign({}, r); delete o.id; delete o.profile; delete o.blob; o.type = r.blob && r.blob.type; o.b64 = r.blob ? await blobToB64(r.blob) : ''; recs.push(o); }
+  const data = JSON.stringify({ app: 'corridor-a-la-maison', format: 'profil-1', version: VERSION, date: new Date().toISOString(), profile: p, clips, recs });
+  download(`corridor-profil-${(p.name || 'enfant').replace(/[^\w-]+/g, '_')}-${today()}.json`, data, 'application/json');
+}
+async function importProfile(d) {
+  if (!d || d.app !== 'corridor-a-la-maison' || d.format !== 'profil-1' || !d.profile) throw new Error('fichier inconnu');
+  const p = Object.assign({}, d.profile); p.progress = Object.assign(kid(), p.progress || {});
+  if (!parcoursOf(p.parcours)) throw new Error('parcours inconnu');
+  if (!p.id || S.profiles.some(x => x.id === p.id)) p.id = newId(S.profiles);
+  if (!THEMES.includes(p.couleur)) p.couleur = THEMES[0];
+  S.profiles.push(p); save();
+  for (const c of d.clips || []) await DB.putClip(`${c.phrase}@${p.id}`, b64ToBlob(c.b64, c.type));
+  for (const r of d.recs || []) { const rec = Object.assign({}, r); delete rec.b64; delete rec.type; delete rec.id; rec.profile = p.id; rec.blob = b64ToBlob(r.b64, r.type); await DB.addRec(rec); }
+  RECS_CACHE = (await DB.recs()) || [];
+  return p.name;
+}
+/* Rappel de sauvegarde : jamais faite, ou plus de 7 jours, alors qu'il y a du suivi à perdre. */
+function backupWarnHTML() {
+  const has = S.profiles.some(p => p.progress.runs.length);
+  const days = S.lastBackup ? Math.floor((Date.now() - new Date(S.lastBackup).getTime()) / DAY_MS) : null;
+  if (!has || (days !== null && days < 7)) return '';
+  return `<p class="warn">Le suivi n'a ${days === null ? 'jamais été sauvegardé' : `pas été sauvegardé depuis ${days} jours`}. Une tablette réinitialisée le perd. <button class="btn sm" id="tobackup" style="--c:var(--river)">Sauvegarder maintenant</button></p>`;
+}
+
+/* ============================ journal d'erreurs ============================ */
+/* Les 50 dernières erreurs, sur la tablette seulement, lisibles et copiables dans Réglages. Rien n'est envoyé. */
+function logError(m) {
+  try { (S.log || (S.log = [])).push({ ts: new Date().toISOString(), v: VERSION, ecran: document.body.dataset.screen || '', m: String(m).slice(0, 300) }); if (S.log.length > 50) S.log.splice(0, S.log.length - 50); save(); } catch (e) {}
+}
+window.addEventListener('error', e => logError((e.message || 'erreur') + (e.filename ? ` (${String(e.filename).split('/').pop()}:${e.lineno})` : '')));
+window.addEventListener('unhandledrejection', e => logError('promesse : ' + ((e.reason && e.reason.message) || e.reason)));
+
 function screenSetup() {
   setChild(null); stopSpeech(); screen('setup');
   const first = !S.setup;
@@ -553,6 +629,7 @@ function screenProfile(p) {
   const edit = !!p; const f = p ? Object.assign({}, p) : { name: '', girl: false, dob: '', parcours: '', couleur: '' };
   const draw = () => {
     const age = ageOf(f.dob), prop = age == null ? null : PARCOURS.find(x => age >= x.age_min && age <= x.age_max);
+    if (!f.parcours && !edit && S.ecole && S.ecole.classe) { const pc = PARCOURS.find(x => x.classe === S.ecole.classe); if (pc) f.parcours = pc.id; }   /* la classe du code d'inscription */
     if (!f.parcours && prop) f.parcours = prop.id;
     const used = S.profiles.filter(x => !p || x.id !== p.id).map(x => x.couleur), pr = parcoursOf(f.parcours);
     if (!f.couleur) f.couleur = THEMES.find(t => !used.includes(t) && pr && t === pr.couleur) || THEMES.find(t => !used.includes(t)) || (pr ? pr.couleur : THEMES[0]);
@@ -1455,7 +1532,7 @@ async function screenParent(tab) {
   const pane = $('#pane');
   if (tab === 'suivi') {
     const recs = (await DB.recs()) || [];
-    pane.innerHTML = S.profiles.map(p => {
+    const cards = S.profiles.map(p => {
       const pr = p.progress, runs = pr.runs.slice().reverse(), rr = recs.filter(r => r.profile === p.id).sort((a, b) => b.ts - a.ts);
       const unheard = rr.filter(r => !r.heard).length;
       const recsDrill = Object.entries(pr.records).map(([k, r]) => `${esc(k)} : ${r.best} (${r.secs} s, ${esc(r.date)})`).join(' · ');
@@ -1471,6 +1548,8 @@ async function screenParent(tab) {
         <div class="table-wrap"><table class="t"><tr><th>Question</th><th>Réponses tapées</th><th>Résultat</th></tr>${r.items.map(it => `<tr><td>${esc(it.q)}</td><td>${esc(it.answers.join(' → ') || '—')}</td><td>${status(it)}</td></tr>`).join('')}</table></div></div>`).join('') : '<p class="muted">Pas encore de séance.</p>'}</details>
       <p class="small muted">À revoir automatiquement : ${pr.review.length} défi${pr.review.length > 1 ? 's' : ''} de leçon, ${Object.values(pr.drillMisses).reduce((a, b) => a + b.length, 0)} calcul${Object.values(pr.drillMisses).reduce((a, b) => a + b.length, 0) > 1 ? 's' : ''} d'automatismes.</p></div>`;
     }).join('') || '<p class="muted">Aucun enfant pour l\'instant.</p>';
+    pane.innerHTML = backupWarnHTML() + cards;
+    const tb = $('#tobackup'); if (tb) tb.onclick = () => screenParent('reglages');
     pane.querySelectorAll('[data-play]').forEach(b => b.onclick = async () => { const r = recs.find(x => String(x.id) === b.dataset.play); if (r) { stopSpeech(); playFile(URL.createObjectURL(r.blob), false); await markHeard(r); const p = b.parentElement.querySelector('.pill.shown'); if (p) { p.className = 'pill first'; p.textContent = 'écouté'; } } });
     pane.querySelectorAll('[data-del]').forEach(b => { let armed = false; b.onclick = async () => { if (!armed) { armed = true; b.textContent = 'Confirmer la suppression'; return; } await DB.delRec(Number(b.dataset.del)); screenParent('suivi'); }; });
     pane.querySelectorAll('[data-measure]').forEach(b => b.onclick = () => screenMeasure(recs.find(x => String(x.id) === b.dataset.measure)));
@@ -1518,21 +1597,36 @@ async function screenParent(tab) {
     let persisted = null; try { persisted = navigator.storage && navigator.storage.persisted ? await navigator.storage.persisted() : null; } catch (e) {}
     const installed = ['standalone', 'fullscreen', 'minimal-ui'].some(m => matchMedia(`(display-mode: ${m})`).matches);
     pane.innerHTML = `<div class="card stack"><h3>Les enfants</h3>
-      ${S.profiles.map(p => `<div class="row" style="justify-content:space-between"><span><b style="color:var(--${esc(p.couleur)})">${esc(kidLabel(p))}</b> <span class="small muted">· ${esc(parcoursLabel(p))}${ageOf(p.dob) != null ? ` · ${ageOf(p.dob)} ans` : ''}</span></span><span class="row"><button class="btn soft sm" data-edit="${esc(p.id)}">Modifier</button><button class="link" data-rm="${esc(p.id)}">Supprimer</button></span></div>`).join('') || '<p class="muted small" style="margin:0">Aucun enfant.</p>'}
-      <div><button class="btn" id="addp" style="--c:var(--river)">Ajouter un enfant</button></div></div>
+      ${S.profiles.map(p => `<div class="row" style="justify-content:space-between"><span><b style="color:var(--${esc(p.couleur)})">${esc(kidLabel(p))}</b> <span class="small muted">· ${esc(parcoursLabel(p))}${ageOf(p.dob) != null ? ` · ${ageOf(p.dob)} ans` : ''}</span></span><span class="row"><button class="btn soft sm" data-edit="${esc(p.id)}">Modifier</button><button class="btn soft sm" data-exp="${esc(p.id)}">Exporter</button><button class="link" data-rm="${esc(p.id)}">Supprimer</button></span></div>`).join('') || '<p class="muted small" style="margin:0">Aucun enfant.</p>'}
+      <div class="row"><button class="btn" id="addp" style="--c:var(--river)">Ajouter un enfant</button><label class="btn ghost" style="--c:var(--river)">Importer un profil<input type="file" id="impp" accept="application/json,.json" hidden></label></div>
+      <p class="small muted" style="margin:0">Exporter un profil : un fichier avec le suivi de l'enfant, ses enregistrements et les phrases de Maman, pour le retrouver sur une autre tablette.</p><p class="small" id="impmsgp"></p></div>
+    <div class="card stack"><h3>École</h3><p class="small" style="margin:0">${esc(ecoleLine())}.</p>${accessRequired() && !(S.ecole && S.ecole.id) ? `<div class="row"><input type="text" id="ecode" autocomplete="off" autocapitalize="characters" placeholder="Code d'inscription" style="text-transform:uppercase"><button class="btn sm" id="ecode-go" style="--c:var(--river)">Enregistrer le code</button><span class="small" id="ecode-msg" style="color:var(--try)"></span></div>` : ''}</div>
     <div class="card stack"><p style="margin:0">Code parent et voix de Kono.</p><div><button class="btn" id="setup" style="--c:var(--river)">Modifier</button></div></div>
     <div class="card stack"><h3>Sauvegarder le suivi</h3><p class="small" style="margin:0">Le suivi vit dans la tablette. Une tablette réinitialisée le perd. Sauvegardez-le de temps en temps dans un fichier (il reste chez vous : rien n'est envoyé). Les enregistrements audio ne sont pas dans ce fichier.</p>
       <div class="row"><button class="btn" id="exp" style="--c:var(--river)">Télécharger la sauvegarde</button><label class="btn ghost" style="--c:var(--river)">Restaurer une sauvegarde<input type="file" id="imp" accept="application/json,.json" hidden></label></div><p class="small" id="impmsg"></p></div>
     <div class="card stack"><h3>Mémoire de la tablette</h3><p class="small" style="margin:0">Le suivi est rangé dans ce navigateur, à l'adresse <b>${esc(location.origin)}</b>. Un autre navigateur ou une autre adresse ne le voit pas. Application installée : <b>${installed ? 'oui' : 'non (ouverte dans le navigateur)'}</b>. Mémoire protégée contre l'effacement automatique : <b>${persisted === null ? 'inconnu' : persisted ? 'oui' : 'pas encore'}</b>.</p></div>
     <div class="card stack"><h3>Bloquer la tablette sur l'application</h3><p class="small" style="margin:0">Android : Paramètres › Sécurité › Épinglage d'écran. Ouvrez ${APPNAME}, affichez les applications récentes, touchez l'icône de l'application puis « Épingler ».</p></div>
+    <div class="card stack"><h3>Journal</h3><p class="small muted" style="margin:0">${(S.log || []).length ? `${(S.log || []).length} erreur${(S.log || []).length > 1 ? 's' : ''} notée${(S.log || []).length > 1 ? 's' : ''} sur cette tablette. À copier dans un message si l'application se comporte mal.` : 'Aucune erreur notée sur cette tablette.'}</p>
+      ${(S.log || []).slice(-5).reverse().map(l => `<p class="small" style="margin:0">${esc(l.ts.slice(0, 16).replace('T', ' '))} · v${esc(l.v)} · ${esc(l.ecran)} · ${esc(l.m)}</p>`).join('')}
+      ${(S.log || []).length ? `<div class="row"><button class="btn soft sm" id="logcopy">Copier le journal</button><button class="link" id="logclear">Effacer le journal</button><span class="small muted" id="logmsg"></span></div>` : ''}</div>
     <div class="card stack"><h3>Remettre le suivi à zéro</h3><p class="small muted" style="margin:0">Efface les séances, les records et les mesures (pas les enregistrements de Maman).</p><div class="row"><input type="text" id="conf" placeholder="Tapez EFFACER"><button class="btn ghost" id="wipe">Effacer le suivi</button></div></div>`;
     $('#setup').onclick = screenSetup;
     $('#addp').onclick = () => screenProfile(null);
     pane.querySelectorAll('[data-edit]').forEach(b => b.onclick = () => screenProfile(profileOf(b.dataset.edit)));
     pane.querySelectorAll('[data-rm]').forEach(b => { let armed = false; b.onclick = async () => { if (!armed) { armed = true; b.textContent = 'Confirmer : son suivi et ses enregistrements seront effacés'; return; } await removeProfile(b.dataset.rm); screenParent('reglages'); }; });
+    pane.querySelectorAll('[data-exp]').forEach(b => b.onclick = () => exportProfile(profileOf(b.dataset.exp)));
+    $('#impp').onchange = async e => {
+      const f = e.target.files[0]; if (!f) return;
+      try { const n = await importProfile(JSON.parse(await f.text())); $('#impmsgp').textContent = `Profil de ${n} importé.`; screenParent('reglages'); }
+      catch (err) { $('#impmsgp').textContent = 'Ce fichier n\'est pas un profil de ' + APPNAME + '.'; }
+    };
+    const eg = $('#ecode-go'); if (eg) eg.onclick = async () => { const ok = await checkCode($('#ecode').value); if (!ok) { $('#ecode-msg').textContent = 'Code inconnu.'; return; } S.ecole = ok; save(); screenParent('reglages'); };
+    const lc = $('#logcopy'); if (lc) lc.onclick = async () => { const txt = (S.log || []).map(l => `${l.ts} · v${l.v} · ${l.ecran} · ${l.m}`).join('\n'); try { await navigator.clipboard.writeText(txt); $('#logmsg').textContent = 'Copié.'; } catch (e) { $('#logmsg').textContent = 'Copie impossible ici.'; } };
+    const lx = $('#logclear'); if (lx) lx.onclick = () => { S.log = []; save(); screenParent('reglages'); };
     $('#exp').onclick = () => {
       const data = JSON.stringify({ app: 'corridor-a-la-maison', format: 2, version: VERSION, date: new Date().toISOString(), store: S }, null, 1);
-      const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([data], { type: 'application/json' })); a.download = `corridor-suivi-${today()}.json`; document.body.appendChild(a); a.click(); a.remove();
+      download(`corridor-suivi-${today()}.json`, data, 'application/json');
+      S.lastBackup = new Date().toISOString(); save();
     };
     $('#imp').onchange = async e => {
       const f = e.target.files[0]; if (!f) return;
@@ -1610,7 +1704,7 @@ function skillTableHTML(p) {
 }
 let RECS_CACHE = [];
 function report() {
-  const L = [`${APPNAME.toUpperCase()} · RAPPORT · format 1`, `Date : ${today()} · version ${VERSION}`];
+  const L = [`${APPNAME.toUpperCase()} · RAPPORT · format 1`, `Date : ${today()} · version ${VERSION}`, ecoleLine()];
   if (!S.profiles.length) L.push('', 'Aucun enfant.');
   S.profiles.forEach(p => {
     const pr = p.progress, since = Date.now() - 7 * DAY_MS, runs = pr.runs.filter(r => r.start >= since), age = ageOf(p.dob);
@@ -1661,10 +1755,17 @@ async function boot() {
   /* Demande au navigateur de ne jamais effacer les données du site de lui-même (suivi, voix de Maman). */
   try { if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(() => {}); } catch (e) {}
   RECS_CACHE = (await DB.recs()) || [];
-  if (!S.setup) screenSetup(); else if (!S.profiles.length) screenProfile(null); else screenHome();
+  const home = () => { if (!S.setup) screenSetup(); else if (!S.profiles.length) screenProfile(null); else screenHome(); };
+  if (accessRequired()) {
+    if (!S.ecole) {
+      if (S.profiles.length) { S.ecole = { grandfathered: true, date: today() }; save(); }   /* installée avant le contrôle : l'école régularise avec un code */
+      else return screenEcole(home);
+    } else if (S.ecole.h && !codeStillValid(S.ecole.h)) return screenEcole(home, 'Votre inscription a été retirée par l\'école. Tapez un nouveau code pour continuer.');
+  }
+  home();
 }
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) { try { navigator.serviceWorker.register('sw.js').catch(() => {}); } catch (e) {} }
 document.addEventListener('visibilitychange', () => { if (document.hidden) stopSpeech(); });
-window.__kono = { keyOf, sentences, S, P: () => P, AUDIO: () => AUDIO, report, makeRevision, LESSONS: () => LESSONS, profileOf, startLesson };   /* pour les tests */
+window.__kono = { keyOf, sentences, S, P: () => P, AUDIO: () => AUDIO, report, makeRevision, LESSONS: () => LESSONS, profileOf, startLesson, logError, normCode, ECOLE: () => ECOLE };   /* pour les tests */
 boot();
 })();
