@@ -77,7 +77,7 @@ async def main():
             check("skillStats (7 jours) : A 4 essais au 1er essai ; B 3 montrées ; D 2 + 1 après aide + 1 montrée ; E hors fenêtre", s["A"] == {"n": 4, "first": 4, "after": 0, "shown": 0} and s["B"]["shown"] == 3 and s["D"] == {"n": 4, "first": 2, "after": 1, "shown": 1} and "E" not in s, str(s))
             check("masteryOf (30 jours) : A acquis (100 %), B fragile (0 %), C peu travaillée (2 essais), D en cours (62 %, l'après-aide compte moitié)", m["A"]["level"] == "acquis" and m["A"]["score"] == 1 and m["B"]["level"] == "fragile" and m["B"]["score"] == 0 and m["C"]["level"] == "peu" and m["D"]["level"] == "en-cours" and m["D"]["score"] == 0.625 and "E" not in m, str({k: (v["level"], round(v["score"], 2), v["n"]) for k, v in m.items()}))
             check("masteryOf (90 jours) : E acquis apparaît", r["m60"].get("E", {}).get("level") == "acquis")
-            # --- carte du voyage (escales gs : Bamako 4, Ségou 32, Djenné et Mopti 36, Tombouctou 40, Gao 0)
+            # --- carte du voyage (escales gs : Bamako 4, Ségou 32, Mopti 36, Tombouctou 40, Gao 0)
             r = await U("""const mk = n => ({ parcours: 'gs', progress: Object.assign(U.kid(), { done: Object.fromEntries(Array.from({ length: n }, (_, i) => ['l' + i, '2026-10-01'])) }) });
               return [0, 1, 4, 36, 72, 112, 500].map(n => { const j = U.journey(mk(n)); return [n, +j.f.toFixed(3), j.stamps]; });""")
             exp = [[0, 0, []], [1, 0.06, [1]], [4, 0.24, [1, 2]], [36, 0.45, [1, 2, 3]], [72, 0.73, [1, 2, 3, 4]], [112, 1, [1, 2, 3, 4, 5]], [500, 1, [1, 2, 3, 4, 5]]]
