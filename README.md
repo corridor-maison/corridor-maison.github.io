@@ -22,6 +22,7 @@ Une séance interrompue (bouton Arrêter, tablette en veille, application fermé
 ## Principes de conception
 
 - **Une seule source, deux supports.** Une séance = un fichier `app/lessons/<id>.json`. La tablette le joue ; `tools/build_print.py` en tire les fiches et la carte Maman ; `tools/build_audio.py` la liste des phrases à enregistrer. Le format est fixé par [`CONTRAT_LECONS.md`](CONTRAT_LECONS.md) et son annexe A, et vérifié par `tools/check_lessons.py`.
+- **Accès autorisé par l'école.** L'école remet à chaque famille un code d'inscription (`python3 tools/codes.py nouveau 20 CE1`) ; sans code valide, l'application ne s'ouvre pas. Le dépôt ne contient que les empreintes des codes (`app/ecole.json`), jamais les codes ni un nom d'enfant ; les codes sont dans un fichier remis à l'école, jamais commité. Un code se retire (`retirer C-0007`), et la tablette le refuse à sa prochaine ouverture avec internet. Les tablettes installées avant ce contrôle gardent leur accès ; l'école les régularise avec un code depuis l'espace parent.
 - **Un profil par enfant.** Prénom, garçon ou fille, date de naissance, classe proposée d'après l'âge et confirmée par le parent, couleur choisie par l'enfant. L'application route par **parcours** (`gs`, `ce1`), jamais par couleur ni par prénom. Une tablette venue de la v0.2 est migrée au premier lancement, sans perte.
 - **Pour l'enfant, aucun texte pour naviguer.** Icônes et voix. On touche Kono pour le réentendre. Les sous-titres sont cachés par défaut (l'enfant écoute et regarde le dessin) ; ils s'affichent d'office si la tablette n'a pas de voix française.
 - **Calme.** Un seul objet bouge à la fois ; pas de confettis ni de récompenses à chaque réponse ; les poissons dorés récompensent une réponse trouvée après une erreur.
@@ -35,6 +36,8 @@ Une séance interrompue (bouton Arrêter, tablette en veille, application fermé
 |---|---|
 | `app/` | L'application publiée (site statique, installable, hors ligne) |
 | `app/parcours.json` | Les parcours de l'école : classe, âges proposés, couleur par défaut |
+| `app/ecole.json` | Mode d'accès et empreintes des codes d'inscription (jamais les codes) |
+| `tools/codes.py` | Crée, retire et vérifie les codes d'inscription ; écrit les codes pour l'école dans `print/codes-<date>.csv` (non commité) |
 | `app/lessons/index.json` | Liste des séances publiées (schéma 2) et escales du voyage, par parcours |
 | `app/lessons/<id>.json` | Une séance : voix, étapes, manipulations, erreurs typiques, fiche papier |
 | `app/progression/` | Progressions CE1 et grande section (codes de compétences) |
@@ -64,7 +67,7 @@ Le site est publié par GitHub Pages à l'adresse **https://corridor-maison.gith
 2. Menu ⋮ › **Installer l'application** (ou « Ajouter à l'écran d'accueil »). L'icône **Corridor** apparaît.
 3. L'ouvrir une première fois avec internet : tout est gardé pour le hors ligne.
 4. Voix française hors ligne : Paramètres › Synthèse vocale › Moteur Google › Installer les données vocales › Français (France).
-5. Premier lancement : code parent à 4 chiffres, puis un profil par enfant (prénom, garçon ou fille, date de naissance, classe confirmée, couleur). Un enfant de plus s'ajoute depuis l'accueil, avec le code parent.
+5. Premier lancement : code d'inscription remis par l'école, code parent à 4 chiffres, puis un profil par enfant (prénom, garçon ou fille, date de naissance, classe confirmée, couleur). Un enfant de plus s'ajoute depuis l'accueil, avec le code parent.
 6. Voix de Maman : Espace parent › Voix de Maman (avec ses mots à elle ; « bonjour » et « fin » se font une fois par enfant).
 7. Bloquer la tablette sur l'application : Paramètres › Sécurité › Épinglage d'écran.
 
@@ -83,7 +86,7 @@ Toujours ouvrir l'application de la même façon, par l'icône installée : un a
 
 Sans nouvelle semaine, la tablette propose une séance de révision : l'habitude ne casse pas.
 
-Sauvegarde : Espace parent › Réglages › Télécharger la sauvegarde (le suivi dans un fichier, gardé par la famille ; une sauvegarde de la v0.2 se restaure aussi).
+Sauvegarde : Espace parent › Réglages › Télécharger la sauvegarde (le suivi dans un fichier, gardé par la famille ; une sauvegarde de la v0.2 se restaure aussi). Le Suivi rappelle de sauvegarder après sept jours sans sauvegarde. Un enfant seul se déplace vers une autre tablette : Réglages › Exporter (suivi, enregistrements, phrases de Maman) puis Importer un profil sur l'autre tablette. Réglages › Journal garde les dernières erreurs de l'application, à copier dans un message en cas de problème.
 
 ## 4. Format d'une séance (référence citée par le contrat comme « README § 4 »)
 
@@ -128,7 +131,7 @@ Jetons de texte : `{prenom}` (prénom de l'enfant), `{e}` (accord au féminin). 
 - `python3 tests/migration.py` : un état de la v0.2 (`tests/etat-v0.2.json`) devient deux profils sans perte ; écrit la comparaison avant/après.
 - Sous Windows, lancer Python avec `-X utf8`.
 
-## Limites connues (v0.3.2)
+## Limites connues (v0.3.3)
 
 - Les images des histoires sont des dessins simples, en attendant le kit de l'illustrateur.
 - Pas de reconnaissance vocale : la lecture à voix haute est enregistrée, un adulte l'écoute et la mesure.

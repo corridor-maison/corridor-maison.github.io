@@ -9,6 +9,7 @@ Lancer :    python3 -m http.server 8765 --directory app &   puis   python3 tests
 Captures et rapport : dossier $SHOTS (défaut /tmp/corridor-tests/).
 """
 import asyncio, json, sys, os, pathlib, collections
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent)); from ecole_test import ecole_test, CODE
 from playwright.async_api import async_playwright
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 SHOTS = os.environ.get("SHOTS", "/tmp/corridor-tests/"); os.makedirs(SHOTS, exist_ok=True)
@@ -17,7 +18,7 @@ SH = f"{SHOTS}e2e-{VW}x{VH}-"
 URL = "http://localhost:8765/#test"
 PIN = "1234"
 PROFILES = [("ce1", "Ali", "2019-03-15", False), ("gs", "Awa", "2021-02-10", True)]
-REQUIRED = ["tenframe:add", "tenframe:total", "blocks:fermeture-unites", "blocks:fermeture-dizaines", "jumps:via", "order", "erreur-animee", "reprise", "rappel"]
+REQUIRED = ["tenframe:add", "tenframe:total", "blocks:fermeture-unites", "blocks:fermeture-dizaines", "jumps:via", "order", "erreur-animee", "reprise", "rappel", "acces", "profil-export", "journal"]
 DRILL_JS = r"""() => {
   const e = document.querySelector('.drill .v-expr'); if (!e) return null;
   const q = e.textContent.trim(); const svg = document.querySelector('.drill svg[aria-label]'); const lab = svg ? svg.getAttribute('aria-label') : '';
@@ -61,7 +62,13 @@ async def main():
         WRONG = {"seul-29-4": 213, "b-27-5": 212, "guide-8": None, "seul-dizaines-13": 313}
 
         # ---- première installation : réglage parent, puis un profil ; puis un deuxième profil (code parent demandé)
-        await pg.goto(URL); await pg.wait_for_selector("#go"); await shot("setup")
+        # accès autorisé par l'école : un code faux est refusé, le code de test ouvre le réglage parent
+        await pg.goto(URL); await pg.wait_for_selector("#code"); await shot("code-ecole")
+        await pg.fill("#code", "AAA-AAA-AAA"); await pg.click("#go"); await pg.wait_for_timeout(400)
+        refused = ("Code inconnu" in await pg.inner_text("#err")) and await pg.is_visible("#code")
+        await pg.fill("#code", CODE); await pg.click("#go"); await pg.wait_for_selector("#pin"); await shot("setup")
+        if refused: cov["acces"] += 1
+        log.append(f"accès école : code faux refusé {'OK' if refused else 'ÉCHEC'} · code de test accepté")
         await pg.fill("#pin", PIN); await pg.click("#go")
         await create_profile(*PROFILES[0])
         await pg.click("#add"); await type_pin(); await create_profile(*PROFILES[1])
@@ -181,7 +188,8 @@ async def main():
                     continue
                 if t in ("reading", "record"):
                     if await pg.is_visible("#rb"):
-                        await shot(f"{lid}-{t}"); await pg.click("#rb", force=True); await pg.wait_for_timeout(700); await pg.click("#rb", force=True)
+                        await shot(f"{lid}-{t}"); await pg.click("#rb", force=True)
+                        await pg.wait_for_selector(".rec-btn.on", timeout=10000); await pg.wait_for_timeout(600); await pg.click("#rb", force=True)
                         try: await pg.wait_for_selector("#keep", timeout=5000)
                         except Exception:
                             await shot("debug-keep", True); log.append("PAS DE #keep : " + (await pg.inner_html("#answer"))[:300] + " | " + str(errs[-3:])); return False
@@ -259,8 +267,27 @@ async def main():
             log.append("contrôle moteur (étape injectée, profil Contrôle) : boîte de dix en ajout " + ("OK" if cov.get("tenframe:add") else "ÉCHEC"))
             await pg.click("#back")
             await pg.click("#parent"); await type_pin(); await pg.wait_for_timeout(400); await shot("parent-suivi")
+            # rappel de sauvegarde (jamais faite, suivi présent), journal d'erreurs, export puis import d'un profil
+            backup = await pg.is_visible("#tobackup"); log.append(f"rappel de sauvegarde affiché : {'OK' if backup else 'ÉCHEC'}")
+            await pg.evaluate("window.__kono.logError('essai du journal')")
+            await pg.click("[data-t='reglages']"); await pg.wait_for_timeout(300)
+            jtxt = await pg.inner_text("#pane")
+            if "essai du journal" in jtxt and "1 erreur notée" in jtxt: cov["journal"] += 1
+            log.append(f"journal d'erreurs visible dans Réglages : {'OK' if cov['journal'] else 'ÉCHEC'}")
+            n0 = len(profiles) + 1
+            async with pg.expect_download() as dl: await pg.click(f"[data-exp='{profiles[0]['id']}']")
+            fpath = await (await dl.value).path()
+            await pg.set_input_files("#impp", str(fpath)); await pg.wait_for_timeout(800)
+            after = await pg.evaluate("() => window.__kono.S.profiles.map(p => ({ name: p.name, parcours: p.parcours, runs: p.progress.runs.length, done: Object.keys(p.progress.done).length }))")
+            src = next(p for p in after if p["name"] == profiles[0]["name"]); twin = [p for p in after if p["name"] == profiles[0]["name"]]
+            recs = await pg.evaluate("() => window.__kono.S.profiles.map(p => p.id)")
+            ok_imp = len(after) == n0 + 1 and len(twin) == 2 and twin[0]["runs"] == twin[1]["runs"] and twin[0]["done"] == twin[1]["done"] and twin[1]["parcours"] == src["parcours"]
+            if ok_imp: cov["profil-export"] += 1
+            log.append(f"export puis import d'un profil : {'OK' if ok_imp else 'ÉCHEC'} ({twin[1]['runs'] if len(twin) > 1 else '?'} séances et {twin[1]['done'] if len(twin) > 1 else '?'} faites retrouvées)")
+            await shot("parent-reglages")
             await pg.click("[data-t='rapport']"); await pg.wait_for_timeout(300)
             rep = await pg.input_value("#rep"); open(SH + "rapport.txt", "w", encoding="utf-8").write(rep)
+            log.append(f"rapport : ligne d'inscription {'OK' if 'Inscription : C-9999' in rep else 'ÉCHEC'}")
             sp = await pg.evaluate("() => window.__spoken || []"); open(SH + "spoken.json", "w", encoding="utf-8").write(json.dumps(sp, ensure_ascii=False))
         finally:
             print("\n".join(log))
@@ -272,4 +299,5 @@ async def main():
         if errs or not log or missing or any(("ÉCHEC" in l) or ("BLOQUÉ" in l) or ("GARDE" in l) or ("NON PROPOSÉE" in l) for l in log): sys.exit(1)
         print("E2E : OK")
 if __name__ == "__main__":
-    asyncio.run(main())
+    with ecole_test():
+        asyncio.run(main())
