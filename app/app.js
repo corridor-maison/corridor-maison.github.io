@@ -5,7 +5,7 @@
    Format des séances : CONTRAT_LECONS.md. */
 'use strict';
 (() => {
-const VERSION = '0.3.5';
+const VERSION = '0.3.6';
 const APPNAME = 'Corridor à la maison';
 const FAST = location.hash === '#test';
 const app = document.getElementById('app');
@@ -496,7 +496,8 @@ const FISH = gold => `<svg width="40" height="25" viewBox="0 0 40 25" aria-hidde
 
 /* ============================ carte du voyage ============================ */
 /* La pinasse avance d'une étape à chaque séance terminée (révisions comprises), sur les escales du parcours de l'enfant.
-   Escales (index.json) : Bamako (départ), Ségou après 4 séances, puis Djenné et Mopti, Tombouctou, Gao. */
+   Escales (index.json) : Bamako (départ), Ségou après 4 séances, puis Mopti (au confluent du Bani, où Djenné est marquée sur le Bani), Tombouctou, Gao.
+   Géographie schématique mais juste : le Niger coule de Bamako vers le nord-est, fait sa boucle par Tombouctou et redescend vers Gao ; le Bani arrive du sud et rejoint le Niger à Mopti. */
 const RIVER = 'M40 290 C 110 285, 150 262, 205 250 S 290 238, 318 205 S 360 110, 420 88 S 520 92, 575 160';
 const escAt = list => list.length === 5 ? [0, 0.24, 0.45, 0.73, 1] : list.map((e, i) => list.length < 2 ? 0 : i / (list.length - 1));
 function journey(p) {
@@ -516,9 +517,11 @@ function mapHTML(p) {
   <rect x="0" y="0" width="620" height="330" rx="22" fill="#f3e6c8"/>
   <path d="M300 30 q60 -10 120 10 q70 20 150 0" fill="none" stroke="#e8d3a2" stroke-width="34" stroke-linecap="round" opacity=".8"/>
   <path d="M0 320 q120 -30 220 -6 q90 20 160 -10" fill="none" stroke="#e2cf9f" stroke-width="26" opacity=".6"/>
-  <g fill="#8fae6a">${[[70, 238], [150, 222], [262, 212], [300, 278], [470, 150], [540, 120]].map(([x, y]) => `<circle cx="${x}" cy="${y}" r="9"/><rect x="${x - 2}" y="${y + 6}" width="4" height="10" fill="#7a5236"/>`).join('')}</g>
+  <g fill="#8fae6a">${[[70, 238], [150, 222], [262, 212], [352, 282], [470, 150], [540, 120]].map(([x, y]) => `<circle cx="${x}" cy="${y}" r="9"/><rect x="${x - 2}" y="${y + 6}" width="4" height="10" fill="#7a5236"/>`).join('')}</g>
+  <g class="bani"></g>
   <path d="${RIVER}" fill="none" stroke="#8cc0da" stroke-width="20" stroke-linecap="round"/>
   <path class="river" d="${RIVER}" fill="none" stroke="#2f7ea6" stroke-width="3" stroke-dasharray="2 12" stroke-linecap="round"/>
+  <text x="96" y="318" font-family="${FONT}" font-weight="800" font-size="13" fill="#3d7fa3" font-style="italic">fleuve Niger</text>
   <g class="escales"></g><g class="boat-pos">${BOAT}</g></svg>
   <div class="passport">${E.map(e => `<span class="stamp ${j.stamps.includes(e.n) ? 'on' : ''}">${esc(e.name)}</span>`).join('')}</div></div>`;
 }
@@ -526,6 +529,17 @@ function drawMap(root, p, from) {
   const svg = root.querySelector('.map svg'); if (!svg) return;
   const path = svg.querySelector('.river'), L = path.getTotalLength(), g = svg.querySelector('.escales'), E = escalesOf(p.parcours), AT = escAt(E);
   const st = journey(p).stamps;
+  /* Le Bani, affluent venu du sud, rejoint le Niger à Mopti ; Djenné est sur le Bani, en amont du confluent, et n'est pas une escale de la pinasse. */
+  const bani = svg.querySelector('.bani'), km = E.findIndex(e => /mopti/i.test(e.name));
+  if (bani) {
+    if (km >= 0) {
+      const m = path.getPointAtLength(L * AT[km]), d = `M${m.x - 70} 330 C ${m.x - 52} 300, ${m.x - 30} 250, ${m.x} ${m.y}`;
+      const tmp = document.createElementNS('http://www.w3.org/2000/svg', 'path'); tmp.setAttribute('d', d); const dj = tmp.getPointAtLength(tmp.getTotalLength() * 0.5);
+      bani.innerHTML = `<path d="${d}" fill="none" stroke="#8cc0da" stroke-width="12" stroke-linecap="round"/><path d="${d}" fill="none" stroke="#2f7ea6" stroke-width="2.5" stroke-dasharray="2 10" stroke-linecap="round"/>
+        <text x="${m.x - 56}" y="324" font-family="${FONT}" font-weight="800" font-size="13" fill="#3d7fa3" font-style="italic">le Bani</text>
+        <circle cx="${dj.x}" cy="${dj.y}" r="6" fill="#fff" stroke="#22303c" stroke-width="2.5"/><text x="${dj.x + 12}" y="${dj.y + 5}" font-family="${FONT}" font-weight="800" font-size="15" fill="#22303c">Djenné</text>`;
+    } else bani.innerHTML = '';
+  }
   g.innerHTML = E.map((e, i) => { const pt = path.getPointAtLength(L * AT[i]); const on = st.includes(e.n); return `<circle cx="${pt.x}" cy="${pt.y}" r="${on ? 10 : 8}" fill="${on ? '#e0a100' : '#fff'}" stroke="#22303c" stroke-width="3"/><text x="${pt.x}" y="${pt.y + (i === 3 ? -20 : 32)}" text-anchor="middle" font-family="${FONT}" font-weight="800" font-size="18" fill="#22303c">${esc(e.name)}</text>`; }).join('');
   const boat = svg.querySelector('.boat-pos'), to = journey(p).f;
   const place = f => { const pt = path.getPointAtLength(L * f); boat.setAttribute('transform', `translate(${pt.x} ${pt.y - 18}) scale(1.7)`); };
