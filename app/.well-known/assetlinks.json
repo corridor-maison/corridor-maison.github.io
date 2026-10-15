@@ -1,14 +1,15 @@
 [
-  {
-    "relation": [
-      "delegate_permission/common.handle_all_urls"
-    ],
-    "target": {
-      "namespace": "android_app",
-      "package_name": "io.github.corridormaison.app",
-      "sha256_cert_fingerprints": [
-        "FD:FC:C1:F5:4A:84:CA:2A:09:E3:B4:23:C0:1F:75:2F:F9:AA:DB:63:2A:1E:B3:0E:91:7E:15:E7:A3:95:BB:DB"
-      ]
-    }
+ {
+  "relation": [
+   "delegate_permission/common.handle_all_urls"
+  ],
+  "target": {
+   "namespace": "android_app",
+   "package_name": "io.github.corridormaison.app",
+   "sha256_cert_fingerprints": [
+    "FD:FC:C1:F5:4A:84:CA:2A:09:E3:B4:23:C0:1F:75:2F:F9:AA:DB:63:2A:1E:B3:0E:91:7E:15:E7:A3:95:BB:DB",
+    "CD:A1:1E:88:40:7C:C6:99:2B:D0:C3:39:5A:7C:8E:9D:66:AD:E4:CB:6B:D7:20:59:4E:FA:5A:BD:52:07:7B:47"
+   ]
   }
+ }
 ]
