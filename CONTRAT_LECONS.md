@@ -2,6 +2,8 @@
 
 **Version 1 · 11 octobre 2026 · décision du fondateur : profils locaux, sans serveur.**
 
+**Version 1.4 · 15 octobre 2026 · § 5 : rapport au format 2 (rubriques 1 à 7 inchangées, plus la rubrique 8, maîtrise par compétence sur 30 jours) et fichier `rapport-2`. Le format des leçons est inchangé.**
+
 **Version 1.3 · 15 octobre 2026 · § 5 : le rapport existe aussi en fichier `rapport-1` ; § 7 : relecture d'une semaine avec `tools/build_review.py` avant publication. Le format des leçons est inchangé.**
 
 **Version 1.2 · 15 octobre 2026 · § 10 : `app/ecole.json` (codes d'inscription délivrés par l'école), même propriétaire que `parcours.json`.**
@@ -82,7 +84,7 @@ C'est l'entrée de Cowork. Avec la livraison « profils », il sera émis par pr
 
 Suivent, inchangés : les séances, les réponses item par item, les mesures, les automatismes par sorte, la file de révision. Cowork génère la semaine suivante à partir du `parcours` et de ces lignes, jamais à partir du prénom. Jusqu'à cette livraison, `BLEU` vaut `ce1` et `ORANGE` vaut `gs`.
 
-Depuis la v0.3.4, le même rapport s'enregistre aussi en fichier (`rapport-1`, JSON : mêmes chiffres, et le texte lui-même) que la famille dépose à l'école ; `tools/tableau_classe.py` en fait un tableau par classe pour l'enseignante. Cowork continue de lire le texte.
+Depuis la v0.3.4, le même rapport s'enregistre aussi en fichier (JSON : mêmes chiffres, et le texte lui-même) que la famille dépose à l'école ; `tools/tableau_classe.py` en fait un tableau par classe pour l'enseignante. Cowork continue de lire le texte. Depuis la v0.3.5, le texte est au **format 2** : les rubriques 1 à 7 sont celles du format 1, et une rubrique 8 donne la maîtrise par compétence sur 30 jours (`code | palier | réussite | essais`, paliers acquis, en cours, fragile, peu travaillé) ; le fichier est `rapport-2` (clé `maitrise`). Cowork peut s'en servir pour doser la semaine suivante, sans y être tenu.
 
 ## 6. Une publication, c'est tout ou rien
 

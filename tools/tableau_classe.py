@@ -2,7 +2,7 @@
 """Tableau par classe pour l'enseignante, à partir des rapports déposés par les familles.
 
 Chaque famille enregistre son rapport du dimanche dans un fichier (Espace parent › Rapport › Enregistrer dans un fichier,
-format rapport-1) et le dépose à l'école : clé USB, messagerie, ou le téléphone de l'enseignante. Ce script lit tous les
+format rapport-1 ou rapport-2) et le dépose à l'école : clé USB, messagerie, ou le téléphone de l'enseignante. Ce script lit tous les
 fichiers d'un ou plusieurs dossiers, garde le dernier rapport de chaque enfant, et écrit un tableau par classe :
 séances de la semaine, compétences (réussite au premier essai), file de révision, enregistrements non écoutés.
 
@@ -21,7 +21,7 @@ def load_reports(dirs):
         for f in sorted(pathlib.Path(d).rglob("*.json")):
             try: r = json.loads(f.read_text(encoding="utf-8"))
             except Exception: continue
-            if isinstance(r, dict) and r.get("app") == "corridor-a-la-maison" and r.get("format") == "rapport-1": out.append((f, r))
+            if isinstance(r, dict) and r.get("app") == "corridor-a-la-maison" and r.get("format") in ("rapport-1", "rapport-2"): out.append((f, r))
     return out
 
 def latest_children(reports):
@@ -81,14 +81,15 @@ def main(argv):
         if stale:
             names = ", ".join(f"{k['inscription']} ({k.get('prenom', '')})" for k in stale)
             H.append(f"<p class='warn'>Rapport de plus de 9 jours pour : {esc(names)}. Demander un nouveau fichier à la famille.</p>")
-        H.append("<h3>Les enfants</h3><table><tr><th>Inscription</th><th>Prénom</th><th>Rapport du</th><th>Séances 7 j<br>terminées</th><th>arrêtées</th><th>Minutes</th><th>Séances depuis le début</th><th>Enregistrements<br>non écoutés</th><th>Défis à revoir</th><th>Séance en cours</th><th>Automatismes (records)</th></tr>")
+        H.append("<h3>Les enfants</h3><table><tr><th>Inscription</th><th>Prénom</th><th>Rapport du</th><th>Séances 7 j<br>terminées</th><th>arrêtées</th><th>Minutes</th><th>Séances depuis le début</th><th>Enregistrements<br>non écoutés</th><th>Défis à revoir</th><th>Séance en cours</th><th>Maîtrise 30 j<br>acquis / en cours / fragile</th><th>Automatismes (records)</th></tr>")
         for k in kids:
             s = k["seances"]; e = k.get("enregistrements") or {}; rp = k.get("reprise"); rec = k.get("records") or {}
             recs = " ; ".join(f"{kk} {v.get('best')} ({v.get('secs')} s)" for kk, v in rec.items()) or "—"
             encours = f"{rp['seance']} (étape {rp['etape']} sur {rp['sur']})" if rp else "—"
-            H.append(f"<tr><td>{esc(k['inscription'])}</td><td>{esc(k.get('prenom', ''))}</td><td>{esc(k['rapport'][:10])}</td><td class='n'>{s['terminees']}</td><td class='n'>{s['arretees']}</td><td class='n'>{s['minutes']}</td><td class='n'>{s['total']}</td><td class='n'>{e.get('nonEcoutes', 0)} / {e.get('total', 0)}</td><td>{esc(', '.join(k.get('revision') or [])) or '—'}</td><td>{esc(encours)}</td><td class='small'>{esc(recs)}</td></tr>")
+            ma = k.get("maitrise") or {}; mcount = " / ".join(str(sum(1 for v in ma.values() if v.get("palier") == lv)) for lv in ("acquis", "en-cours", "fragile")) if ma else "—"
+            H.append(f"<tr><td>{esc(k['inscription'])}</td><td>{esc(k.get('prenom', ''))}</td><td>{esc(k['rapport'][:10])}</td><td class='n'>{s['terminees']}</td><td class='n'>{s['arretees']}</td><td class='n'>{s['minutes']}</td><td class='n'>{s['total']}</td><td class='n'>{e.get('nonEcoutes', 0)} / {e.get('total', 0)}</td><td>{esc(', '.join(k.get('revision') or [])) or '—'}</td><td>{esc(encours)}</td><td class='n'>{esc(mcount)}</td><td class='small'>{esc(recs)}</td></tr>")
             rows_csv.append({"classe": classe, "inscription": k["inscription"], "prenom": k.get("prenom", ""), "parcours": k.get("parcours", ""), "rapport_du": k["rapport"][:10], "seances_7j_terminees": s["terminees"], "seances_7j_arretees": s["arretees"], "minutes_7j": s["minutes"], "seances_total": s["total"],
-                             "enregistrements_non_ecoutes": e.get("nonEcoutes", 0), "defis_a_revoir": " ".join(k.get("revision") or []), "competences": " ; ".join(f"{c}={v['premier']}/{v['essais']}" for c, v in sorted((k.get("competences") or {}).items()))})
+                             "enregistrements_non_ecoutes": e.get("nonEcoutes", 0), "defis_a_revoir": " ".join(k.get("revision") or []), "maitrise_acquis_encours_fragile": mcount, "competences": " ; ".join(f"{c}={v['premier']}/{v['essais']}" for c, v in sorted((k.get("competences") or {}).items()))})
         H.append("</table>")
         if cols:
             H.append("<h3>Compétences, 7 derniers jours : réussite au premier essai (nombre d'essais)</h3><table><tr><th>Enfant</th>" + "".join(f"<th title='{esc(s['label'])}'>{esc(s['code'])}</th>" for s in cols) + "</tr>")

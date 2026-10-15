@@ -47,7 +47,7 @@ async def main():
             # après : deux profils, suivi identique, enregistrements et phrases de Maman rattachés aux profils
             prof = {pp["legacy"]: pp for pp in S.get("profiles", []) if pp.get("legacy")}
             ok &= check(S.get("schema") == 2 and len(S.get("profiles", [])) == 2, f"schéma 2, {len(S.get('profiles', []))} profils", lines)
-            ok &= check(S.get("pin") == STATE["pin"] and S.get("voice") == STATE["voice"] and S.get("settings") == STATE["settings"], "code parent, voix et réglages conservés", lines)
+            ok &= check(S.get("pin") == STATE["pin"] and S.get("voice") == STATE["voice"] and all(S.get("settings", {}).get(k) == v for k, v in STATE["settings"].items()) and all(S.get("settings", {}).get(k) is False for k in ("gaucher", "calme", "contraste")), "code parent, voix et réglages conservés (les réglages d'affichage nouveaux restent éteints)", lines)
             ok &= check("migrate" not in S, "drapeau de migration effacé après la migration de la base", lines)
             ok &= check(bool(S.get("ecole", {}).get("grandfathered")), "tablette installée avant le contrôle d'accès : accès conservé, à régulariser par l'école", lines)
             for c, pid, nm in (("bleu", "ce1", "Ali"), ("orange", "gs", "Awa")):
