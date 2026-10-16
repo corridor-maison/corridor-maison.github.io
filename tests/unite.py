@@ -2,7 +2,7 @@
 sont appelées avec des données construites ici, sans jouer de séance. Le test échoue à la première assertion fausse.
 
 Couvre : normalisation des codes d'inscription, clés et découpage des phrases (mêmes règles que build_audio.py), prénom et accord,
-âge, options des automatismes, générateur des automatismes (invariants sur 300 tirages par sorte), verdict du juge (3 essais,
+âge, ordre des séances (verrou) et séances par escale, options des automatismes, générateur des automatismes (invariants sur 300 tirages par sorte), verdict du juge (3 essais,
 erreur typique, aide, réponse montrée, dernier choix), statistiques et maîtrise par compétence, carte du voyage (escales),
 lecture d'un état (schéma 2, v0.2, inconnu), identifiants, rappel du niveau, révision ciblée sur les compétences fragiles.
 
@@ -86,6 +86,14 @@ async def main():
               return [0, 1, 4, 36, 72, 112, 500].map(n => { const j = U.journey(mk(n)); return [n, +j.f.toFixed(3), j.stamps]; });""")
             exp = [[0, 0, []], [1, 0.06, [1]], [4, 0.24, [1, 2]], [36, 0.45, [1, 2, 3]], [72, 0.73, [1, 2, 3, 4]], [112, 1, [1, 2, 3, 4, 5]], [500, 1, [1, 2, 3, 4, 5]]]
             check("journey : position de la pinasse et tampons du passeport selon le nombre de séances faites", r == exp, str(r))
+            # --- ordre des séances et séances par escale
+            r = await U("""const p = { parcours: 'ce1', progress: { done: {} } }; const ids = U.escaleLessons('ce1', 1).map(l => l.id);
+              const s0 = ids.map(id => U.ticketState(p, id)); p.progress.done[ids[0]] = '2026-10-16'; const s1 = ids.map(id => U.ticketState(p, id));
+              ids.forEach(id => p.progress.done[id] = 'x'); const s2 = ids.map(id => U.ticketState(p, id));
+              const all = ['ce1', 'gs'].map(pid => [pid, [1, 2, 3, 4, 5].map(n => U.escaleLessons(pid, n).length)]);
+              return { ids, s0, s1, s2, all, rev: U.ticketState(p, 'revision') };""")
+            check("ticketState : la première séance non faite est « due », celles d'après « locked », les faites « done », la révision jamais verrouillée", r["s0"] == ["due", "locked", "locked", "locked"] and r["s1"] == ["done", "due", "locked", "locked"] and r["s2"] == ["done"] * 4 and r["rev"] == "due", f"{r['s0']} {r['s1']} {r['s2']}")
+            check("escaleLessons : les 4 séances publiées de chaque parcours sont à l'escale 1 (Bamako), aucune ailleurs", r["all"] == [["ce1", [4, 0, 0, 0, 0]], ["gs", [4, 0, 0, 0, 0]]], str(r["all"]))
             # --- lecture d'un état enregistré
             r = await U("""const a = U.fromStore(null), b = U.fromStore({ schema: 2, setup: true, pin: '1234', settings: { sounds: false }, profiles: [{ id: 'abcd', name: 'Awa', parcours: 'gs', couleur: 'orange', progress: { runs: [] } }] });
               const c = U.fromStore({ setup: true, pin: '9999', names: { bleu: 'Ali', orange: '' }, progress: { bleu: { runs: [{ x: 1 }], done: { 'bleu-s0-dizaine': '2026-10-01' } }, orange: {} } });

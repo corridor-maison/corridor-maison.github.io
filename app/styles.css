@@ -130,7 +130,24 @@ svg { overflow: visible; }
 .ticket.done { border-style: solid; border-color: var(--good); background: var(--good-soft); }
 .map svg { width: 100%; height: auto; display: block; }
 .passport { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; margin-top: 10px; }
-.stamp { border: 2px solid var(--line); background: var(--paper); color: var(--muted); border-radius: 99px; padding: 4px 12px; font-size: .9rem; font-weight: 700; }
+/* Les escales sont des boutons (cible de 44 px) : touchées, elles montrent les séances de l'étape ; sur l'écran de fin, de simples repères. */
+.stamp { border: 2px solid var(--line); background: var(--paper); color: var(--muted); border-radius: 99px; padding: 8px 16px; font-size: .95rem; font-weight: 700; font-family: inherit; min-height: 44px; display: inline-flex; align-items: center; box-shadow: var(--shadow-sm); cursor: pointer; }
+span.stamp { box-shadow: none; cursor: default; }
+.ticket.locked { opacity: .62; } .ticket.locked .t-mark { color: var(--muted); }
+.ticket.wink { animation: wink .9s ease-in-out 2; }
+@keyframes wink { 50% { box-shadow: 0 0 0 6px var(--c-soft), var(--shadow-sm); transform: scale(1.02); } }
+.qa-card.esc-card { max-width: 640px; width: calc(100% - 32px); max-height: 86vh; overflow: auto; text-align: left; }   /* plus précis que .qa-card, qui centre */
+.esc-card h2 { font-size: 1.7rem; color: var(--c); margin: 0 0 4px; }
+.esc-card > .muted { margin: 0 0 6px; }
+.esc-list { list-style: none; margin: 10px 0 16px; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.esc-row { display: flex; align-items: center; gap: 12px; border: 2px solid var(--line); border-radius: 14px; padding: 8px 12px; background: var(--paper); }
+.esc-row .t-ic { width: 40px; height: 40px; color: var(--c); flex: none; } .esc-row .t-ic svg { width: 100%; height: 100%; }
+.esc-txt { flex: 1; min-width: 0; font-size: 1.05rem; line-height: 1.3; } .esc-txt b { display: block; color: var(--c); font-family: var(--display); font-size: .95rem; }
+.esc-st { width: 32px; height: 32px; flex: none; color: var(--muted); } .esc-st svg { width: 100%; height: 100%; }
+.esc-row.done { border-color: var(--good); background: var(--good-soft); } .esc-row.done .esc-st { color: var(--good); }
+.esc-row.due { border-color: var(--c); box-shadow: 0 0 0 3px var(--c-soft); } .esc-row.due .esc-st { color: var(--c); }
+.esc-card .btn { margin-top: 4px; }
+.prog-list { margin: 4px 0 10px; padding-left: 20px; font-size: .95rem; }
 .stamp.on { border: 2px solid #8a6400; color: #8a6400; background: #fff4d6; transform: rotate(-4deg); }
 @media (max-width: 860px) { .c-grid { grid-template-columns: 1fr; } }
 /* sur tablette, les cartes des enfants se posent au milieu de la hauteur libre, pas collées au titre */
@@ -440,13 +457,13 @@ label.f { display: flex; flex-direction: column; gap: 4px; font-weight: 700; fon
 .mw.last { box-shadow: 0 0 0 3px var(--river); }
 
 @media (prefers-reduced-motion: reduce) {
-  .kono *, .pulse, .rec-btn.on, .next-btn.nudge, .next-btn.appear, .v-maman, .board.ready-u .pc, .board.ready-t .pc, .catch.bump, .fishes svg, .v-part, .tok, .sc-card.shake, .syll-dots i, .v-svg .arc, .map .boat, .celebrate i, .choice.yes, .ans-box.right { animation: none !important; }
+  .kono *, .pulse, .rec-btn.on, .next-btn.nudge, .next-btn.appear, .v-maman, .board.ready-u .pc, .board.ready-t .pc, .catch.bump, .fishes svg, .v-part, .tok, .sc-card.shake, .syll-dots i, .v-svg .arc, .map .boat, .celebrate i, .choice.yes, .ans-box.right, .ticket.wink { animation: none !important; }
   .celebrate { display: none; }
   .syll-dots i { background: var(--c); }
   .v-svg .arc { stroke-dashoffset: 0; }
 }
 /* ---------- réglages d'affichage : classes sur body (Espace parent › Voix et affichage) ---------- */
-body.calme .kono *, body.calme .pulse, body.calme .rec-btn.on, body.calme .next-btn.nudge, body.calme .next-btn.appear, body.calme .v-maman, body.calme .board.ready-u .pc, body.calme .board.ready-t .pc, body.calme .catch.bump, body.calme .fishes svg, body.calme .v-part, body.calme .tok, body.calme .sc-card.shake, body.calme .syll-dots i, body.calme .v-svg .arc, body.calme .map .boat, body.calme .celebrate i, body.calme .choice.yes, body.calme .ans-box.right { animation: none !important; }
+body.calme .kono *, body.calme .pulse, body.calme .rec-btn.on, body.calme .next-btn.nudge, body.calme .next-btn.appear, body.calme .v-maman, body.calme .board.ready-u .pc, body.calme .board.ready-t .pc, body.calme .catch.bump, body.calme .fishes svg, body.calme .v-part, body.calme .tok, body.calme .sc-card.shake, body.calme .syll-dots i, body.calme .v-svg .arc, body.calme .map .boat, body.calme .celebrate i, body.calme .choice.yes, body.calme .ans-box.right, body.calme .ticket.wink { animation: none !important; }
 body.calme .celebrate { display: none; }
 body.calme .syll-dots i { background: var(--c); }
 body.calme .v-svg .arc { stroke-dashoffset: 0; }
@@ -484,7 +501,7 @@ body.contraste { min-height: 100vh; }
   .today h2 { font-size: 1.3rem; } .t-big { width: 44px; height: 44px; } .t-sel { gap: 10px; }
   .btn.big { font-size: 1.2rem; padding: 12px 20px 10px; min-height: 60px; } .btn.big .go-boat { width: 70px; height: 38px; }
   .tickets { grid-template-columns: 1fr; gap: 8px; } .ticket { min-height: 72px; padding: 8px; grid-template-columns: 36px 1fr; column-gap: 6px; } .ticket .t-ic { width: 36px; height: 36px; } .ticket .t-day { font-size: 1rem; } .ticket .t-title { font-size: .82rem; }
-  .passport { gap: 5px; } .stamp { font-size: .78rem; padding: 3px 9px; }
+  .passport { gap: 6px; } .stamp { font-size: .85rem; padding: 6px 12px; } .esc-card { padding: 16px; } .esc-card h2 { font-size: 1.3rem; } .esc-txt { font-size: .95rem; }
   .l-head { padding: 6px 8px 4px; gap: 8px; } .trail { padding: 0 2px; } .trail-river { left: 17px; right: 17px; } .tp { width: 34px; height: 34px; border-width: 2px; } .tp svg { width: 20px; height: 20px; }
   .catch { font-size: 1.05rem; padding: 4px 10px 4px 8px; gap: 4px; } .catch svg { width: 30px; height: 19px; }
   .l-body { padding: 2px 8px 8px; gap: 8px; } .guide { gap: 8px; } .kono-btn { width: 84px; } .kono-btn .ear { width: 34px; height: 34px; } .kono-btn .ear svg { width: 20px; height: 20px; }

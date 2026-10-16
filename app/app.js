@@ -5,7 +5,7 @@
    Format des séances : CONTRAT_LECONS.md. */
 'use strict';
 (() => {
-const VERSION = '0.4.0';
+const VERSION = '0.4.1';
 const APPNAME = 'Corridor à la maison';
 const FAST = location.hash === '#test';
 const app = document.getElementById('app');
@@ -301,6 +301,8 @@ function mood(m) { const g = document.querySelector('.guide .kono'); if (!g) ret
 /* ============================ dessins ============================ */
 const ICON = (n, cls = '') => `<img class="ic ${cls}" src="img/${esc(n)}.svg" alt="${esc(wordOf(n))}" draggable="false">`;
 const UI = {
+  lock: '<svg viewBox="0 0 48 48" aria-hidden="true"><rect x="10" y="21" width="28" height="21" rx="5" fill="currentColor"/><path d="M16 21 V15 a8 8 0 0 1 16 0 V21" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round"/></svg>',
+  close: '<svg viewBox="0 0 48 48" aria-hidden="true"><path d="M13 13 L35 35 M35 13 L13 35" fill="none" stroke="currentColor" stroke-width="6" stroke-linecap="round"/></svg>',
   home: '<svg viewBox="0 0 48 48" aria-hidden="true"><path d="M8 24 L24 9 L40 24" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/><path d="M13 22 V39 H35 V22" fill="none" stroke="currentColor" stroke-width="5" stroke-linejoin="round"/></svg>',
   next: '<svg viewBox="0 0 48 48" aria-hidden="true"><path d="M10 24 H36 M25 12 L37 24 L25 36" fill="none" stroke="currentColor" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/></svg>',
   check: '<svg viewBox="0 0 48 48" aria-hidden="true"><path d="M10 25 L20 35 L38 13" fill="none" stroke="currentColor" stroke-width="6.5" stroke-linecap="round" stroke-linejoin="round"/></svg>',
@@ -511,7 +513,7 @@ function journey(p) {
   }
   return { f: Math.min(1, f), stamps, count };
 }
-function mapHTML(p) {
+function mapHTML(p, fixed) {
   const j = journey(p), E = escalesOf(p.parcours);
   return `<div class="map"><svg viewBox="0 0 620 330" role="img" aria-label="Carte du voyage sur le fleuve Niger">
   <rect x="0" y="0" width="620" height="330" rx="22" fill="#f3e6c8"/>
@@ -523,7 +525,7 @@ function mapHTML(p) {
   <path class="river" d="${RIVER}" fill="none" stroke="#1e7fc2" stroke-width="3" stroke-dasharray="2 12" stroke-linecap="round"/>
   <text x="88" y="322" font-family="${FONT}" font-weight="800" font-size="24" fill="#1f5f80" stroke="#f3e6c8" stroke-width="5" paint-order="stroke" stroke-linejoin="round">fleuve Niger</text>
   <g class="escales"></g><g class="boat-pos">${BOAT}</g></svg>
-  <div class="passport">${E.map(e => `<span class="stamp ${j.stamps.includes(e.n) ? 'on' : ''}">${esc(e.name)}</span>`).join('')}</div></div>`;
+  <div class="passport">${E.map(e => fixed ? `<span class="stamp ${j.stamps.includes(e.n) ? 'on' : ''}">${esc(e.name)}</span>` : `<button class="stamp ${j.stamps.includes(e.n) ? 'on' : ''}" data-esc="${e.n}" aria-label="Escale ${esc(e.name)} : voir les séances de l'étape">${esc(e.name)}</button>`).join('')}</div></div>`;
 }
 function drawMap(root, p, from) {
   const svg = root.querySelector('.map svg'); if (!svg) return;
@@ -730,6 +732,16 @@ function screenHome() {
   $('#parent').onclick = () => screenPin(() => screenParent('suivi'));
 }
 function nextLesson(p) { return INDEX.filter(l => l.parcours === p.parcours).find(l => !p.progress.done[l.id]) || null; }
+/* Ordre des séances : la séance du jour est la première non faite du parcours (« due ») ; celles d'après sont verrouillées
+   (on ne saute pas mardi pour aller jeudi) ; celles d'avant, faites, se refont librement. La révision n'est jamais verrouillée. */
+function ticketState(p, id, list) {
+  if (id === 'revision') return 'due';
+  if (p.progress.done[id]) return 'done';
+  const L = list || INDEX.filter(l => l.parcours === p.parcours), nx = L.find(l => !p.progress.done[l.id]);
+  return nx && nx.id === id ? 'due' : 'locked';
+}
+/* Les séances d'une escale : celles de l'index qui portent son numéro, dans l'ordre de lecture. */
+function escaleLessons(pid, n) { return INDEX.filter(l => l.parcours === pid && l.escale === n); }
 const revisionId = () => 'revision-' + today();
 /* La séance à reprendre d'un profil, si elle existe encore et n'est pas finie. */
 function resumeOf(p) {
@@ -788,7 +800,7 @@ function screenChild(p, opts = {}) {
       <button class="btn big go boat-btn" id="${bid}" aria-label="${esc(lab)}" title="${esc(lab)}"><svg class="go-boat" viewBox="-40 -22 80 44" aria-hidden="true">${BOAT}</svg>${UI.play}</button>
       <p class="small muted">${resuming ? `Étape ${rs.i + 1} sur ${rs.steps.length}, commencée le ${esc(rs.date || '')}.` : sel === 'revision' ? 'On revoit ce que tu as appris.' : `Prépare ton crayon et ta ${esc(ficheOf(p))}.`}</p>`;
   };
-  const ticketHTML = (id, day, title, done, icon) => `<button class="ticket ${done ? 'done' : ''} ${rs && rs.lesson === id ? 'pending' : ''} ${sel === id ? 'sel' : ''}" data-l="${esc(id)}" aria-label="${esc(day ? `Séance de ${day} : ${title}` : title)}"><span class="t-ic">${icon}</span><span class="t-day">${esc(DAY[day] || (id === 'revision' ? 'Rév.' : lastWeek))}</span><span class="t-title">${esc(title)}</span><span class="t-mark">${done ? UI.check : rs && rs.lesson === id ? UI.play : ''}</span></button>`;
+  const ticketHTML = (id, day, title, done, icon) => { const st = ticketState(p, id, list); return `<button class="ticket ${st} ${rs && rs.lesson === id ? 'pending' : ''} ${sel === id ? 'sel' : ''}" data-l="${esc(id)}" aria-label="${esc((day ? `Séance de ${day} : ${title}` : title) + (st === 'locked' ? ' (après la séance du jour)' : ''))}"><span class="t-ic">${icon}</span><span class="t-day">${esc(DAY[day] || (id === 'revision' ? 'Rév.' : lastWeek))}</span><span class="t-title">${esc(title)}</span><span class="t-mark">${st === 'done' ? UI.check : rs && rs.lesson === id ? UI.play : st === 'locked' ? UI.lock : ''}</span></button>`; };
   app.innerHTML = `<div class="page child">
   <header class="c-head"><button class="icon-btn" id="back" aria-label="Retour">${UI.back}</button><h2>${esc(kidLabel(p))}</h2><span class="c-count" aria-label="Poissons pêchés">${FISH(false)}<b>${pr.runs.reduce((a, r) => a + (r.fish || 0) + (r.gold || 0), 0)}</b></span></header>
   <div class="c-grid">
@@ -797,7 +809,7 @@ function screenChild(p, opts = {}) {
       <div class="card today"><div id="today">${todayHTML()}</div><p class="recap" id="recap" ${subtitlesOn() ? '' : 'hidden'}>${esc(recap)}</p></div>
       <div class="tickets">${tickets.map(l => ticketHTML(l.id, (LESSONS[l.id] || {}).day || '', l.title, !!pr.done[l.id], domainIcon(LESSONS[l.id]))).join('')}${canRevise ? ticketHTML('revision', '', 'Séance de révision', false, DOMAIN_ICON.revision) : ''}</div>
     </div>
-  </div></div>`;
+  </div><div class="quit-ask" id="escale" hidden></div></div>`;
   drawMap(app, p);
   $('#back').onclick = screenHome;
   const go = id => {
@@ -809,7 +821,23 @@ function screenChild(p, opts = {}) {
   };
   const bind = () => ['start', 'revise', 'resume'].forEach(k => { const b = $('#' + k); if (b) b.onclick = () => go(sel); });
   bind();
+  /* Les escales sont des boutons : l'étape du voyage, ses séances publiées et où en est l'enfant. */
+  const escOpen = n => {
+    const E = escalesOf(p.parcours), i = E.findIndex(e => e.n === n); if (i < 0) return;
+    const e = E[i], nextE = E[i + 1], Ls = escaleLessons(p.parcours, n), done = Ls.filter(l => pr.done[l.id]).length;
+    const title = nextE ? `De ${e.name} à ${nextE.name}` : `${e.name}, l'arrivée`;
+    const sub = nextE ? `${e.sessions} séance${e.sessions > 1 ? 's' : ''} prévue${e.sessions > 1 ? 's' : ''} · ${Ls.length} publiée${Ls.length > 1 ? 's' : ''} · ${done} faite${done > 1 ? 's' : ''}` : 'La fin du voyage sur le fleuve.';
+    const rows = Ls.map(l => { const st = ticketState(p, l.id, list), L = LESSONS[l.id] || {}; return `<li class="esc-row ${st}"><span class="t-ic">${domainIcon(L)}</span><span class="esc-txt"><b>${esc(DAY[L.day] || '')} · ${esc(l.week)}</b>${esc(l.title)}</span><span class="esc-st" aria-label="${st === 'done' ? 'faite' : st === 'due' ? 'séance du jour' : 'à venir'}">${st === 'done' ? UI.check : st === 'due' ? UI.play : UI.lock}</span></li>`; }).join('');
+    $('#escale').innerHTML = `<div class="qa-card esc-card" role="dialog" aria-label="${esc(title)}"><h2>${esc(title)}</h2><p class="muted">${esc(sub)}</p>${rows ? `<ul class="esc-list">${rows}</ul>` : nextE ? `<p class="muted">${esc(PH.escaleSoon || 'Les séances arrivent bientôt.')}</p>` : ''}<button class="btn big ghost" id="esc-close" aria-label="Fermer">${UI.close}</button></div>`;
+    $('#escale').hidden = false; $('#esc-close').onclick = () => { $('#escale').hidden = true; stopSpeech(); };
+    const say = !nextE ? (PH.escaleEnd || "{nom}, c'est l'arrivée du voyage !").replace('{nom}', e.name) : !Ls.length ? `${title}. ${PH.escaleSoon || 'Les séances arrivent bientôt.'}` : (PH.escaleLeg || 'De {de} à {a} : {n} séances. Tu en as fait {faites}.').replace('{de}', e.name).replace('{a}', nextE.name).replace('{n}', Ls.length).replace('{faites}', done);
+    speak(say);
+  };
+  app.querySelectorAll('[data-esc]').forEach(b => b.onclick = () => { sfx('tap'); escOpen(+b.dataset.esc); });
+  /* On ne saute pas une séance : un billet verrouillé ne change pas la sélection, Kono dit laquelle vient d'abord, le billet du jour clignote. */
+  const lockedSay = () => (PH.ticketLocked || "Pas encore ! D'abord la séance de {jour} : {titre}.").replace('{jour}', nx ? ((LESSONS[nx.id] || {}).day || '') : '').replace('{titre}', nx ? nx.title : '');
   app.querySelectorAll('[data-l]').forEach(b => b.onclick = () => {
+    if (b.classList.contains('locked')) { sfx('soft'); const d = app.querySelector('.ticket.due'); if (d) { d.classList.remove('wink'); void d.offsetWidth; d.classList.add('wink'); } speak(lockedSay()); return; }
     sfx('tap'); sel = b.dataset.l;
     app.querySelectorAll('[data-l]').forEach(x => x.classList.toggle('sel', x.dataset.l === sel));
     $('#today').innerHTML = todayHTML(); bind();
@@ -1553,7 +1581,7 @@ async function endStep(st, alive) {
   saveRun(true); endWake();
   const mins = Math.max(1, Math.round((P.run.end - P.run.start) / 60000));
   $('#stage').className = 'stage top';
-  $('#stage').innerHTML = `${celebrateHTML()}<div class="v-title">Séance terminée</div><div class="fishes">${Array.from({ length: P.fish }, () => FISH(false)).join('')}${Array.from({ length: P.gold }, () => FISH(true)).join('')}</div>${mapHTML(child)}`;
+  $('#stage').innerHTML = `${celebrateHTML()}<div class="v-title">Séance terminée</div><div class="fishes">${Array.from({ length: P.fish }, () => FISH(false)).join('')}${Array.from({ length: P.gold }, () => FISH(true)).join('')}</div>${mapHTML(child, true)}`;
   drawMap($('#stage'), child, P.fromF);
   mood('happy'); sfx('gold');
   bubble(`${mins} minute${mins > 1 ? 's' : ''} de travail · ${P.fish + P.gold} réponse${P.fish + P.gold > 1 ? 's' : ''} trouvée${P.fish + P.gold > 1 ? 's' : ''}${P.gold ? `, dont ${P.gold} après une erreur` : ''}.`, 'good');
@@ -1592,7 +1620,7 @@ const recKind = r => r.kind === 'lecture' ? (r.reread ? 'Relecture' : 'Lecture')
 async function markHeard(r) { if (r && !r.heard) { r.heard = true; await DB.putRec(r); } }
 async function screenParent(tab) {
   setChild(null); stopSpeech(); screen('parent');
-  const tabs = [['suivi', 'Suivi'], ['maman', 'Voix de Maman'], ['kono', 'Voix et affichage'], ['rapport', 'Rapport'], ['reglages', 'Réglages']];
+  const tabs = [['suivi', 'Suivi'], ['programme', 'Programme'], ['maman', 'Voix de Maman'], ['kono', 'Voix et affichage'], ['rapport', 'Rapport'], ['reglages', 'Réglages']];
   app.innerHTML = `<div class="page stack"><div class="row" style="justify-content:space-between"><h2>Espace parent</h2><button class="btn ghost" id="out" style="--c:var(--river)">Sortir</button></div>
   <div class="tabs">${tabs.map(([k, l]) => `<button class="tab ${k === tab ? 'on' : ''}" data-t="${k}">${l}</button>`).join('')}</div><div id="pane" class="stack"></div></div>`;
   $('#out').onclick = screenHome;
@@ -1623,6 +1651,21 @@ async function screenParent(tab) {
     pane.querySelectorAll('[data-del]').forEach(b => { let armed = false; b.onclick = async () => { if (!armed) { armed = true; b.textContent = 'Confirmer la suppression'; return; } await DB.delRec(Number(b.dataset.del)); screenParent('suivi'); }; });
     pane.querySelectorAll('[data-measure]').forEach(b => b.onclick = () => screenMeasure(recs.find(x => String(x.id) === b.dataset.measure)));
     pane.querySelectorAll('[data-grade]').forEach(b => b.onclick = () => screenGrade(recs.find(x => String(x.id) === b.dataset.grade)));
+  }
+  if (tab === 'programme') {
+    /* Le programme, lisible par le parent : le voyage (escales, séances prévues et publiées), chaque semaine publiée (jour, séance,
+       ce qu'elle travaille, compétences, état pour chaque enfant du parcours) et la progression de l'année (compétences par période). */
+    const DAYL = { lundi: 'Lundi', mardi: 'Mardi', mercredi: 'Mercredi', jeudi: 'Jeudi', vendredi: 'Vendredi' };
+    const pids = PARCOURS.map(x => x.id).filter(id => INDEX.some(l => l.parcours === id) || S.profiles.some(p => p.parcours === id));
+    pane.innerHTML = `<p class="muted">Ce que les séances travaillent, semaine par semaine, et la progression de l'année. Les semaines suivantes arrivent par publication : la tablette les prend à l'ouverture avec internet. Dans l'espace de l'enfant, chaque escale de la carte montre les séances de son étape.</p>` + pids.map(pid => {
+      const prc = parcoursOf(pid), kids = S.profiles.filter(p => p.parcours === pid), E = escalesOf(pid), prog = PROG[pid] || { periods: [], skills: [] };
+      const weeks = [...new Set(INDEX.filter(l => l.parcours === pid).map(l => l.week))];
+      const nDone = (k, Ls) => Ls.filter(l => k.progress.done[l.id]).length;
+      const voyage = `<table class="t"><tr><th>Escale</th><th>Séances prévues</th><th>Publiées</th>${kids.map(k => `<th>${esc(kidLabel(k))}</th>`).join('')}</tr>${E.map((e, i) => { const Ls = escaleLessons(pid, e.n); return `<tr><td>${esc(e.name)}${i === E.length - 1 ? ' (arrivée)' : ''}</td><td>${e.sessions}</td><td>${Ls.length}</td>${kids.map(k => `<td>${nDone(k, Ls)} faite${nDone(k, Ls) > 1 ? 's' : ''}</td>`).join('')}</tr>`; }).join('')}</table>`;
+      const sem = weeks.map(w => `<h3 style="font-size:1rem">Semaine ${esc(w)}</h3><div class="table-wrap"><table class="t"><tr><th>Jour</th><th>Séance</th><th>Ce qu'elle travaille</th>${kids.map(k => `<th>${esc(kidLabel(k))}</th>`).join('')}</tr>${INDEX.filter(l => l.parcours === pid && l.week === w).map(l => { const L = LESSONS[l.id] || {}; return `<tr><td>${esc(DAYL[L.day] || '')}</td><td><b>${esc(l.title)}</b><br><span class="small muted">${esc(L.domain || '')}</span></td><td>${esc(L.objective || '')}<br><span class="small muted">${(L.skills || []).map(c => esc(skillLabel(pid, c))).join(' · ')}</span></td>${kids.map(k => { const st = ticketState(k, l.id); return `<td>${st === 'done' ? '<span class="pill first">faite</span>' : st === 'due' ? '<span class="pill after">séance du jour</span>' : '<span class="pill m-peu">à venir</span>'}</td>`; }).join('')}</tr>`; }).join('')}</table></div>`).join('');
+      const periods = (prog.periods || []).map(per => `<h3 style="font-size:1rem">${esc(per.label)}</h3><ul class="prog-list">${(prog.skills || []).filter(s => (s.periods || []).includes(per.n)).map(s => `<li>${esc(s.label)} <span class="small muted">(${esc(s.code)})</span></li>`).join('')}</ul>`).join('');
+      return `<div class="card stack"><h3 style="color:var(--${esc(prc ? prc.couleur : 'river')})">${esc(prc ? prc.label : pid)}</h3><h3 style="font-size:1rem">Le voyage</h3><div class="table-wrap">${voyage}</div>${sem || '<p class="muted">Aucune séance publiée pour ce parcours.</p>'}<details><summary>Progression de l'année (${(prog.skills || []).length} compétences)</summary>${periods}</details></div>`;
+    }).join('');
   }
   if (tab === 'maman') {
     const keys = new Set((await DB.clipKeys()) || []);
@@ -1879,6 +1922,6 @@ async function boot() {
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) { try { navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' }).catch(() => {}); } catch (e) {} }
 document.addEventListener('visibilitychange', () => { if (document.hidden) stopSpeech(); });
 window.__kono = { keyOf, sentences, S, P: () => P, AUDIO: () => AUDIO, report, reportData, makeRevision, LESSONS: () => LESSONS, profileOf, startLesson, logError, normCode, ECOLE: () => ECOLE, domainIcon,
-  unit: { normCode, keyOf, sentences, fill, ageOf, opts3, genItem, verdict, isRight, masteryOf, skillStats, journey, fromStore, fromV02, newId, recapOf, kid, blank, retrievalPool, applySettings, calm, PH: () => PH, PROG: () => PROG } };   /* pour les tests */
+  unit: { normCode, keyOf, sentences, fill, ageOf, opts3, genItem, verdict, isRight, masteryOf, skillStats, journey, fromStore, fromV02, newId, recapOf, kid, blank, retrievalPool, ticketState, escaleLessons, applySettings, calm, PH: () => PH, PROG: () => PROG } };   /* pour les tests */
 boot();
 })();

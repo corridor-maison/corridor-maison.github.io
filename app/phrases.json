@@ -63,6 +63,10 @@
  "recapRevision": "Aujourd'hui, on révise ce que tu as appris.",
  "recapDone": "Tu as tout fait. À demain !",
  "ticketGo": "Touche la pinasse pour commencer.",
+ "ticketLocked": "Pas encore ! D'abord la séance de {jour} : {titre}. Touche la pinasse.",
+ "escaleLeg": "De {de} à {a} : {n} séances. Tu en as fait {faites}.",
+ "escaleEnd": "{nom}, c'est l'arrivée du voyage !",
+ "escaleSoon": "Les séances arrivent bientôt.",
  "clips": [
   {
    "id": "bonjour",

@@ -1,5 +1,6 @@
 """Test hors ligne : une seule ouverture avec réseau, puis coupure RÉELLE (le serveur est arrêté).
-Attendu : l'accueil s'affiche et une séance s'ouvre sans réseau.
+Attendu : l'accueil s'affiche et la séance du jour s'ouvre sans réseau (les séances d'après sont verrouillées depuis la v0.4.1 ;
+le nombre de fichiers de séances en cache, compté plus bas, prouve que toutes sont gardées).
 (La coupure simulée de Playwright ne s'applique pas au service worker : elle ne prouve rien.)
 
 Lancer : python3 tests/offline.py      (démarre et arrête lui-même un serveur sur le port 8766)
@@ -29,7 +30,7 @@ async def main():
             home = "introuvables" not in await pg.inner_text("#app") and await pg.is_visible(".kid[data-c]")
             print("2e ouverture sans réseau :", "OK (accueil avec le profil)" if home else "LEÇONS INTROUVABLES")
             if home:
-                last = await pg.evaluate("fetch('lessons/index.json').then(r => r.json()).then(i => i.lessons.filter(l => l.parcours === 'gs').slice(-1)[0].id)")
+                last = await pg.evaluate("fetch('lessons/index.json').then(r => r.json()).then(i => i.lessons.filter(l => l.parcours === 'gs')[0].id)")   # la séance du jour : la première non faite
                 await pg.click(".kid[data-c]"); await pg.wait_for_selector(".tickets"); await pg.click(f"[data-l='{last}']"); await pg.wait_for_selector(f".ticket.sel[data-l='{last}']"); await pg.click("#today .boat-btn"); await pg.wait_for_timeout(800)
                 ok = await pg.evaluate("() => !!window.__kono.P()")
                 print(f"séance {last} sans réseau :", "OK" if ok else "ÉCHEC")
