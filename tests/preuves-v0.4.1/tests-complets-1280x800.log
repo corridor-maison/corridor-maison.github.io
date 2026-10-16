@@ -1,0 +1,147 @@
+=== node --check ===
+syntaxe OK
+=== python tools/check_lessons.py ===
+8 leçon(s), 0 erreur(s)
+check_lessons exit code: 0
+=== serveur http.server 8765 --directory app ===
+=== python tests/e2e.py 1280x800 ===
+accès école : code faux refusé OK · code de test accepté
+profils : Ali (ce1, 6arb), Awa (gs, yhuc)
+bleu-s0-dizaine: OK
+ce1-s1-echange: OK
+ce1-s1-centaine: OK
+ce1-s1-marche: OK
+révision ce1: OK
+orange-s0-amis10: OK
+gs-s1-cache: OK
+gs-s1-collection: OK
+gs-s1-syllabes: OK
+révision gs: OK
+reprise proposée après fermeture : OK (étape 6/28, 1 réponses gardées, rappel dit : oui)
+reprise à la bonne étape : OK (étape 6, 1 réponses, 1 poissons)
+orange-s0-amis10 reprise jusqu'au bout : OK
+historique après reprise : OK (séance orange-s0-amis10 terminée=True, 15 réponses, reprise effacée=True)
+rappel du niveau à l'ouverture : OK · « La dernière fois, tu as fait  Les amis de 10 . Tu réussis bien : Trouver ce qui manque pour faire 10, Comprendre une histoire et la raconter »
+contrôle moteur (étape injectée, profil Contrôle) : boîte de dix en ajout OK
+rappel de sauvegarde affiché : OK
+maîtrise par compétence dans le Suivi : OK
+réglages d'affichage (main gauche, calme, contraste) : OK ['gaucher', 'calme', 'contraste']
+onglet Programme (voyage, semaine S1, progression, état par enfant) : OK
+journal d'erreurs visible dans Réglages : OK
+export puis import d'un profil : OK (5 séances et 5 faites retrouvées)
+rapport : ligne d'inscription OK · format 2 et rubrique 8 (maîtrise) OK
+rapport enregistré dans un fichier : OK (4 profils, inscription C-9999, 5 séances terminées, 9 compétences)
+COUVERTURE : tenframe:add = 1 · tenframe:total = 3 · blocks:fermeture-unites = 6 · blocks:fermeture-dizaines = 1 · jumps:via = 3 · order = 1 · erreur-animee = 4 · reprise = 1 · rappel = 1 · acces = 1 · profil-export = 1 · journal = 1 · navigation = 9 · rapport-fichier = 1 · maitrise = 1 · reglages-affichage = 1 · verrou = 2 · escale = 2 · programme = 1
+ERREURS JS : aucune
+LECTEUR D'ÉCRAN : tout nommé sur 243 captures
+E2E : OK
+e2e exit code: 0
+=== python tests/offline.py ===
+fichiers de séances en cache après une seule ouverture : 9
+2e ouverture sans réseau : OK (accueil avec le profil)
+séance orange-s0-amis10 sans réseau : OK
+offline exit code: 0
+=== python tests/migration.py ===
+OK  schéma 2, 2 profils
+OK  code parent, voix et réglages conservés (les réglages d'affichage nouveaux restent éteints)
+OK  drapeau de migration effacé après la migration de la base
+OK  tablette installée avant le contrôle d'accès : accès conservé, à régulariser par l'école
+OK  case bleu → profil Ali, parcours ce1, couleur bleu, fille=False
+OK  Ali : suivi identique clé par clé (runs, review, done, records, drillMisses, skills, measures)
+OK  Ali : classe CE1 déduite du parcours
+OK  case orange → profil Awa, parcours gs, couleur orange, fille=True
+OK  Awa : suivi identique clé par clé (runs, review, done, records, drillMisses, skills, measures)
+OK  Awa : classe GS déduite du parcours
+OK  2 enregistrements conservés, plus aucun champ child
+OK  enregistrement d'Ali rattaché à son profil, audio intact
+OK  enregistrement d'Awa rattaché à son profil, audio intact
+OK  phrases de Maman : ['bonjour@h34s', 'fiche', 'fin@8xxx']
+OK  rapport du dimanche émis par profil
+OK  rapport : ligne d'inscription (installation antérieure)
+MIGRATION : OK, aucune perte
+migration exit code: 0
+=== python tests/unite.py ===
+[OK] escales gs : Bamako, Ségou, Mopti, Tombouctou, Gao, dans cet ordre · ['Bamako', 'Ségou', 'Mopti', 'Tombouctou', 'Gao']
+[OK] escales ce1 : Bamako, Ségou, Mopti, Tombouctou, Gao, dans cet ordre · ['Bamako', 'Ségou', 'Mopti', 'Tombouctou', 'Gao']
+[OK] normCode : majuscules, sans séparateurs, O→0, I/L→1 · ['ABC011', 'TSTTSTTST', 'K7F29QH43', '']
+[OK] keyOf : guillemets et espaces ignorés, 8 hexadécimaux, clés distinctes · [True, True, True]
+[OK] sentences : découpage sur . ! ? … et guillemets retirés (les espaces restent, comme dans build_audio.py) · [4, 0, ['Il a dit  oui .', 'Bien.']]
+[OK] fill : sans enfant, le prénom et l'accord disparaissent proprement · ['Coucou !', 'trompé', '']
+[OK] ageOf : 7 ans (né le 15 mars 2019), 5 ans (10 février 2021), null sinon · [7, None, None, 5]
+[OK] opts3 : trois options distinctes dans 0..10, la bonne incluse (300 tirages)
+[OK] genItem : question et réponse cohérentes pour les 8 sortes d'automatismes (300 tirages chacune) · {}
+[OK] isRight : comparaison en texte (33, '33' justes ; '34' faux)
+[OK] verdict : 1er essai faux typique → explication de l'erreur, sans la montrer · {'kind': 'retry', 'why': 'Tu as écrit 13 à côté du 2.', 'show': None, 'typed': True}
+[OK] verdict : erreur objet → explication et dessin · {'kind': 'retry', 'why': 'Tu as oublié la dizaine.', 'show': [{'kind': 'blocks', 't': 2, 'u': 13}], 'typed': True}
+[OK] verdict : erreur non typique → aide 1 puis aide 2 · ['Aide un.', 'Aide deux.']
+[OK] verdict : 3e essai faux → réponse montrée
+[OK] verdict : plus qu'une option possible → réponse montrée ; deux options → on réessaie
+[OK] verdict : sans erreur typique ni aide → « Regarde encore » ; erreur forcée (via) → son texte · Tu n'es pas passé par 30.
+[OK] skillStats (7 jours) : A 4 essais au 1er essai ; B 3 montrées ; D 2 + 1 après aide + 1 montrée ; E hors fenêtre · {'A': {'n': 4, 'first': 4, 'after': 0, 'shown': 0}, 'B': {'n': 3, 'first': 0, 'after': 0, 'shown': 3}, 'C': {'n': 2, 'first': 2, 'after': 0, 'shown': 0}, 'D': {'n': 4, 'first': 2, 'after': 1, 'shown': 1}}
+[OK] masteryOf (30 jours) : A acquis (100 %), B fragile (0 %), C peu travaillée (2 essais), D en cours (62 %, l'après-aide compte moitié) · {'A': ('acquis', 1, 4), 'B': ('fragile', 0, 3), 'C': ('peu', 1, 2), 'D': ('en-cours', 0.62, 4)}
+[OK] masteryOf (90 jours) : E acquis apparaît
+[OK] journey : position de la pinasse et tampons du passeport selon le nombre de séances faites · [[0, 0, []], [1, 0.06, [1]], [4, 0.24, [1, 2]], [36, 0.45, [1, 2, 3]], [72, 0.73, [1, 2, 3, 4]], [112, 1, [1, 2, 3, 4, 5]], [500, 1, [1, 2, 3, 4, 5]]]
+[OK] ticketState : la première séance non faite est « due », celles d'après « locked », les faites « done », la révision jamais verrouillée · ['due', 'locked', 'locked', 'locked'] ['done', 'due', 'locked', 'locked'] ['done', 'done', 'done', 'done']
+[OK] escaleLessons : les 4 séances publiées de chaque parcours sont à l'escale 1 (Bamako), aucune ailleurs · [['ce1', [4, 0, 0, 0, 0]], ['gs', [4, 0, 0, 0, 0]]]
+[OK] fromStore : état vide → réglages par défaut (sons oui, main gauche non) · [2, False, 0, False, True]
+[OK] fromStore : schéma 2 → réglages complétés, suivi complété (review, resume) · [True, '1234', False, False, False, 0, None]
+[OK] fromV02 : case bleu avec suivi → profil Ali (ce1, legacy bleu), case orange vide ignorée, migration demandée · [1, 'ce1', 'bleu', 'Ali', 1, True, '9999']
+[OK] newId : 4 caractères, jamais un identifiant déjà pris, 200 tirages distincts · [200, True]
+[OK] recapOf : première séance → bienvenue puis la séance du jour · C'est ta première séance avec moi. Bienvenue à bord ! Aujourd'hui : « Les amis de 10 ».
+[OK] recapOf : avec historique → dernière séance, réussites (A), à revoir (D, B), puis révision · La dernière fois, tu as fait « Les amis de 10 ». Tu réussis bien : A. On va revoir ensemble : D, B. Aujourd'hui, on révise ce que tu as appris.
+[OK] recapOf : séance à reprendre → la nomme et propose de reprendre · Tu t'es arrêté au milieu de la séance « La calebasse magique ». On reprend là où tu en étais ? Tu réussis bien : A. On v
+[OK] makeRevision : les défis de rappel visent d'abord la compétence fragile (GS.N.amis10) · {'pool': 22, 'nAmis': 7, 'retr': ['GS.N.amis10', 'GS.N.amis10', 'GS.N.amis10'], 'parts': 4, 'hasDrill': True, 'hasStory': True, 'end': 'end'}
+[OK] makeRevision : quatre temps, automatismes, histoire, fin · {'pool': 22, 'nAmis': 7, 'retr': ['GS.N.amis10', 'GS.N.amis10', 'GS.N.amis10'], 'parts': 4, 'hasDrill': True, 'hasStory': True, 'end': 'end'}
+[OK] report / reportData : en-tête « format 2 », fichier rapport-2, texte joint · ['CORRIDOR À LA MAISON · RAPPORT · format 2', True, 'rapport-2', 0, 'string']
+[OK] applySettings / calm : classes sur body posées puis retirées · [True, True, True, False]
+[OK] aucune erreur JavaScript pendant les tests unitaires
+UNITÉ : 34 contrôles, OK
+unite exit code: 0
+=== python tests/ecrans.py ===
+[OK] lancement : fond clair, Kono et le nom visibles avant les styles et le moteur (pas d'écran blanc) · fond=rgb(253, 249, 241) image={'w': 512, 'vis': True, 'alt': ''} texte='Corridor à la maison'
+[OK] manifeste : icônes 192 et 512 en « any » et en « maskable » · [('192x192', 'any'), ('192x192', 'maskable'), ('512x512', 'any'), ('512x512', 'maskable')]
+[OK] icône icons/icon-192.png (any) : 192 px, fond sable, Kono dedans · taille=(192, 192) coin=(246, 239, 226) bleu=0.062 hors-zone=0
+[OK] icône icons/icon-512.png (any) : 512 px, fond sable, Kono dedans · taille=(512, 512) coin=(246, 239, 226) bleu=0.068 hors-zone=0
+[OK] icône icons/icon-maskable-192.png (maskable) : 192 px, fond sable, Kono dedans, rien hors de la zone sûre (cercle de 80 %) · taille=(192, 192) coin=(246, 239, 226) bleu=0.033 hors-zone=0
+[OK] icône icons/icon-maskable-512.png (maskable) : 512 px, fond sable, Kono dedans, rien hors de la zone sûre (cercle de 80 %) · taille=(512, 512) coin=(246, 239, 226) bleu=0.033 hors-zone=0
+[OK] téléphone · code : pas de débordement, rien de tronqué, cibles ≥ 44 px, ni pointillés ni relief dur, rien de recouvert · débordement=False tronqué=[] petits=[] kono=0 pointillés=[] relief=[] recouverts=[]
+[OK] téléphone · accueil : pas de débordement, rien de tronqué, cibles ≥ 44 px, ni pointillés ni relief dur, rien de recouvert · débordement=False tronqué=[] petits=[] kono=0 pointillés=[] relief=[] recouverts=[]
+[OK] téléphone · enfant : pas de débordement, rien de tronqué, cibles ≥ 44 px, ni pointillés ni relief dur, rien de recouvert · débordement=False tronqué=[] petits=[] kono=0 pointillés=[] relief=[] recouverts=[]
+[OK] téléphone · escale : pas de débordement, rien de tronqué, cibles ≥ 44 px, ni pointillés ni relief dur, rien de recouvert · débordement=False tronqué=[] petits=[] kono=0 pointillés=[] relief=[] recouverts=[]
+[OK] carte : le Bani dessiné, Djenné en losange plein (pas une escale), les deux fleuves nommés et lisibles (≥ 12 px à l'écran), 5 cercles d'escale · {'bani': True, 'djenne': True, 'noms': 2, 'hauteurMin': 16, 'escales': 5}
+[OK] billets : chaque titre de séance tient sur 3 lignes au plus · [{'t': 'Passer par la dizaine', 'lignes': 1}, {'t': 'La dizaine qui se forme', 'lignes': 1}, {'t': 'Dix dizaines, une centaine', 'lignes': 1}, {'t': 'Problèmes au marché', 'lignes': 1}]
+[OK] téléphone · seance-consigne : pas de débordement, rien de tronqué, cibles ≥ 44 px, Kono ≤ 25 % de la hauteur, ni pointillés ni relief dur, rien de recouvert · débordement=False tronqué=[] petits=[] kono=0.139 pointillés=[] relief=[] recouverts=[]
+[OK] téléphone · seance-automatismes : pas de débordement, rien de tronqué, cibles ≥ 44 px, Kono ≤ 25 % de la hauteur, ni pointillés ni relief dur, rien de recouvert · débordement=False tronqué=[] petits=[] kono=0.139 pointillés=[] relief=[] recouverts=[]
+[OK] téléphone · seance-clavier : pas de débordement, rien de tronqué, cibles ≥ 44 px, Kono ≤ 25 % de la hauteur, ni pointillés ni relief dur, rien de recouvert · débordement=False tronqué=[] petits=[] kono=0.139 pointillés=[] relief=[] recouverts=[]
+[OK] téléphone : consigne, automatismes et clavier atteints dans la séance · {'clavier', 'consigne', 'intro'}
+[OK] réglages : main gauche, moins d'animations, contraste posés depuis l'espace parent et enregistrés · ['gaucher', 'calme', 'contraste']
+[OK] réglages : gardés après rechargement · ['gaucher', 'calme', 'contraste']
+[OK] contraste renforcé : texte noir · moins d'animations : Kono immobile · couleur rgb(0, 0, 0), animation none
+[OK] main gauche : la flèche à gauche, Kono à droite de la zone de travail · {'nextLeft': True, 'konoRight': True, 'stage': 0.733, 'kono': 0.407}
+[OK] main gauche : le clavier à gauche du dessin · {'padLeft': True}
+[OK] séance (1280 × 800) : le dessin remplit au moins la moitié de la hauteur, Kono au moins le tiers · stage=0.733 kono=0.407
+[OK] lecteur d'écran : sur tous les écrans visités, chaque bouton, champ et image a un nom
+[OK] aucune erreur JavaScript
+ÉCRANS : OK
+ecrans exit code: 0
+=== python tests/maj.py ===
+[OK] ancienne version installée : v0.0.1 affichée, cache kono-0.0.1 · v0.0.1 ['kono-0.0.1']
+[OK] ancienne version : marche sans réseau
+[OK] première ouverture en ligne après publication : v0.4.1 affichée sans vider le cache · v0.4.1
+[OK] nouveau service worker actif : seul le cache kono-0.4.1 reste, l'ancien est effacé · ['kono-0.4.1']
+[OK] nouvelle version sans réseau : v0.4.1 affichée · v0.4.1
+[OK] nouvelle version sans réseau : une séance s'ouvre
+MISE À JOUR : OK
+maj exit code: 0
+=== python tests/outils.py ===
+[OK] check_lessons.py rend 0 · 8 leçon(s), 0 erreur(s)
+[OK] codes.py verifier rend 0 · 41 code(s), 41 actif(s), accès code, école « École pilote », 0 erreur(s)
+[OK] build_review.py S1 rend 0 et produit print/Relecture_S1.html · 8 séance(s) de S1 · check_lessons : 0 · 0 avertissement(s) · voix : 0 / 849 phrases avec fichier · print\Relecture_S1.html
+[OK] la relecture contient chaque séance de la semaine, le tableau des étapes et les contrôles · 8 séances
+[OK] tableau_classe.py rend 0 et produit le tableau HTML et le CSV · 3 rapport(s) lu(s), 6 enfant(s), 2 classe(s) : C:\Users\ABDOUL~1.OUS\AppData\Local\Temp\tmp2ov2kx5p\tableau-classes-2026-10-16.html et tableau-classes-2026-10-16.csv
+[OK] le tableau a une section par classe, une ligne par enfant, les compétences et la séance en cours
+[OK] le tableau montre la maîtrise (rapport-2) pour le rapport du test de bout en bout
+[OK] le rapport exporté par le test de bout en bout entre dans le tableau · 4 profils, inscription C-9999
+OUTILS : OK
+outils exit code: 0
+exit 0
