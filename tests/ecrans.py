@@ -6,10 +6,13 @@
 - Réglages d'affichage (1280 × 800) : main gauche (clavier et flèche à gauche, Kono à droite), moins d'animations (Kono immobile),
   contraste renforcé (texte noir) ; posés depuis l'espace parent, gardés après rechargement.
 - Lecteur d'écran : sur chaque écran visité, tout bouton, champ ou image visible a un nom (texte, aria-label, étiquette ou alt).
+- Lancement : avant que styles.css et app.js n'arrivent, la page est déjà sable avec Kono (jamais d'écran blanc ni de texte système) ;
+  les icônes du manifeste existent en « any » et « maskable », aux tailles annoncées, fond sable, Kono dedans et dans la zone sûre.
 
 Lancer : python3 tests/ecrans.py      (démarre et arrête lui-même un serveur sur le port 8770)
 """
-import asyncio, os, pathlib, subprocess, sys, time
+import asyncio, json, os, pathlib, subprocess, sys, time
+from PIL import Image
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent)); from ecole_test import ecole_test, CODE
 from playwright.async_api import async_playwright
 ROOT = pathlib.Path(__file__).resolve().parent.parent; APP = ROOT / "app"
@@ -47,6 +50,26 @@ async def main():
         async with async_playwright() as p:
             b = await p.chromium.launch(args=["--use-fake-ui-for-media-stream", "--use-fake-device-for-media-stream"])
             errs = []
+            # ---------------- lancement : sans styles.css ni app.js, la page est déjà sable avec Kono (pas d'écran blanc)
+            ctx0 = await b.new_context(viewport={"width": 360, "height": 640}); pg0 = await ctx0.new_page()
+            await pg0.route("**/styles.css", lambda r: r.abort()); await pg0.route("**/app.js", lambda r: r.abort())
+            await pg0.goto(URL); await pg0.wait_for_timeout(400)
+            bg = await pg0.evaluate("getComputedStyle(document.documentElement).backgroundColor")
+            img = await pg0.evaluate("() => { const i = document.querySelector('#app img'); return i ? { w: i.naturalWidth, vis: !!i.getClientRects().length, alt: i.getAttribute('alt') } : null; }")
+            txt = (await pg0.inner_text("#app")).strip(); await pg0.screenshot(path=f"{SHOTS}lancement-sans-styles.png")
+            check("lancement : fond sable, Kono et le nom visibles avant les styles et le moteur (pas d'écran blanc)",
+                  bg == "rgb(246, 239, 226)" and bool(img) and img["w"] == 512 and img["vis"] and img["alt"] is not None and txt == "Corridor à la maison", f"fond={bg} image={img} texte={txt[:40]!r}")
+            await ctx0.close()
+            man = json.loads((APP / "manifest.webmanifest").read_text(encoding="utf-8"))
+            got_ic = {(i["sizes"], i["purpose"]) for i in man["icons"]}
+            check("manifeste : icônes 192 et 512 en « any » et en « maskable »", got_ic == {("192x192", "any"), ("512x512", "any"), ("192x192", "maskable"), ("512x512", "maskable")}, str(sorted(got_ic)))
+            for ic in man["icons"]:
+                im = Image.open(APP / ic["src"]).convert("RGB"); s = int(ic["sizes"].split("x")[0]); px = im.load(); pts = [(x, y) for x in range(0, s, 4) for y in range(0, s, 4)]
+                sand = lambda c: max(abs(c[0] - 246), abs(c[1] - 239), abs(c[2] - 226)) < 6
+                blue = sum(1 for x, y in pts if max(abs(px[x, y][0] - 43), abs(px[x, y][1] - 108), abs(px[x, y][2] - 176)) < 12) / len(pts)
+                out = sum(1 for x, y in pts if not sand(px[x, y]) and ((x - s / 2) ** 2 + (y - s / 2) ** 2) ** .5 > .4 * s) if ic["purpose"] == "maskable" else 0
+                check(f"icône {ic['src']} ({ic['purpose']}) : {s} px, fond sable, Kono dedans" + (", rien hors de la zone sûre (cercle de 80 %)" if ic["purpose"] == "maskable" else ""),
+                      im.size == (s, s) and sand(px[2, 2]) and blue > 0.02 and out == 0, f"taille={im.size} coin={px[2, 2]} bleu={blue:.3f} hors-zone={out}")
             # ---------------- téléphone 360 × 640
             ctx = await b.new_context(viewport={"width": 360, "height": 640}, is_mobile=True, has_touch=True, device_scale_factor=2, permissions=["microphone"])
             pg = await ctx.new_page(); pg.on("pageerror", lambda e: errs.append("PAGEERROR " + str(e)))
