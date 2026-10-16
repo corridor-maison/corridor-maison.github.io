@@ -93,6 +93,9 @@ async def main():
             await pg.fill("#p-name", "Ali"); await pg.fill("#p-dob", "2019-03-15"); await pg.click("[data-p='ce1']"); await pg.click("#go"); await pg.wait_for_selector(".kids")
             await audit(pg, "accueil"); await phone("accueil")
             await pg.click(".kid[data-c]"); await pg.wait_for_selector(".tickets"); await pg.wait_for_timeout(300); await audit(pg, "espace enfant"); await phone("enfant")
+            # une escale touchée ouvre les séances de l'étape, dans l'écran du téléphone
+            await pg.click("[data-esc='1']"); await pg.wait_for_selector("#escale:not([hidden]) .esc-row"); await pg.wait_for_timeout(200); await audit(pg, "escale"); await phone("escale")
+            await pg.click("#esc-close"); await pg.wait_for_timeout(100)
             # carte : le Bani et Djenné (losange plein, pas un cercle d'escale), noms des fleuves lisibles ; billets : titre sur 3 lignes au plus
             carte = await pg.evaluate("""() => { const m = document.querySelector('.map'); const t = m.innerText; const lab = [...m.querySelectorAll('text')].filter(x => /Niger|Bani/.test(x.textContent));
               const fs = lab.map(x => x.getBoundingClientRect().height); const dj = m.querySelector('.bani rect.ville'); const cercles = m.querySelectorAll('.escales circle').length;

@@ -18,7 +18,7 @@ SH = f"{SHOTS}e2e-{VW}x{VH}-"
 URL = "http://localhost:8765/#test"
 PIN = "1234"
 PROFILES = [("ce1", "Ali", "2019-03-15", False), ("gs", "Awa", "2021-02-10", True)]
-REQUIRED = ["tenframe:add", "tenframe:total", "blocks:fermeture-unites", "blocks:fermeture-dizaines", "jumps:via", "order", "erreur-animee", "reprise", "rappel", "acces", "profil-export", "journal", "navigation", "rapport-fichier", "maitrise", "reglages-affichage"]
+REQUIRED = ["tenframe:add", "tenframe:total", "blocks:fermeture-unites", "blocks:fermeture-dizaines", "jumps:via", "order", "erreur-animee", "reprise", "rappel", "acces", "profil-export", "journal", "navigation", "rapport-fichier", "maitrise", "reglages-affichage", "verrou", "escale", "programme"]
 NAMES = r"""() => { const out = []; const vis = el => !!el.getClientRects().length && getComputedStyle(el).visibility !== 'hidden';
   const nameOf = el => (el.getAttribute('aria-label') || el.getAttribute('title') || (el.labels && [...el.labels].map(l => l.textContent).join(' ')) || (el.closest('label') ? el.closest('label').textContent : '') || el.textContent || el.getAttribute('placeholder') || '').replace(/\s+/g, ' ').trim();
   document.querySelectorAll('button, [role=button], input:not([type=hidden]), select, textarea').forEach(el => { if (vis(el) && !nameOf(el)) out.push(el.tagName.toLowerCase() + (el.id ? '#' + el.id : '') + (typeof el.className === 'string' && el.className.trim() ? '.' + el.className.trim().split(/\s+/).join('.') : '')); });
@@ -219,6 +219,21 @@ async def main():
             for prof in profiles:
                 await pg.wait_for_selector(".kids"); await pg.click(f".kid[data-c='{prof['id']}']"); await pg.wait_for_selector(".tickets")
                 await shot(f"{prof['parcours']}-enfant")
+                # ordre des séances : toucher le dernier billet (verrouillé) ne change pas la sélection (la première séance) et Kono dit laquelle vient d'abord
+                lids = [l["id"] for l in sorted([l for l in idx["lessons"] if l["parcours"] == prof["parcours"]], key=lambda l: l["order"])]
+                if await pg.is_visible(f".ticket.locked[data-l='{lids[-1]}']"):
+                    await pg.evaluate("window.__spoken = []"); await pg.click(f"[data-l='{lids[-1]}']"); await pg.wait_for_timeout(150)
+                    said = " ".join(await pg.evaluate("() => window.__spoken || []")); selid = await pg.evaluate("() => { const s = document.querySelector('.ticket.sel'); return s ? s.dataset.l : null; }")
+                    if selid == lids[0] and "D'abord" in said: cov["verrou"] += 1
+                    else: log.append(f"VERROU {prof['parcours']} : sélection {selid}, dit « {said[:80]} »")
+                    await shot("verrou")
+                else: log.append(f"VERROU {prof['parcours']} : le dernier billet n'est pas verrouillé")
+                # escale : Bamako est un bouton qui ouvre les séances de l'étape (4 publiées) et Kono les compte
+                await pg.evaluate("window.__spoken = []"); await pg.click("[data-esc='1']"); await pg.wait_for_selector("#escale:not([hidden]) .esc-row")
+                nrows = await pg.evaluate("document.querySelectorAll('#escale .esc-row').length"); said = " ".join(await pg.evaluate("() => window.__spoken || []"))
+                if nrows == 4 and "Bamako" in said and "Ségou" in said: cov["escale"] += 1
+                else: log.append(f"ESCALE {prof['parcours']} : {nrows} lignes, dit « {said[:80]} »")
+                await shot("escale"); await pg.click("#esc-close"); await pg.wait_for_timeout(100)
                 for l in sorted([l for l in idx["lessons"] if l["parcours"] == prof["parcours"]], key=lambda l: l["order"]):
                     ok = await run_lesson(prof, l["id"]); log.append(f"{l['id']}: {'OK' if ok else 'ÉCHEC'}")
                     if not ok: await shot(f"bloque-{l['id']}", True); break
@@ -295,6 +310,10 @@ async def main():
             if all(c in cls for c in ("gaucher", "calme", "contraste")): cov["reglages-affichage"] += 1
             log.append(f"réglages d'affichage (main gauche, calme, contraste) : {'OK' if cov['reglages-affichage'] else 'ÉCHEC'} {cls}")
             await pg.click("#st-gauch"); await pg.click("#st-calme"); await pg.click("#st-contr"); await pg.wait_for_timeout(100)
+            # onglet Programme : le voyage, la semaine publiée, la progression de l'année, l'état par enfant
+            await pg.click("[data-t='programme']"); await pg.wait_for_timeout(300); ptxt = await pg.inner_text("#pane"); await shot("parent-programme")
+            if "Le voyage" in ptxt and "Semaine S1" in ptxt and "Progression de l'année" in ptxt and "faite" in ptxt and "Bamako" in ptxt: cov["programme"] += 1
+            log.append(f"onglet Programme (voyage, semaine S1, progression, état par enfant) : {'OK' if cov['programme'] else 'ÉCHEC'}")
             await pg.click("[data-t='reglages']"); await pg.wait_for_timeout(300)
             jtxt = await pg.inner_text("#pane")
             if "essai du journal" in jtxt and "1 erreur notée" in jtxt: cov["journal"] += 1
