@@ -1,0 +1,70 @@
+[1] OK  / répond 200, titre « Corridor à la maison »
+     preuve : HTTP 200 · <title>Corridor à la maison</title> · etag "6ad28dd1-50c" · last-modified Fri, 16 Oct 2026 20:49:21 GMT
+[2] OK  /app.js contient const VERSION = '0.4.1'
+     preuve : HTTP 200 · const VERSION = '0.4.1' · sha256 0134827df2928c09c21dcc77f3960e66577b27f4246eea69abb13a822203300a
+[3] OK  /sw.js contient kono-0.4.1
+     preuve : HTTP 200 · CACHE = 'kono-0.4.1' · sha256 5a43d39c4133ba6f109c0e06db20f97298495a7ca7c7aefbc7d31f6c12ebb3bb
+[4] OK  /lessons/index.json : schema 2, version S1-2026-10-11, parcours ce1 et gs, 8 séances avec parcours
+     preuve : HTTP 200 · schema 2 · version S1-2026-10-11 · parcours ['ce1', 'gs'] · escales ['gs', 'ce1'] · bleu-s0-dizaine=ce1, ce1-s1-echange=ce1, ce1-s1-centaine=ce1, ce1-s1-marche=ce1, orange-s0-amis10=gs, gs-s1-cache=gs, gs-s1-collection=gs, gs-s1-syllabes=gs
+[5] OK  les 8 fichiers de séance répondent 200
+     preuve : bleu-s0-dizaine: HTTP 200 · ce1-s1-echange: HTTP 200 · ce1-s1-centaine: HTTP 200 · ce1-s1-marche: HTTP 200 · orange-s0-amis10: HTTP 200 · gs-s1-cache: HTTP 200 · gs-s1-collection: HTTP 200 · gs-s1-syllabes: HTTP 200
+[6] OK  /progression/*.json, /parcours.json et /ecole.json répondent 200 ; ecole.json : accès par code, empreintes seules
+     preuve : progression/ce1.json: HTTP 200 · progression/gs.json: HTTP 200 · parcours.json: HTTP 200 · ecole.json: HTTP 200 · acces code · 41 empreintes · aucun code en clair : True
+[7] OK  les 16 images img/*.svg listées dans sw.js répondent 200
+     preuve : 16 images · ananas.svg:200 · ballon.svg:200 · baobab.svg:200 · bateau.svg:200 · bol.svg:200 · calebasse.svg:200 · chat.svg:200 · domino.svg:200 · jeton.svg:200 · lapin.svg:200 · mangue.svg:200 · panier.svg:200 · poisson.svg:200 · sac.svg:200 · soleil.svg:200 · velo.svg:200
+[8] OK  /manifest.webmanifest : « Corridor à la maison » et « Corridor »
+     preuve : HTTP 200 · name « Corridor à la maison » · short_name « Corridor »
+[8] OK  manifeste : 4 icônes (any et maskable, 192 et 512) servies ; index.html : fond sable et écran d'attente avant les styles
+     preuve : icons/icon-192.png: HTTP 200 · icons/icon-512.png: HTTP 200 · icons/icon-maskable-192.png: HTTP 200 · icons/icon-maskable-512.png: HTTP 200 · boot en ligne : True
+     détail :
+       .well-known/assetlinks.json: HTTP 200 · servi d931013bbe3b · commit d931013bbe3b
+       app.js: HTTP 200 · servi 0134827df292 · commit 0134827df292
+       audio/gen/.gitkeep: HTTP 200 · servi e3b0c44298fc · commit e3b0c44298fc
+       audio/manifest.json: HTTP 200 · servi 5ff7153891a0 · commit 5ff7153891a0
+       audio/rec/.gitkeep: HTTP 200 · servi e3b0c44298fc · commit e3b0c44298fc
+       confidentialite.html: HTTP 200 · servi 4edcd2b5e581 · commit 4edcd2b5e581
+       ecole.json: HTTP 200 · servi 5f5f08d0693c · commit 5f5f08d0693c
+       fonts/andika-400.woff2: HTTP 200 · servi dd6bb7266c94 · commit dd6bb7266c94
+       fonts/andika-700.woff2: HTTP 200 · servi 61c90acb5f96 · commit 61c90acb5f96
+       fonts/nunito-800.woff2: HTTP 200 · servi 2363d3ed0372 · commit 2363d3ed0372
+       icons/icon-192.png: HTTP 200 · servi dd39e6f493dc · commit dd39e6f493dc
+       icons/icon-512.png: HTTP 200 · servi 7e5926882e80 · commit 7e5926882e80
+       icons/icon-maskable-192.png: HTTP 200 · servi 740486051863 · commit 740486051863
+       icons/icon-maskable-512.png: HTTP 200 · servi 9db57c3cbd5c · commit 9db57c3cbd5c
+       img/ananas.svg: HTTP 200 · servi 2be051de2e86 · commit 2be051de2e86
+       img/ballon.svg: HTTP 200 · servi ecea4902b665 · commit ecea4902b665
+       img/baobab.svg: HTTP 200 · servi ca170e6d037e · commit ca170e6d037e
+       img/bateau.svg: HTTP 200 · servi ba09d07ee180 · commit ba09d07ee180
+       img/bol.svg: HTTP 200 · servi a37af9e44fe7 · commit a37af9e44fe7
+       img/calebasse.svg: HTTP 200 · servi f0065e6c4f7d · commit f0065e6c4f7d
+       img/chat.svg: HTTP 200 · servi 8d72b343ec90 · commit 8d72b343ec90
+       img/domino.svg: HTTP 200 · servi 24e243db9d78 · commit 24e243db9d78
+       img/jeton.svg: HTTP 200 · servi 48225a078189 · commit 48225a078189
+       img/lapin.svg: HTTP 200 · servi b50bfccf6242 · commit b50bfccf6242
+       img/mangue.svg: HTTP 200 · servi 32886bea71fe · commit 32886bea71fe
+       img/panier.svg: HTTP 200 · servi 7ddd8ec46e54 · commit 7ddd8ec46e54
+       img/poisson.svg: HTTP 200 · servi 3cde092fbfab · commit 3cde092fbfab
+       img/sac.svg: HTTP 200 · servi 407946cf2ef3 · commit 407946cf2ef3
+       img/soleil.svg: HTTP 200 · servi 8355cb8b1ec1 · commit 8355cb8b1ec1
+       img/velo.svg: HTTP 200 · servi 39ce59f86b01 · commit 39ce59f86b01
+       index.html: HTTP 200 · servi 522db381d611 · commit 522db381d611
+       lessons/bleu-s0-dizaine.json: HTTP 200 · servi 844c7e828cb3 · commit 844c7e828cb3
+       lessons/ce1-s1-centaine.json: HTTP 200 · servi e71f9842de2d · commit e71f9842de2d
+       lessons/ce1-s1-echange.json: HTTP 200 · servi 1b932e00f294 · commit 1b932e00f294
+       lessons/ce1-s1-marche.json: HTTP 200 · servi 90918e6f4b79 · commit 90918e6f4b79
+       lessons/gs-s1-cache.json: HTTP 200 · servi 1b30eb3264ad · commit 1b30eb3264ad
+       lessons/gs-s1-collection.json: HTTP 200 · servi 889c23f9120c · commit 889c23f9120c
+       lessons/gs-s1-syllabes.json: HTTP 200 · servi 2f6606ef4eda · commit 2f6606ef4eda
+       lessons/index.json: HTTP 200 · servi 2b1cd109a4a6 · commit 2b1cd109a4a6
+       lessons/orange-s0-amis10.json: HTTP 200 · servi 782e86aef8d6 · commit 782e86aef8d6
+       manifest.webmanifest: HTTP 200 · servi 582416f4cd39 · commit 582416f4cd39
+       parcours.json: HTTP 200 · servi 581d79b0a94b · commit 581d79b0a94b
+       phrases.json: HTTP 200 · servi 554eda87d53e · commit 554eda87d53e
+       progression/ce1.json: HTTP 200 · servi cdeb1ef37e4e · commit cdeb1ef37e4e
+       progression/gs.json: HTTP 200 · servi 6b256536c892 · commit 6b256536c892
+       styles.css: HTTP 200 · servi a91ff8e72c8f · commit a91ff8e72c8f
+       sw.js: HTTP 200 · servi 5a43d39c4133 · commit 5a43d39c4133
+[9] OK  empreinte de chaque fichier servi = celle du commit 15221bb (47 fichiers)
+     preuve : 47 identiques, 0 différents
+
+CONTRÔLES 1 À 9 : TOUS OK
