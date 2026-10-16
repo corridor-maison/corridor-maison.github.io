@@ -6,7 +6,7 @@
 - Réglages d'affichage (1280 × 800) : main gauche (clavier et flèche à gauche, Kono à droite), moins d'animations (Kono immobile),
   contraste renforcé (texte noir) ; posés depuis l'espace parent, gardés après rechargement.
 - Lecteur d'écran : sur chaque écran visité, tout bouton, champ ou image visible a un nom (texte, aria-label, étiquette ou alt).
-- Lancement : avant que styles.css et app.js n'arrivent, la page est déjà sable avec Kono (jamais d'écran blanc ni de texte système) ;
+- Lancement : avant que styles.css et app.js n'arrivent, la page est déjà claire avec Kono (jamais d'écran blanc ni de texte système) ;
   les icônes du manifeste existent en « any » et « maskable », aux tailles annoncées, fond sable, Kono dedans et dans la zone sûre.
 
 Lancer : python3 tests/ecrans.py      (démarre et arrête lui-même un serveur sur le port 8770)
@@ -34,6 +34,13 @@ PHONE = r"""() => { const W = innerWidth, H = innerHeight; const out = { overflo
   document.querySelectorAll('button, [role=button]').forEach(el => { if (!vis(el) || el.classList.contains('hit')) return; const r = el.getBoundingClientRect(); if (r.width < 44 || r.height < 44) out.small.push(`${el.tagName.toLowerCase()}${el.id ? '#' + el.id : ''}.${[...el.classList].join('.')} ${Math.round(r.width)}×${Math.round(r.height)}`); });
   ['#catch', '.c-count', '#next:not([hidden])', '.icon-btn'].forEach(sel => document.querySelectorAll(sel).forEach(el => { if (!vis(el)) return; const r = el.getBoundingClientRect(); if (r.left < 0 || r.right > W + 0.5 || r.width < 20) out.clipped.push(`${sel} ${Math.round(r.left)}..${Math.round(r.right)} / ${W}`); }));
   const k = document.querySelector('.kono-btn .kono'); if (k) out.kono = +(k.getBoundingClientRect().height / H).toFixed(3);
+  /* v0.4.0 : plus de pointillés ni de relief dur (ombre « 0 n 0 ») sur ce que l'enfant voit */
+  out.dashed = []; out.hard = [];
+  document.querySelectorAll('*').forEach(el => { if (!vis(el) || el.closest('svg')) return; const cs = getComputedStyle(el); const tag = el.tagName.toLowerCase() + (el.id ? '#' + el.id : '') + (typeof el.className === 'string' && el.className.trim() ? '.' + el.className.trim().split(/\s+/).slice(0, 2).join('.') : '');
+    if (/dashed/.test(cs.borderStyle) && cs.borderWidth !== '0px') out.dashed.push(tag);
+    if (/\) 0px \d+px 0px 0px/.test(cs.boxShadow) && !/inset/.test(cs.boxShadow)) out.hard.push(tag + ' ' + cs.boxShadow.slice(0, 50)); });
+  /* rien ne doit recouvrir une touche ou un choix visible (la carte du dessin au-dessus du clavier, par exemple) */
+  out.covered = [...document.querySelectorAll('.key, .choice, .next-btn:not([hidden])')].filter(k => { const r = k.getBoundingClientRect(); if (r.bottom < 0 || r.top > H || !r.width) return false; const e = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2); return e && e !== k && !k.contains(e); }).map(k => k.tagName.toLowerCase() + '.' + [...k.classList].join('.') + (k.textContent.trim() ? ':' + k.textContent.trim().slice(0, 4) : ''));
   return out; }"""
 STATE = "() => { const P = window.__kono.P(); if (!P) return null; const st = P.steps[P.i]; const n = document.querySelector('#next'); return { i: P.i, t: st && st.type, a: st && st.answer, next: n && !n.hidden ? n.dataset.mode : null }; }"
 DRILL_JS = r"""() => { const e = document.querySelector('.drill .v-expr'); if (!e) return null; const q = e.textContent.trim(); let m;
@@ -57,8 +64,8 @@ async def main():
             bg = await pg0.evaluate("getComputedStyle(document.documentElement).backgroundColor")
             img = await pg0.evaluate("() => { const i = document.querySelector('#app img'); return i ? { w: i.naturalWidth, vis: !!i.getClientRects().length, alt: i.getAttribute('alt') } : null; }")
             txt = (await pg0.inner_text("#app")).strip(); await pg0.screenshot(path=f"{SHOTS}lancement-sans-styles.png")
-            check("lancement : fond sable, Kono et le nom visibles avant les styles et le moteur (pas d'écran blanc)",
-                  bg == "rgb(246, 239, 226)" and bool(img) and img["w"] == 512 and img["vis"] and img["alt"] is not None and txt == "Corridor à la maison", f"fond={bg} image={img} texte={txt[:40]!r}")
+            check("lancement : fond clair, Kono et le nom visibles avant les styles et le moteur (pas d'écran blanc)",
+                  bg == "rgb(253, 249, 241)" and bool(img) and img["w"] == 512 and img["vis"] and img["alt"] is not None and txt == "Corridor à la maison", f"fond={bg} image={img} texte={txt[:40]!r}")
             await ctx0.close()
             man = json.loads((APP / "manifest.webmanifest").read_text(encoding="utf-8"))
             got_ic = {(i["sizes"], i["purpose"]) for i in man["icons"]}
@@ -78,8 +85,8 @@ async def main():
                 await pg.click("#answer [data-k='ok']")
             async def phone(tag):
                 r = await pg.evaluate(PHONE); await pg.screenshot(path=f"{SHOTS}tel-360x640-{tag}.png")
-                check(f"téléphone · {tag} : pas de débordement, rien de tronqué, cibles ≥ 44 px" + (", Kono ≤ 25 % de la hauteur" if r["kono"] else ""),
-                      not r["overflow"] and not r["clipped"] and not r["small"] and r["kono"] <= 0.25, f"débordement={r['overflow']} tronqué={r['clipped']} petits={r['small'][:4]} kono={r['kono']}")
+                check(f"téléphone · {tag} : pas de débordement, rien de tronqué, cibles ≥ 44 px" + (", Kono ≤ 25 % de la hauteur" if r["kono"] else "") + ", ni pointillés ni relief dur, rien de recouvert",
+                      not r["overflow"] and not r["clipped"] and not r["small"] and r["kono"] <= 0.25 and not r["dashed"] and not r["hard"] and not r["covered"], f"débordement={r['overflow']} tronqué={r['clipped']} petits={r['small'][:4]} kono={r['kono']} pointillés={r['dashed'][:4]} relief={r['hard'][:3]} recouverts={r['covered'][:4]}")
             await pg.goto(URL); await pg.wait_for_selector("#code"); await audit(pg, "code d'inscription"); await phone("code")
             await pg.fill("#code", CODE); await pg.click("#go"); await pg.wait_for_selector("#pin"); await audit(pg, "réglage parent")
             await pg.fill("#pin", PIN); await pg.click("#go"); await pg.wait_for_selector("#p-name"); await audit(pg, "profil")
@@ -139,7 +146,7 @@ async def main():
                 guard += 1; await pg.wait_for_timeout(50); s = await pg.evaluate(STATE)
                 if s is None: break
                 if s["t"] == "say" and s["next"] and "fleche" not in got:
-                    got["fleche"] = await pg.evaluate("() => { const n = document.querySelector('#next').getBoundingClientRect(), k = document.querySelector('.guide').getBoundingClientRect(), w = document.querySelector('#work').getBoundingClientRect(); return { nextLeft: n.left < innerWidth / 2, konoRight: k.left > w.left }; }")
+                    got["fleche"] = await pg.evaluate("() => { const n = document.querySelector('#next').getBoundingClientRect(), k = document.querySelector('.guide').getBoundingClientRect(), w = document.querySelector('#work').getBoundingClientRect(); return { nextLeft: n.left < innerWidth / 2, konoRight: k.left > w.left, stage: +(document.querySelector('#stage').getBoundingClientRect().height / innerHeight).toFixed(3), kono: +(document.querySelector('.kono-btn .kono').getBoundingClientRect().height / innerHeight).toFixed(3) }; }")
                     await pg.screenshot(path=f"{SHOTS}reglages-gaucher-consigne.png")
                 if s["t"] == "drill":
                     if await pg.is_visible("#go"): await pg.click("#go"); continue
@@ -153,6 +160,7 @@ async def main():
                 if s["next"]: await pg.click("#next"); continue
             check("main gauche : la flèche à gauche, Kono à droite de la zone de travail", got.get("fleche", {}).get("nextLeft") and got.get("fleche", {}).get("konoRight"), str(got.get("fleche")))
             check("main gauche : le clavier à gauche du dessin", got.get("clavier", {}).get("padLeft"), str(got.get("clavier")))
+            check("séance (1280 × 800) : le dessin remplit au moins la moitié de la hauteur, Kono au moins le tiers", got.get("fleche", {}).get("stage", 0) >= .5 and got.get("fleche", {}).get("kono", 0) >= .33, f"stage={got.get('fleche', {}).get('stage')} kono={got.get('fleche', {}).get('kono')}")
             await audit(pg, "séance (réglages)")
             await ctx.close(); await b.close()
             for scr, v in names.items(): check(f"lecteur d'écran · {scr} : chaque bouton, champ et image a un nom", False, ", ".join(v[:6]))
