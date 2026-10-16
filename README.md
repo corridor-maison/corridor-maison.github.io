@@ -50,6 +50,7 @@ Dans son espace, l'enfant n'a **rien à lire pour choisir** : chaque séance est
 | `tools/check_lessons.py` | Contrôle des séances selon le contrat ; rend 0 si tout est conforme ; lancé par le workflow avant toute publication |
 | `tools/build_print.py` | `python3 tools/build_print.py S1` → `print/Fiches_S1.pdf` |
 | `tools/build_review.py` | `python3 tools/build_review.py S1` → `print/Relecture_S1.html` : relecture d'une semaine avant publication (tout ce que l'enfant entend, voit et répond, fiche, carte Maman, contrôles) |
+| `tools/build_icons.py` | Icônes du site (`app/icons/`, usages « any » et « maskable »), de l'enveloppe Android (`--android <res>`) et de la fiche Play (`--play <dossier>`), rendues par Chromium depuis le dessin de Kono d'`app.js` |
 | `tools/tableau_classe.py` | `python3 tools/tableau_classe.py <dossier>` → tableau par classe pour l'enseignante, à partir des rapports (`rapport-1`) déposés par les familles |
 | `tools/build_audio.py` | Phrases à enregistrer, import des enregistrements, génération des voix, manifeste |
 | `voix/` | Enregistrements humains (`conteur/`, `kono/`) et registre stable des numéros |
@@ -69,7 +70,7 @@ Le site est publié par GitHub Pages à l'adresse **https://corridor-maison.gith
 ## Installer sur une tablette Android
 
 1. Ouvrir **https://corridor-maison.github.io/** dans **Chrome**, avec internet.
-2. Menu ⋮ › **Installer l'application** (ou « Ajouter à l'écran d'accueil »). L'icône **Corridor** apparaît.
+2. Menu ⋮ › **Installer l'application** (ou « Ajouter à l'écran d'accueil »). L'icône **Corridor** (Kono sur fond sable) apparaît.
 3. L'ouvrir une première fois avec internet : tout est gardé pour le hors ligne.
 4. Voix française hors ligne : Paramètres › Synthèse vocale › Moteur Google › Installer les données vocales › Français (France).
 5. Premier lancement : code d'inscription remis par l'école, code parent à 4 chiffres, puis un profil par enfant (prénom, garçon ou fille, date de naissance, classe confirmée, couleur). Un enfant de plus s'ajoute depuis l'accueil, avec le code parent.
@@ -77,6 +78,8 @@ Le site est publié par GitHub Pages à l'adresse **https://corridor-maison.gith
 7. Bloquer la tablette sur l'application : Paramètres › Sécurité › Épinglage d'écran.
 
 Les mises à jour arrivent seules : à la prochaine ouverture avec internet, la tablette prend la nouvelle version, sans perdre le suivi.
+
+À l'ouverture, l'écran est sable avec Kono dès le premier instant, avant même que le moteur soit chargé : jamais d'écran blanc. L'application du Play Store (enveloppe Android) montre le même Kono sur le même sable comme icône et comme écran de lancement.
 
 Toujours ouvrir l'application de la même façon, par l'icône installée : un autre navigateur (Samsung Internet, Firefox), la navigation privée ou une autre adresse ont chacun leur propre mémoire et ne voient pas le suivi.
 
@@ -135,9 +138,10 @@ Jetons de texte : `{prenom}` (prénom de l'enfant), `{e}` (accord au féminin). 
 - `python3 tests/outils.py` : `check_lessons.py` et `codes.py verifier` rendent 0 ; `build_review.py` produit la relecture de la semaine avec chaque séance ; `tableau_classe.py` fait un tableau par classe à partir d'un rapport d'exemple et du rapport exporté par le test de bout en bout.
 - `python3 tests/maj.py` : mise à jour sans vider le cache. Une copie de l'application en version 0.0.1 est servie et installée hors ligne ; la vraie version la remplace sur le même serveur ; à la première ouverture en ligne, la vraie version doit s'afficher en bas de l'accueil, son cache doit être le seul restant, et elle doit encore marcher sans réseau.
 - `python3 tests/unite.py` : 32 contrôles unitaires dans le vrai moteur (Chromium), sans jouer de séance : la liste exacte des escales (Bamako, Ségou, Mopti, Tombouctou, Gao), codes d'inscription, clés et phrases, prénom et accord, âge, automatismes (invariants sur 300 tirages par sorte), verdict du juge (3 essais, erreur typique, aide, réponse montrée), statistiques et maîtrise par compétence, carte du voyage, lecture d'un état, rappel du niveau, révision ciblée.
-- `python3 tests/ecrans.py` : téléphone 360 × 640 (pas de débordement, compteur visible, Kono au quart de l'écran au plus, cibles ≥ 44 px, captures), carte (le Bani dessiné, Djenné en losange et non en escale, noms des fleuves lisibles), billets dont le titre tient sur trois lignes au plus, réglages main gauche / moins d'animations / contraste posés depuis l'espace parent et gardés, et sur chaque écran visité, chaque bouton, champ et image a un nom pour un lecteur d'écran. Le test de bout en bout refait cet audit à chaque capture.
+- `python3 tests/ecrans.py` : lancement (fond sable, Kono et le nom avant même les styles et le moteur), icônes du manifeste (tailles, usages « any » et « maskable », fond sable, Kono dedans et dans la zone sûre), téléphone 360 × 640 (pas de débordement, compteur visible, Kono au quart de l'écran au plus, cibles ≥ 44 px, captures), carte (le Bani dessiné, Djenné en losange et non en escale, noms des fleuves lisibles), billets dont le titre tient sur trois lignes au plus, réglages main gauche / moins d'animations / contraste posés depuis l'espace parent et gardés, et sur chaque écran visité, chaque bouton, champ et image a un nom pour un lecteur d'écran. Le test de bout en bout refait cet audit à chaque capture.
 - `python3 tests/offline.py` : une seule ouverture avec réseau, puis coupure réelle (serveur arrêté) ; l'accueil et une séance doivent s'ouvrir.
 - `python3 tests/migration.py` : un état de la v0.2 (`tests/etat-v0.2.json`) devient deux profils sans perte ; écrit la comparaison avant/après.
+- Les tests demandent Playwright (Chromium) et Pillow (`tests/ecrans.py` lit les icônes).
 - Sous Windows, lancer Python avec `-X utf8`.
 
 ## Limites connues (v0.3.5)

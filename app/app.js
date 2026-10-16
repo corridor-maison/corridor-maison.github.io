@@ -5,7 +5,7 @@
    Format des séances : CONTRAT_LECONS.md. */
 'use strict';
 (() => {
-const VERSION = '0.3.7';
+const VERSION = '0.3.8';
 const APPNAME = 'Corridor à la maison';
 const FAST = location.hash === '#test';
 const app = document.getElementById('app');

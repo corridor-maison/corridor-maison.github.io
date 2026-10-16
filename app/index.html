@@ -8,10 +8,18 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icons/icon-192.png">
 <link rel="apple-touch-icon" href="icons/icon-192.png">
+<style>
+/* Avant l'arrivée des styles et du moteur : fond sable et Kono, jamais d'écran blanc ni de texte système. */
+html { background: #f6efe2; }
+.boot { min-height: 100vh; margin: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; color: #22303c; font-family: 'Trebuchet MS', system-ui, sans-serif; font-weight: 700; font-size: 1.35rem; }
+.boot img { width: 160px; height: 160px; border-radius: 40px; }
+.boot p { margin: 0; }
+@media (prefers-reduced-motion: no-preference) { .boot img { animation: boot 1.6s ease-in-out infinite; } @keyframes boot { 50% { transform: translateY(-8px); } } }
+</style>
 <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-<main id="app"><p style="padding:24px;font-family:sans-serif">Chargement de Corridor à la maison…</p></main>
+<main id="app"><div class="boot" role="status"><img src="icons/icon-512.png" alt="" width="160" height="160"><p>Corridor à la maison</p></div></main>
 <script src="app.js"></script>
 </body>
 </html>
