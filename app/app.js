@@ -5,7 +5,7 @@
    Format des séances : CONTRAT_LECONS.md. */
 'use strict';
 (() => {
-const VERSION = '0.3.8';
+const VERSION = '0.4.0';
 const APPNAME = 'Corridor à la maison';
 const FAST = location.hash === '#test';
 const app = document.getElementById('app');
@@ -364,7 +364,7 @@ function vTenframe(v) {
   const c = 58; let s = '';
   for (let i = 0; i < 10; i++) {
     const x = 3 + (i % 5) * c, y = 3 + Math.floor(i / 5) * c, full = i < v.filled;
-    s += `<rect x="${x}" y="${y}" width="${c}" height="${c}" fill="${!full && v.highlightEmpty ? '#ffe27a' : '#fff'}" ${!full && v.highlightEmpty ? 'class="pulse"' : ''} stroke="#22303c" stroke-width="3"/>`;
+    s += `<rect x="${x}" y="${y}" width="${c}" height="${c}" fill="${!full && v.highlightEmpty ? '#ffe27a' : '#fff'}" ${!full && v.highlightEmpty ? 'class="pulse"' : ''} rx="6" stroke="#4a5560" stroke-width="2.5"/>`;
     if (full) s += `<circle cx="${x + c / 2}" cy="${y + c / 2}" r="${c * 0.32}" fill="var(--tok, #c35713)"/>`;
   }
   return `<svg class="v-svg" style="max-width:${v.small ? 260 : 440}px" viewBox="0 0 ${5 * c + 6} ${2 * c + 6}" role="img" aria-label="boîte à dix avec ${v.filled} points">${s}</svg>`;
@@ -520,7 +520,7 @@ function mapHTML(p) {
   <g fill="#8fae6a">${[[70, 238], [150, 222], [262, 212], [352, 282], [470, 150], [540, 120]].map(([x, y]) => `<circle cx="${x}" cy="${y}" r="9"/><rect x="${x - 2}" y="${y + 6}" width="4" height="10" fill="#7a5236"/>`).join('')}</g>
   <g class="bani"></g>
   <path d="${RIVER}" fill="none" stroke="#8cc0da" stroke-width="20" stroke-linecap="round"/>
-  <path class="river" d="${RIVER}" fill="none" stroke="#2f7ea6" stroke-width="3" stroke-dasharray="2 12" stroke-linecap="round"/>
+  <path class="river" d="${RIVER}" fill="none" stroke="#1e7fc2" stroke-width="3" stroke-dasharray="2 12" stroke-linecap="round"/>
   <text x="88" y="322" font-family="${FONT}" font-weight="800" font-size="24" fill="#1f5f80" stroke="#f3e6c8" stroke-width="5" paint-order="stroke" stroke-linejoin="round">fleuve Niger</text>
   <g class="escales"></g><g class="boat-pos">${BOAT}</g></svg>
   <div class="passport">${E.map(e => `<span class="stamp ${j.stamps.includes(e.n) ? 'on' : ''}">${esc(e.name)}</span>`).join('')}</div></div>`;
@@ -536,7 +536,7 @@ function drawMap(root, p, from) {
     if (km >= 0) {
       const m = path.getPointAtLength(L * AT[km]), d = `M${m.x - 70} 330 C ${m.x - 52} 300, ${m.x - 30} 250, ${m.x} ${m.y}`;
       const tmp = document.createElementNS('http://www.w3.org/2000/svg', 'path'); tmp.setAttribute('d', d); const dj = tmp.getPointAtLength(tmp.getTotalLength() * 0.5);
-      bani.innerHTML = `<path d="${d}" fill="none" stroke="#8cc0da" stroke-width="12" stroke-linecap="round"/><path d="${d}" fill="none" stroke="#2f7ea6" stroke-width="2.5" stroke-dasharray="2 10" stroke-linecap="round"/>
+      bani.innerHTML = `<path d="${d}" fill="none" stroke="#8cc0da" stroke-width="12" stroke-linecap="round"/><path d="${d}" fill="none" stroke="#1e7fc2" stroke-width="2.5" stroke-dasharray="2 10" stroke-linecap="round"/>
         <text x="${m.x - 52}" y="326" font-family="${FONT}" font-weight="800" font-size="24" fill="#1f5f80" stroke="#f3e6c8" stroke-width="5" paint-order="stroke" stroke-linejoin="round">le Bani</text>
         <rect class="ville" x="${dj.x - 6}" y="${dj.y - 6}" width="12" height="12" rx="2" fill="#5a3a22" transform="rotate(45 ${dj.x} ${dj.y})"/><text x="${dj.x + 12}" y="${dj.y + 6}" font-family="${FONT}" font-weight="800" font-size="18" fill="#22303c">Djenné</text>`;
     } else bani.innerHTML = '';
@@ -1543,11 +1543,17 @@ function saveRun(done) {
   child.progress.resume = null;
   save();
 }
+/* Fête de fin de séance : une seule fois par séance, quelques points de couleur qui s'envolent (rien en mode calme). */
+function celebrateHTML() {
+  if (calm() || FAST) return '';
+  const K = ['#e0a100', '#1e7fc2', '#c35713', '#2c8554'];
+  return `<div class="celebrate" aria-hidden="true">${Array.from({ length: 14 }, (_, k) => { const a = k / 14 * Math.PI * 2, r = 170 + (k % 3) * 60; return `<i style="--dx:${Math.round(Math.cos(a) * r)}px;--dy:${Math.round(Math.sin(a) * r * .6 - 40)}px;--d:${(k % 5) * .08}s;--k:${K[k % 4]}"></i>`; }).join('')}</div>`;
+}
 async function endStep(st, alive) {
   saveRun(true); endWake();
   const mins = Math.max(1, Math.round((P.run.end - P.run.start) / 60000));
   $('#stage').className = 'stage top';
-  $('#stage').innerHTML = `<div class="v-title">Séance terminée</div><div class="fishes">${Array.from({ length: P.fish }, () => FISH(false)).join('')}${Array.from({ length: P.gold }, () => FISH(true)).join('')}</div>${mapHTML(child)}`;
+  $('#stage').innerHTML = `${celebrateHTML()}<div class="v-title">Séance terminée</div><div class="fishes">${Array.from({ length: P.fish }, () => FISH(false)).join('')}${Array.from({ length: P.gold }, () => FISH(true)).join('')}</div>${mapHTML(child)}`;
   drawMap($('#stage'), child, P.fromF);
   mood('happy'); sfx('gold');
   bubble(`${mins} minute${mins > 1 ? 's' : ''} de travail · ${P.fish + P.gold} réponse${P.fish + P.gold > 1 ? 's' : ''} trouvée${P.fish + P.gold > 1 ? 's' : ''}${P.gold ? `, dont ${P.gold} après une erreur` : ''}.`, 'good');
