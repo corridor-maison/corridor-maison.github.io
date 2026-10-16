@@ -1,0 +1,4 @@
+passe 2 (en ligne, profil déjà en cache) : accueil « v0.3.8 » → OK (attendu v0.3.8)
+passe 2 : caches après activation ['kono-0.3.8'] → OK (attendu ['kono-0.3.8'] seul)
+témoin example.com : injoignable → coupure effective
+passe 3 (hors ligne) : accueil « v0.3.8 » → OK · carte avec le Bani et Djenné : OK
