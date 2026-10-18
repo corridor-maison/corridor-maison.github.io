@@ -1,7 +1,7 @@
 /* Hors ligne : l'application, les images et les leçons sont gardées sur la tablette.
    Les leçons, les phrases et le moteur sont d'abord demandés au réseau (pour recevoir la semaine suivante et les mises à jour),
    puis pris dans le cache s'il n'y a pas de connexion. */
-const CACHE = 'kono-0.4.2';
+const CACHE = 'kono-0.4.3';
 const CORE = ['./', 'index.html', 'styles.css', 'app.js', 'manifest.webmanifest',
   'fonts/andika-400.woff2', 'fonts/andika-700.woff2', 'fonts/nunito-800.woff2',
   'icons/icon-192.png', 'icons/icon-512.png', 'icons/icon-maskable-192.png', 'icons/icon-maskable-512.png', 'parcours.json', 'ecole.json', 'lessons/index.json', 'phrases.json', 'audio/manifest.json',

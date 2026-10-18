@@ -100,7 +100,12 @@ svg { overflow: visible; }
 .kid b { font-family: var(--display); font-size: clamp(2.2rem, 4.5vw, 3rem); line-height: 1; }
 .kid span { font-weight: 700; opacity: .92; }
 .kid-boat { position: absolute; right: 20px; top: 22px; width: 120px; opacity: .95; }
-.home-foot { display: flex; justify-content: space-between; align-items: center; }
+.home-foot { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+/* Paramètres toujours visibles en haut de l'accueil (l'espace parent était caché derrière un petit lien en bas) */
+.home-foot .hint { font-size: .88rem; }   /* pas .small : la version reste le seul .small du pied (lue par les tests de mise à jour) */
+.home-top { display: flex; justify-content: flex-end; margin-bottom: -10px; }
+.btn.settings { font-size: 1.05rem; min-height: 52px; padding: 10px 18px 8px 14px; gap: 8px; }
+.btn.settings svg { width: 26px; height: 26px; }
 
 .c-head { display: flex; align-items: center; gap: 16px; margin-bottom: 14px; }
 .c-head h2 { font-size: 2.2rem; color: var(--c); flex: 1; }
