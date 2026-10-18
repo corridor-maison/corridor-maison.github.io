@@ -348,6 +348,10 @@ async def main():
         finally:
             print("\n".join(log))
             print("COUVERTURE : " + " · ".join(f"{k} = {cov.get(k, 0)}" for k in REQUIRED))
+            # voix : part des phrases dites qui ont un fichier (voix générée ou enregistrée) ; les autres passent par la synthèse d'Android
+            v = await pg.evaluate("() => { const dit = JSON.parse(sessionStorage.getItem('kono-dit') || '[]'), A = window.__kono.AUDIO().files, k = window.__kono.keyOf; const sans = dit.filter(t => !A[k(t)]); return { n: dit.length, sans: sans.length, uniques: [...new Set(sans)] }; }")
+            print(f"VOIX : {v['n']} phrases dites, {v['n'] - v['sans']} avec un fichier de voix ({round(100 * (v['n'] - v['sans']) / max(1, v['n']))} %), {v['sans']} par la synthèse d'Android ({len(v['uniques'])} différentes)")
+            with open(SH + "voix-sans-fichier.txt", "w", encoding="utf-8") as fh: fh.write(chr(10).join(v["uniques"]))
             print("ERREURS JS :", "\n".join(errs) or "aucune")
             print("LECTEUR D'ÉCRAN :", "tout nommé sur " + str(len(shots)) + " captures" if not a11y else "SANS NOM : " + " ; ".join(f"{k} → {', '.join(v[:5])}" for k, v in a11y.items()))
         await b.close()
