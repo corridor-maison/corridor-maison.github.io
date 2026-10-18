@@ -5,7 +5,7 @@
    Format des séances : CONTRAT_LECONS.md. */
 'use strict';
 (() => {
-const VERSION = '0.4.2';
+const VERSION = '0.4.3';
 const APPNAME = 'Corridor à la maison';
 const FAST = /^#(.*&)?test(&|$)/.test(location.hash);
 /* Lien d'inscription (QR code d'une fiche, message WhatsApp de l'école) : #code=XXX-XXX-XXX. La partie après # ne part jamais
@@ -304,6 +304,7 @@ function mood(m) { const g = document.querySelector('.guide .kono'); if (!g) ret
 /* ============================ dessins ============================ */
 const ICON = (n, cls = '') => `<img class="ic ${cls}" src="img/${esc(n)}.svg" alt="${esc(wordOf(n))}" draggable="false">`;
 const UI = {
+  gear: '<svg viewBox="0 0 48 48" aria-hidden="true"><path d="M24 4 l4 5 6-2 1 6 6 2-2 6 5 3-5 3 2 6-6 2-1 6-6-2-4 5-4-5-6 2-1-6-6-2 2-6-5-3 5-3-2-6 6-2 1-6 6 2z" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linejoin="round"/><circle cx="24" cy="24" r="7" fill="none" stroke="currentColor" stroke-width="4"/></svg>',
   lock: '<svg viewBox="0 0 48 48" aria-hidden="true"><rect x="10" y="21" width="28" height="21" rx="5" fill="currentColor"/><path d="M16 21 V15 a8 8 0 0 1 16 0 V21" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round"/></svg>',
   close: '<svg viewBox="0 0 48 48" aria-hidden="true"><path d="M13 13 L35 35 M35 13 L13 35" fill="none" stroke="currentColor" stroke-width="6" stroke-linecap="round"/></svg>',
   home: '<svg viewBox="0 0 48 48" aria-hidden="true"><path d="M8 24 L24 9 L40 24" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/><path d="M13 22 V39 H35 V22" fill="none" stroke="currentColor" stroke-width="5" stroke-linejoin="round"/></svg>',
@@ -725,12 +726,13 @@ function screenHome() {
   setChild(null); stopSpeech(); screen('home');
   const done = p => Object.keys(p.progress.done).length;
   app.innerHTML = `<div class="page home">
+  <div class="home-top"><button class="btn ghost settings" id="parent" aria-label="Paramètres (espace parent, avec le code parent)">${UI.gear}<span>Paramètres</span></button></div>
   <div class="hero"><div class="hero-kono">${KONO}</div><div><h1>${APPNAME}</h1><p class="muted">${S.profiles.length ? 'Qui voyage avec Kono aujourd\'hui ?' : 'avec Kono, l\'oiseau du fleuve'}</p></div></div>
   <div class="kids">
     ${S.profiles.map(p => `<button class="kid ${esc(p.couleur)}" data-c="${esc(p.id)}"><svg class="kid-boat" viewBox="-40 -20 80 40" aria-hidden="true">${BOAT}</svg><b>${esc(kidLabel(p))}</b><span>${esc(parcoursLabel(p))} · ${done(p)} séance${done(p) > 1 ? 's' : ''} sur le fleuve</span></button>`).join('')}
     <button class="kid add" id="add"><b>+</b><span>Ajouter un enfant</span></button>
   </div>
-  <div class="home-foot"><button class="link" id="parent">Espace parent</button><span class="small muted">v${VERSION}</span></div></div>`;
+  <div class="home-foot"><span class="hint muted">Profils, voix, suivi, compte et mise à jour : Paramètres, en haut.</span><span class="small muted">v${VERSION}</span></div></div>`;
   app.querySelectorAll('[data-c]').forEach(b => b.onclick = () => { const p = profileOf(b.dataset.c); if (p) { sfx('tap'); screenChild(p); } });
   $('#add').onclick = () => screenPin(() => screenProfile(null));
   $('#parent').onclick = () => screenPin(() => screenParent('suivi'));
@@ -1624,7 +1626,7 @@ const recKind = r => r.kind === 'lecture' ? (r.reread ? 'Relecture' : 'Lecture')
 async function markHeard(r) { if (r && !r.heard) { r.heard = true; await DB.putRec(r); } }
 async function screenParent(tab) {
   setChild(null); stopSpeech(); screen('parent');
-  const tabs = [['suivi', 'Suivi'], ['programme', 'Programme'], ['maman', 'Voix de Maman'], ['kono', 'Voix et affichage'], ['rapport', 'Rapport'], ['reglages', 'Réglages']];
+  const tabs = [['suivi', 'Suivi'], ['programme', 'Programme'], ['maman', 'Voix de Maman'], ['kono', 'Voix et affichage'], ['rapport', 'Rapport'], ['reglages', 'Enfants et compte']];
   app.innerHTML = `<div class="page stack"><div class="row" style="justify-content:space-between"><h2>Espace parent</h2><button class="btn ghost" id="out" style="--c:var(--river)">Sortir</button></div>
   <div class="tabs">${tabs.map(([k, l]) => `<button class="tab ${k === tab ? 'on' : ''}" data-t="${k}">${l}</button>`).join('')}</div><div id="pane" class="stack"></div></div>`;
   $('#out').onclick = screenHome;
@@ -1718,7 +1720,8 @@ async function screenParent(tab) {
   if (tab === 'reglages') {
     let persisted = null; try { persisted = navigator.storage && navigator.storage.persisted ? await navigator.storage.persisted() : null; } catch (e) {}
     const installed = ['standalone', 'fullscreen', 'minimal-ui'].some(m => matchMedia(`(display-mode: ${m})`).matches);
-    pane.innerHTML = `<div class="card stack"><h3>Les enfants</h3>
+    pane.innerHTML = `<div class="card stack"><h3>Version et mise à jour</h3><p class="small" style="margin:0">Version installée : <b>v${VERSION}</b>. Les mises à jour s'installent seules à l'ouverture avec internet ; ce bouton vérifie tout de suite.</p><div class="row"><button class="btn" id="maj" style="--c:var(--river)">Rechercher une mise à jour</button><span class="small" id="majmsg" role="status"></span></div></div>
+    <div class="card stack"><h3>Les enfants</h3>
       ${S.profiles.map(p => `<div class="row" style="justify-content:space-between"><span><b style="color:var(--${esc(p.couleur)})">${esc(kidLabel(p))}</b> <span class="small muted">· ${esc(parcoursLabel(p))}${ageOf(p.dob) != null ? ` · ${ageOf(p.dob)} ans` : ''}</span></span><span class="row"><button class="btn soft sm" data-edit="${esc(p.id)}">Modifier</button><button class="btn soft sm" data-exp="${esc(p.id)}">Exporter</button><button class="link" data-rm="${esc(p.id)}">Supprimer</button></span></div>`).join('') || '<p class="muted small" style="margin:0">Aucun enfant.</p>'}
       <div class="row"><button class="btn" id="addp" style="--c:var(--river)">Ajouter un enfant</button><label class="btn ghost" style="--c:var(--river)">Importer un profil<input type="file" id="impp" accept="application/json,.json" hidden></label></div>
       <p class="small muted" style="margin:0">Exporter un profil : un fichier avec le suivi de l'enfant, ses enregistrements et les phrases de Maman, pour le retrouver sur une autre tablette.</p><p class="small" id="impmsgp"></p></div>
@@ -1732,6 +1735,20 @@ async function screenParent(tab) {
       ${(S.log || []).slice(-5).reverse().map(l => `<p class="small" style="margin:0">${esc(l.ts.slice(0, 16).replace('T', ' '))} · v${esc(l.v)} · ${esc(l.ecran)} · ${esc(l.m)}</p>`).join('')}
       ${(S.log || []).length ? `<div class="row"><button class="btn soft sm" id="logcopy">Copier le journal</button><button class="link" id="logclear">Effacer le journal</button><span class="small muted" id="logmsg"></span></div>` : ''}</div>
     <div class="card stack"><h3>Remettre le suivi à zéro</h3><p class="small muted" style="margin:0">Efface les séances, les records et les mesures (pas les enregistrements de Maman).</p><div class="row"><input type="text" id="conf" placeholder="Tapez EFFACER"><button class="btn ghost" id="wipe">Effacer le suivi</button></div></div>`;
+    /* Mise à jour à la demande : lit la version publiée (sans cache) ; si elle diffère, le service worker se met à jour et la page se recharge. */
+    $('#maj').onclick = async () => {
+      const m = $('#majmsg');
+      if (!navigator.onLine) { m.textContent = 'Pas de connexion : la mise à jour se fera à la prochaine ouverture avec internet.'; return; }
+      m.textContent = 'Recherche…';
+      try {
+        const v = ((await (await fetch('app.js', { cache: 'no-store' })).text()).match(/const VERSION = '([^']+)'/) || [])[1];
+        if (!v) throw new Error('version illisible');
+        if (v === VERSION) { m.textContent = `Vous avez la dernière version (v${VERSION}).`; return; }
+        m.textContent = `Nouvelle version v${v} : installation…`;
+        try { const r = navigator.serviceWorker && await navigator.serviceWorker.getRegistration(); if (r) await r.update(); } catch (e) {}
+        setTimeout(() => location.reload(), 1500);
+      } catch (e) { m.textContent = 'La vérification a échoué. Réessayez avec internet.'; }
+    };
     $('#setup').onclick = screenSetup;
     $('#addp').onclick = () => screenProfile(null);
     pane.querySelectorAll('[data-edit]').forEach(b => b.onclick = () => screenProfile(profileOf(b.dataset.edit)));
