@@ -23,6 +23,17 @@ def check(name, ok, detail=""):
 
 code, out = run(["tools/check_lessons.py"]); check("check_lessons.py rend 0", code == 0, out.splitlines()[-1] if out else "")
 code, out = run(["tools/codes.py", "verifier"]); check("codes.py verifier rend 0", code == 0, out.splitlines()[-1] if out else "")
+# fiches d'inscription et messages WhatsApp : sur un fichier de codes de test (le code de test est dans ecole.json le temps du test)
+sys.path.insert(0, str(ROOT / "tests")); from ecole_test import ecole_test, CODE
+with tempfile.TemporaryDirectory() as td, ecole_test():
+    td = pathlib.Path(td); f = td / "codes-2026-10-18.csv"
+    f.write_text("identifiant;classe;code d'inscription;créé le;famille (à remplir par l'école)\nC-9999;GS;" + CODE + ";2026-10-18;Famille Test\nC-9998;GS;ZZZ-ZZZ-ZZZ;2026-10-18;\n", encoding="utf-8")
+    code, out = run(["tools/fiches_codes.py", str(f), "--ids", "C-9999", "--pdf", "--sortie", str(td)])
+    fh, fw, fp = td / "fiches-codes-2026-10-18-C-9999.html", td / "whatsapp-codes-2026-10-18-C-9999.txt", td / "fiches-codes-2026-10-18-C-9999.pdf"
+    t = fh.read_text(encoding="utf-8") if fh.exists() else ""; w = fw.read_text(encoding="utf-8") if fw.exists() else ""
+    check("fiches_codes.py : fiche HTML avec QR code, code, famille et nom de l'école ; PDF ; message WhatsApp avec le lien #code=", code == 0 and "<svg" in t and CODE in t and "Famille Test" in t and "École de test" in t and fp.exists() and fp.stat().st_size > 5000 and f"https://corridor-maison.github.io/#code={CODE}" in w and "ne s'envoie pas" in w, out.strip().splitlines()[-1] if out.strip() else "")
+    code, out = run(["tools/fiches_codes.py", str(f), "--classe", "GS", "--sortie", str(td)])
+    check("fiches_codes.py : un code inconnu de ecole.json est refusé (non imprimé, rend 1), les autres sont imprimés", code == 1 and "REFUSÉ C-9998" in out and "1 fiche(s)" in out, out.strip().replace("\n", " | ")[:160])
 
 idx = json.loads((ROOT / "app" / "lessons" / "index.json").read_text(encoding="utf-8"))
 week = idx["lessons"][0]["week"]

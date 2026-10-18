@@ -77,6 +77,16 @@ async def main():
                 out = sum(1 for x, y in pts if not sand(px[x, y]) and ((x - s / 2) ** 2 + (y - s / 2) ** 2) ** .5 > .4 * s) if ic["purpose"] == "maskable" else 0
                 check(f"icône {ic['src']} ({ic['purpose']}) : {s} px, fond sable, Kono dedans" + (", rien hors de la zone sûre (cercle de 80 %)" if ic["purpose"] == "maskable" else ""),
                       im.size == (s, s) and sand(px[2, 2]) and blue > 0.02 and out == 0, f"taille={im.size} coin={px[2, 2]} bleu={blue:.3f} hors-zone={out}")
+            # ---------------- lien d'inscription (QR code ou WhatsApp) : #code=… inscrit sans rien taper et s'efface de l'adresse
+            ctxl = await b.new_context(viewport={"width": 360, "height": 640}); pgl = await ctxl.new_page(); pgl.on("pageerror", lambda e: errs.append("PAGEERROR " + str(e)))
+            await pgl.goto(URL + "&code=" + CODE.lower().replace("-", " ")); await pgl.wait_for_selector("#pin, #code", timeout=15000)
+            ins = await pgl.evaluate("() => ({ pin: !!document.querySelector('#pin'), code: !!document.querySelector('#code'), hash: location.hash, ecole: window.__kono.S.ecole && window.__kono.S.ecole.id })")
+            check("lien d'inscription : code bon → inscrit sans saisie (réglage parent affiché), code effacé de l'adresse", ins["pin"] and not ins["code"] and ins["hash"] == "#test" and ins["ecole"] == "C-9999", str(ins))
+            await ctxl.close(); ctxl = await b.new_context(viewport={"width": 360, "height": 640}); pgl = await ctxl.new_page()
+            await pgl.goto(URL + "&code=AAA-AAA-AAA"); await pgl.wait_for_selector("#code", timeout=15000)
+            bad = await pgl.evaluate("() => ({ val: document.querySelector('#code').value, err: document.querySelector('#err').textContent, msg: document.querySelector('.brand p').textContent, hash: location.hash })")
+            check("lien d'inscription : code faux → champ prérempli, message, pas d'inscription, adresse nettoyée", bad["val"] == "AAA-AAA-AAA" and "inconnu" in bad["err"] and "lien" in bad["msg"] and bad["hash"] == "#test", str(bad))
+            await ctxl.close()
             # ---------------- téléphone 360 × 640
             ctx = await b.new_context(viewport={"width": 360, "height": 640}, is_mobile=True, has_touch=True, device_scale_factor=2, permissions=["microphone"])
             pg = await ctx.new_page(); pg.on("pageerror", lambda e: errs.append("PAGEERROR " + str(e)))
