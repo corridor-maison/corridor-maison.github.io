@@ -11,6 +11,8 @@ Ce que fait ce script, dans l'ordre :
   6. Génère les phrases manquantes avec une voix de synthèse haut de gamme, si une clé est fournie :
        - Google (par défaut) : GOOGLE_TTS_API_KEY ; voix KONO_VOICE (défaut fr-FR-Chirp3-HD-Achird) et CONTEUR_VOICE
          (défaut fr-FR-Chirp3-HD-Sulafat, utilisée seulement si aucun enregistrement humain n'existe).
+       - OpenAI (voix de la famille ChatGPT) : KONO_ENGINE=openai, OPENAI_API_KEY ; OPENAI_VOICE (défaut marin, conteur :
+         OPENAI_CONTEUR_VOICE, défaut cedar), OPENAI_TTS_MODEL (défaut gpt-4o-mini-tts). Voix de synthèse : à signaler aux familles.
        - ElevenLabs : KONO_ENGINE=elevenlabs, ELEVENLABS_API_KEY, ELEVENLABS_VOICE_ID (voix créée par « Voice Design »,
          jamais une voix copiée sur une personne réelle).
      -> app/audio/gen/<clé>.mp3
@@ -148,10 +150,24 @@ def tts_eleven(text, voice_id):
     with urllib.request.urlopen(req, timeout=60) as r:
         return r.read()
 
+OPENAI_STYLE = {
+    "kono": "Parle en français de France. Tu es Kono, un martin-pêcheur bienveillant qui guide un enfant de 5 à 8 ans : voix chaleureuse, souriante, calme, débit posé, articulation nette.",
+    "conteur": "Parle en français de France. Tu racontes une histoire à un enfant de 5 à 8 ans : voix douce et expressive, débit lent, pauses naturelles.",
+}
+def tts_openai(text, voice, role="kono"):
+    body = json.dumps({"model": os.environ.get("OPENAI_TTS_MODEL", "gpt-4o-mini-tts"), "voice": voice, "input": text,
+                       "instructions": OPENAI_STYLE.get(role, OPENAI_STYLE["kono"]), "response_format": "mp3"}).encode()
+    req = urllib.request.Request("https://api.openai.com/v1/audio/speech", data=body,
+                                 headers={"Content-Type": "application/json", "Authorization": "Bearer " + os.environ["OPENAI_API_KEY"]})
+    with urllib.request.urlopen(req, timeout=90) as r:
+        return r.read()
+
 def generate(entries):
     engine = os.environ.get("KONO_ENGINE", "google")
     if engine == "elevenlabs" and not (os.environ.get("ELEVENLABS_API_KEY") and os.environ.get("ELEVENLABS_VOICE_ID")):
         return 0, "ELEVENLABS_API_KEY ou ELEVENLABS_VOICE_ID manquant : génération sautée"
+    if engine == "openai" and not os.environ.get("OPENAI_API_KEY"):
+        return 0, "pas de clé OPENAI_API_KEY : génération sautée"
     if engine == "google" and not os.environ.get("GOOGLE_TTS_API_KEY"):
         return 0, "pas de clé GOOGLE_TTS_API_KEY : génération sautée"
     kv = os.environ.get("KONO_VOICE", "fr-FR-Chirp3-HD-Achird"); cv = os.environ.get("CONTEUR_VOICE", "fr-FR-Chirp3-HD-Sulafat")
@@ -160,8 +176,10 @@ def generate(entries):
         out = AUDIO / "gen" / f'{e["key"]}.mp3'
         if out.exists() or (AUDIO / "rec" / f'{e["key"]}.mp3').exists(): continue
         if engine == "elevenlabs": data = tts_eleven(e["text"], os.environ["ELEVENLABS_VOICE_ID"])
+        elif engine == "openai": data = tts_openai(e["text"], os.environ.get("OPENAI_VOICE", "marin") if e["role"] == "kono" else os.environ.get("OPENAI_CONTEUR_VOICE", "cedar"), e["role"])
         else: data = tts_google(e["text"], kv if e["role"] == "kono" else cv, 0.95 if e["role"] == "kono" else 0.9)
         out.write_bytes(data); n += 1
+    if engine == "openai": return n, f"OpenAI, Kono : {os.environ.get('OPENAI_VOICE', 'marin')}, conteur : {os.environ.get('OPENAI_CONTEUR_VOICE', 'cedar')}"
     return n, (f"ElevenLabs, voix {os.environ.get('ELEVENLABS_VOICE_ID')}" if engine == "elevenlabs" else f"Google, Kono : {kv}, conteur : {cv}")
 
 ESSAI = [
@@ -182,12 +200,13 @@ def essai():
     cands = []
     if os.environ.get("GOOGLE_TTS_API_KEY"): cands += [("google", v) for v in voices]
     if os.environ.get("ELEVENLABS_API_KEY") and os.environ.get("ELEVENLABS_VOICE_ID"): cands.append(("elevenlabs", os.environ["ELEVENLABS_VOICE_ID"]))
-    if not cands: print("Aucune clé : définir GOOGLE_TTS_API_KEY et/ou ELEVENLABS_API_KEY + ELEVENLABS_VOICE_ID."); return
+    if os.environ.get("OPENAI_API_KEY"): cands += [("openai", v) for v in os.environ.get("ESSAI_OPENAI_VOICES", "marin,cedar,coral,sage").split(",") if v]
+    if not cands: print("Aucune clé : définir GOOGLE_TTS_API_KEY, OPENAI_API_KEY et/ou ELEVENLABS_API_KEY + ELEVENLABS_VOICE_ID."); return
     random.shuffle(cands)
     out = ROOT / "print" / "essai_voix"; out.mkdir(parents=True, exist_ok=True)
     lines = []
     for i, (eng, v) in enumerate(cands, 1):
-        audio = b"".join(tts_eleven(t, v) if eng == "elevenlabs" else tts_google(t, v, 0.95) for t in ESSAI)
+        audio = b"".join(tts_eleven(t, v) if eng == "elevenlabs" else tts_openai(t, v) if eng == "openai" else tts_google(t, v, 0.95) for t in ESSAI)
         (out / f"voix_{i}.mp3").write_bytes(audio); lines.append(f"voix_{i}.mp3 = {eng} {v}")
     (out / "cle.txt").write_text("À ouvrir seulement après le choix des enfants.\n" + "\n".join(lines), encoding="utf-8", newline="\n")
     print(f"{len(cands)} voix dans {out} (la correspondance est dans cle.txt)")
