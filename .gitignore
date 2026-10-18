@@ -2,4 +2,6 @@ print/*.html
 __pycache__/
 .DS_Store
 print/codes-*.csv
+print/fiches-codes-*
+print/whatsapp-codes-*
 print/tableau-*.csv
