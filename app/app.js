@@ -5,12 +5,20 @@
    Format des séances : CONTRAT_LECONS.md. */
 'use strict';
 (() => {
-const VERSION = '0.4.4';
+const VERSION = '0.4.5';
 const APPNAME = 'Corridor à la maison';
-const FAST = /^#(.*&)?test(&|$)/.test(location.hash);
+const HASH0 = location.hash;   /* lu une fois : le lien d'inscription et le retour de Google l'effacent ensuite de l'adresse */
+const FAST = /^#(.*&)?test(&|$)/.test(HASH0);
 /* Lien d'inscription (QR code d'une fiche, message WhatsApp de l'école) : #code=XXX-XXX-XXX. La partie après # ne part jamais
    au serveur ; on la lit une fois puis on l'efface de l'adresse, pour qu'elle ne reste ni affichée ni dans un favori. */
-const LINK_CODE = (() => { const m = location.hash.match(/(?:^#|&)code=([^&]*)/); if (!m) return ''; try { history.replaceState(null, '', location.pathname + location.search + (FAST ? '#test' : '')); } catch (e) {} try { return decodeURIComponent(m[1]); } catch (e) { return m[1]; } })();
+const LINK_CODE = (() => { const m = HASH0.match(/(?:^#|&)code=([^&]*)/); if (!m) return ''; try { history.replaceState(null, '', location.pathname + location.search + (FAST ? '#test' : '')); } catch (e) {} try { return decodeURIComponent(m[1]); } catch (e) { return m[1]; } })();
+/* Retour de Google (sauvegarde Drive) : #access_token=…&expires_in=…&state=… ou #error=…&state=… ; lu une fois, effacé de l'adresse. */
+const DRIVE_BACK = (() => {
+  if (!/(?:^#|&)(?:access_token|error)=/.test(HASH0)) return null;
+  const h = new URLSearchParams(HASH0.slice(1));
+  try { history.replaceState(null, '', location.pathname + location.search + (FAST ? '#test' : '')); } catch (e) {}
+  return { token: h.get('access_token') || '', exp: Date.now() + ((+h.get('expires_in') || 3600) - 60) * 1000, state: h.get('state') || '', error: h.get('error') || '' };
+})();
 const app = document.getElementById('app');
 const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const sleep = ms => new Promise(r => setTimeout(r, FAST ? 5 : ms));
@@ -629,6 +637,71 @@ function backupWarnHTML() {
   const days = S.lastBackup ? Math.floor((Date.now() - new Date(S.lastBackup).getTime()) / DAY_MS) : null;
   if (!has || (days !== null && days < 7)) return '';
   return `<p class="warn">Le suivi n'a ${days === null ? 'jamais été sauvegardé' : `pas été sauvegardé depuis ${days} jours`}. Une tablette réinitialisée le perd. <button class="btn sm" id="tobackup" style="--c:var(--river)">Sauvegarder maintenant</button></p>`;
+}
+
+/* ============================ sauvegarde : fichier et Google Drive ============================ */
+const backupData = () => JSON.stringify({ app: 'corridor-a-la-maison', format: 2, version: VERSION, date: new Date().toISOString(), store: S }, null, 1);
+/* Remplace l'état de la tablette par une sauvegarde (fichier ou Drive) ; une sauvegarde de la v0.2 est migrée comme au démarrage. */
+async function restoreBackup(d) {
+  if (!d || d.app !== 'corridor-a-la-maison' || !d.store || !(Array.isArray(d.store.profiles) || d.store.progress)) throw new Error('fichier inconnu');
+  const b = fromStore(d.store);
+  Object.keys(S).forEach(k => delete S[k]); Object.assign(S, b); save(); await migrateDB();
+  return S.profiles.length;
+}
+/* Sauvegarde Google Drive (voie A, décidée par le fondateur le 18 octobre 2026) : à la demande du parent, le suivi est copié dans le dossier
+   caché de l'application (appDataFolder) du Google Drive de la famille. Aucun serveur Corridor : la tablette parle directement à Google,
+   et seule cette application peut lire ce dossier. Connexion par le flux OAuth des applications web (jeton d'une heure, gardé pour l'onglet). */
+const GDRIVE_CLIENT_ID = '1001480501561-anaa7v8komm7qm03ga6kj93qiv0igcvh.apps.googleusercontent.com';   /* identifiant client OAuth (public) du projet Google Cloud de Corridor ; vide = sauvegarde Drive pas encore activée */
+const GDRIVE = { client: (window.KONO_GDRIVE_CLIENT || GDRIVE_CLIENT_ID).trim(),   /* KONO_GDRIVE_CLIENT : tests seulement */ scope: 'https://www.googleapis.com/auth/drive.appdata', name: 'corridor-sauvegarde.json', key: 'kono-drive', pending: 'kono-drive-pending' };
+const sess = { get(k) { try { return JSON.parse(sessionStorage.getItem(k) || 'null'); } catch (e) { return null; } }, set(k, v) { try { if (v == null) sessionStorage.removeItem(k); else sessionStorage.setItem(k, JSON.stringify(v)); } catch (e) {} } };
+const driveToken = () => { const t = sess.get(GDRIVE.key); return t && t.token && t.exp > Date.now() ? t.token : null; };
+function driveAuth(action) {
+  const st = Array.from(crypto.getRandomValues(new Uint8Array(12)), x => x.toString(16).padStart(2, '0')).join('');
+  sess.set(GDRIVE.pending, { action, state: st });
+  const q = new URLSearchParams({ client_id: GDRIVE.client, redirect_uri: location.origin + location.pathname, response_type: 'token', scope: GDRIVE.scope, include_granted_scopes: 'true', state: st, prompt: 'select_account' });
+  location.assign('https://accounts.google.com/o/oauth2/v2/auth?' + q);
+}
+async function driveFetch(url, opts = {}) {
+  const r = await fetch(url, Object.assign({}, opts, { headers: Object.assign({}, opts.headers || {}, { Authorization: 'Bearer ' + driveToken() }) }));
+  if (r.status === 401) { sess.set(GDRIVE.key, null); throw new Error('auth'); }
+  if (!r.ok) throw new Error('drive ' + r.status);
+  return r;
+}
+async function driveFind() {
+  const r = await driveFetch('https://www.googleapis.com/drive/v3/files?spaces=appDataFolder&fields=' + encodeURIComponent('files(id,name,modifiedTime)') + '&q=' + encodeURIComponent(`name='${GDRIVE.name}'`));
+  return ((await r.json()).files || [])[0] || null;
+}
+async function driveSave() {
+  const data = backupData(), f = await driveFind();
+  if (f) await driveFetch(`https://www.googleapis.com/upload/drive/v3/files/${f.id}?uploadType=media`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: data });
+  else {
+    const fd = new FormData();
+    fd.append('metadata', new Blob([JSON.stringify({ name: GDRIVE.name, parents: ['appDataFolder'] })], { type: 'application/json' }));
+    fd.append('file', new Blob([data], { type: 'application/json' }));
+    await driveFetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id', { method: 'POST', body: fd });
+  }
+  S.lastBackup = new Date().toISOString(); S.drive = { last: S.lastBackup }; save();
+}
+async function driveLoad() {
+  const f = await driveFind(); if (!f) return null;
+  const d = await (await driveFetch(`https://www.googleapis.com/drive/v3/files/${f.id}?alt=media`)).json();
+  await restoreBackup(d); S.drive = { last: d.date || new Date().toISOString() }; save();
+  return d;
+}
+async function driveRun(action) {
+  const say = t => { const m = $('#gd-msg'); if (m) m.textContent = t; };
+  if (!navigator.onLine) return say('Pas de connexion : la sauvegarde Google Drive demande internet.');
+  if (!driveToken()) { say('Connexion à Google…'); return driveAuth(action); }
+  try {
+    say(action === 'save' ? 'Sauvegarde en cours…' : 'Restauration en cours…');
+    if (action === 'save') { await driveSave(); await screenParent('reglages'); say(`Sauvegardé sur Google Drive (${fmtDate(Date.now())}).`); return; }
+    const d = await driveLoad();
+    if (!d) return say('Aucune sauvegarde de Corridor sur ce compte Google.');
+    await screenParent('reglages'); say(`Sauvegarde du ${String(d.date || '').slice(0, 10)} restaurée depuis Google Drive : ${S.profiles.length} enfant${S.profiles.length > 1 ? 's' : ''}.`);
+  } catch (e) {
+    if (String(e && e.message) === 'auth') { say('Connexion à Google…'); return driveAuth(action); }
+    logError('sauvegarde Google Drive : ' + (e && e.message)); say('La sauvegarde Google Drive a échoué. Réessayez avec internet.');
+  }
 }
 
 /* ============================ journal d'erreurs ============================ */
@@ -1728,7 +1801,9 @@ async function screenParent(tab) {
       <p class="small muted" style="margin:0">Exporter un profil : un fichier avec le suivi de l'enfant, ses enregistrements et les phrases de Maman, pour le retrouver sur une autre tablette.</p><p class="small" id="impmsgp"></p></div>
     <div class="card stack"><h3>École</h3><p class="small" style="margin:0">${esc(ecoleLine())}.</p>${accessRequired() && !(S.ecole && S.ecole.id) ? `<div class="row"><input type="text" id="ecode" autocomplete="off" autocapitalize="characters" placeholder="Code d'inscription" style="text-transform:uppercase"><button class="btn sm" id="ecode-go" style="--c:var(--river)">Enregistrer le code</button><span class="small" id="ecode-msg" style="color:var(--try)"></span></div>` : ''}</div>
     <div class="card stack"><p style="margin:0">Code parent et voix de Kono.</p><div><button class="btn" id="setup" style="--c:var(--river)">Modifier</button></div></div>
-    <div class="card stack"><h3>Sauvegarder le suivi</h3><p class="small" style="margin:0">Le suivi vit dans la tablette. Une tablette réinitialisée le perd. Sauvegardez-le de temps en temps dans un fichier (il reste chez vous : rien n'est envoyé). Les enregistrements audio ne sont pas dans ce fichier.</p>
+    <div class="card stack"><h3>Sauvegarde Google Drive</h3>${GDRIVE.client ? `<p class="small" style="margin:0">Le suivi des enfants est copié dans un dossier caché du Google Drive de la famille, que seule cette application peut lire. Aucun serveur Corridor ne le voit. ${S.drive && S.drive.last ? `Dernière sauvegarde Google Drive : ${esc(fmtDate(S.drive.last))}.` : 'Pas encore de sauvegarde Google Drive.'} Les enregistrements audio n'y sont pas.</p>
+      <div class="row"><button class="btn" id="gd-save" style="--c:var(--river)">Sauvegarder sur Google Drive</button><button class="btn ghost" id="gd-load" style="--c:var(--river)">Restaurer depuis Google Drive</button></div><p class="small" id="gd-msg" role="status"></p>` : '<p class="small muted" style="margin:0">Bientôt : sauvegarde du suivi sur le Google Drive de la famille.</p>'}</div>
+    <div class="card stack"><h3>Sauvegarder le suivi dans un fichier</h3><p class="small" style="margin:0">Le suivi vit dans la tablette. Une tablette réinitialisée le perd. Sauvegardez-le de temps en temps dans un fichier (il reste chez vous : rien n'est envoyé). Les enregistrements audio ne sont pas dans ce fichier.</p>
       <div class="row"><button class="btn" id="exp" style="--c:var(--river)">Télécharger la sauvegarde</button><label class="btn ghost" style="--c:var(--river)">Restaurer une sauvegarde<input type="file" id="imp" accept="application/json,.json" hidden></label></div><p class="small" id="impmsg"></p></div>
     <div class="card stack"><h3>Mémoire de la tablette</h3><p class="small" style="margin:0">Le suivi est rangé dans ce navigateur, à l'adresse <b>${esc(location.origin)}</b>. Un autre navigateur ou une autre adresse ne le voit pas. Application installée : <b>${installed ? 'oui' : 'non (ouverte dans le navigateur)'}</b>. Mémoire protégée contre l'effacement automatique : <b>${persisted === null ? 'inconnu' : persisted ? 'oui' : 'pas encore'}</b>.</p></div>
     <div class="card stack"><h3>Bloquer la tablette sur l'application</h3><p class="small" style="margin:0">Android : Paramètres › Sécurité › Épinglage d'écran. Ouvrez ${APPNAME}, affichez les applications récentes, touchez l'icône de l'application puis « Épingler ».</p></div>
@@ -1763,18 +1838,17 @@ async function screenParent(tab) {
     const eg = $('#ecode-go'); if (eg) eg.onclick = async () => { const ok = await checkCode($('#ecode').value); if (!ok) { $('#ecode-msg').textContent = 'Code inconnu.'; return; } S.ecole = ok; save(); screenParent('reglages'); };
     const lc = $('#logcopy'); if (lc) lc.onclick = async () => { const txt = (S.log || []).map(l => `${l.ts} · v${l.v} · ${l.ecran} · ${l.m}`).join('\n'); try { await navigator.clipboard.writeText(txt); $('#logmsg').textContent = 'Copié.'; } catch (e) { $('#logmsg').textContent = 'Copie impossible ici.'; } };
     const lx = $('#logclear'); if (lx) lx.onclick = () => { S.log = []; save(); screenParent('reglages'); };
+    const gs = $('#gd-save'); if (gs) gs.onclick = () => driveRun('save');
+    const gl = $('#gd-load'); if (gl) gl.onclick = () => driveRun('load');
     $('#exp').onclick = () => {
-      const data = JSON.stringify({ app: 'corridor-a-la-maison', format: 2, version: VERSION, date: new Date().toISOString(), store: S }, null, 1);
-      download(`corridor-suivi-${today()}.json`, data, 'application/json');
+      download(`corridor-suivi-${today()}.json`, backupData(), 'application/json');
       S.lastBackup = new Date().toISOString(); save();
     };
     $('#imp').onchange = async e => {
       const f = e.target.files[0]; if (!f) return;
       try {
         const d = JSON.parse(await f.text());
-        if (d.app !== 'corridor-a-la-maison' || !d.store || !(Array.isArray(d.store.profiles) || d.store.progress)) throw new Error('fichier inconnu');
-        const b = fromStore(d.store);   /* une sauvegarde de la v0.2 est migrée comme au démarrage */
-        Object.keys(S).forEach(k => delete S[k]); Object.assign(S, b); save(); await migrateDB();
+        await restoreBackup(d);
         $('#impmsg').textContent = `Sauvegarde du ${String(d.date || '').slice(0, 10)} restaurée : ${S.profiles.length} enfant${S.profiles.length > 1 ? 's' : ''}.`;
       } catch (err) { $('#impmsg').textContent = 'Ce fichier n\'est pas une sauvegarde de ' + APPNAME + '.'; }
     };
@@ -1947,8 +2021,23 @@ async function boot() {
     } else if (S.ecole.h && !codeStillValid(S.ecole.h)) return screenEcole(home, 'Votre inscription a été retirée par l\'école. Tapez un nouveau code pour continuer.');
   }
   home();
+  /* Retour de Google : le jeton est gardé pour cet onglet ; l'action demandée (sauvegarder, restaurer) reprend après le code parent. */
+  if (DRIVE_BACK) {
+    const pend = sess.get(GDRIVE.pending); sess.set(GDRIVE.pending, null);
+    if (pend && pend.state && pend.state === DRIVE_BACK.state && S.pin) {
+      if (DRIVE_BACK.token) sess.set(GDRIVE.key, { token: DRIVE_BACK.token, exp: DRIVE_BACK.exp });
+      screenPin(async () => {
+        await screenParent('reglages');
+        if (DRIVE_BACK.token) driveRun(pend.action); else { const m = $('#gd-msg'); if (m) m.textContent = 'Connexion à Google annulée.'; }
+      });
+    }
+  }
 }
-if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) { try { navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' }).catch(() => {}); } catch (e) {} }
+if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
+  try { navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' }).catch(() => {}); } catch (e) {}
+  /* les voix se téléchargent en arrière-plan dès la première ouverture (sw.js, message « voix ») */
+  try { navigator.serviceWorker.ready.then(r => { if (r.active) r.active.postMessage('voix'); }).catch(() => {}); } catch (e) {}
+}
 document.addEventListener('visibilitychange', () => { if (document.hidden) stopSpeech(); });
 window.__kono = { keyOf, sentences, S, P: () => P, AUDIO: () => AUDIO, report, reportData, makeRevision, LESSONS: () => LESSONS, profileOf, startLesson, logError, normCode, ECOLE: () => ECOLE, domainIcon,
   unit: { normCode, keyOf, sentences, fill, ageOf, opts3, genItem, verdict, isRight, masteryOf, skillStats, journey, fromStore, fromV02, newId, recapOf, kid, blank, retrievalPool, ticketState, escaleLessons, applySettings, calm, PH: () => PH, PROG: () => PROG } };   /* pour les tests */

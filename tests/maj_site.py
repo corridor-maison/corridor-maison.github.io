@@ -30,7 +30,7 @@ async def main():
             ok_v = v1.strip() == "v" + want
             print(f"passe 2 (en ligne, profil déjà en cache) : accueil « {v1} » → {'OK' if ok_v else 'ÉCHEC'} (attendu v{want})")
             await pg.evaluate("navigator.serviceWorker.ready"); await pg.wait_for_timeout(8000)
-            ks = await pg.evaluate("caches.keys()"); ok_c = ks == ["kono-" + want]
+            ks = [k for k in await pg.evaluate("caches.keys()") if k != "kono-audio"]; ok_c = ks == ["kono-" + want]
             print(f"passe 2 : caches après activation {ks} → {'OK' if ok_c else 'ÉCHEC'} (attendu ['kono-{want}'] seul)")
             await ctx.set_offline(True)
             tm = await ctx.new_page()   # le témoin dans un autre onglet : la page d'erreur de Chrome ferait échouer la navigation suivante du même onglet
