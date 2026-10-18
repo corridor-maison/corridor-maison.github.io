@@ -102,6 +102,8 @@ async def main():
             await pg.fill("#pin", PIN); await pg.click("#go"); await pg.wait_for_selector("#p-name"); await audit(pg, "profil")
             await pg.fill("#p-name", "Ali"); await pg.fill("#p-dob", "2019-03-15"); await pg.click("[data-p='ce1']"); await pg.click("#go"); await pg.wait_for_selector(".kids")
             await audit(pg, "accueil"); await phone("accueil")
+            gear = await pg.evaluate("() => { const b = document.querySelector('#parent'); if (!b) return null; const r = b.getBoundingClientRect(); return { txt: b.textContent.trim(), haut: r.top < innerHeight * 0.2, droite: r.right > innerWidth * 0.6, h: Math.round(r.height) }; }")
+            check("accueil : bouton « Paramètres » visible en haut à droite, cible ≥ 44 px", bool(gear) and gear["txt"] == "Paramètres" and gear["haut"] and gear["droite"] and gear["h"] >= 44, str(gear))
             await pg.click(".kid[data-c]"); await pg.wait_for_selector(".tickets"); await pg.wait_for_timeout(300); await audit(pg, "espace enfant"); await phone("enfant")
             # une escale touchée ouvre les séances de l'étape, dans l'écran du téléphone
             await pg.click("[data-esc='1']"); await pg.wait_for_selector("#escale:not([hidden]) .esc-row"); await pg.wait_for_timeout(200); await audit(pg, "escale"); await phone("escale")

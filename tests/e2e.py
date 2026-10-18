@@ -18,7 +18,7 @@ SH = f"{SHOTS}e2e-{VW}x{VH}-"
 URL = "http://localhost:8765/#test"
 PIN = "1234"
 PROFILES = [("ce1", "Ali", "2019-03-15", False), ("gs", "Awa", "2021-02-10", True)]
-REQUIRED = ["tenframe:add", "tenframe:total", "blocks:fermeture-unites", "blocks:fermeture-dizaines", "jumps:via", "order", "erreur-animee", "reprise", "rappel", "acces", "profil-export", "journal", "navigation", "rapport-fichier", "maitrise", "reglages-affichage", "verrou", "escale", "programme"]
+REQUIRED = ["tenframe:add", "tenframe:total", "blocks:fermeture-unites", "blocks:fermeture-dizaines", "jumps:via", "order", "erreur-animee", "reprise", "rappel", "acces", "profil-export", "journal", "navigation", "rapport-fichier", "maitrise", "reglages-affichage", "verrou", "escale", "programme", "mise-a-jour"]
 NAMES = r"""() => { const out = []; const vis = el => !!el.getClientRects().length && getComputedStyle(el).visibility !== 'hidden';
   const nameOf = el => (el.getAttribute('aria-label') || el.getAttribute('title') || (el.labels && [...el.labels].map(l => l.textContent).join(' ')) || (el.closest('label') ? el.closest('label').textContent : '') || el.textContent || el.getAttribute('placeholder') || '').replace(/\s+/g, ' ').trim();
   document.querySelectorAll('button, [role=button], input:not([type=hidden]), select, textarea').forEach(el => { if (vis(el) && !nameOf(el)) out.push(el.tagName.toLowerCase() + (el.id ? '#' + el.id : '') + (typeof el.className === 'string' && el.className.trim() ? '.' + el.className.trim().split(/\s+/).join('.') : '')); });
@@ -315,6 +315,11 @@ async def main():
             if "Le voyage" in ptxt and "Semaine S1" in ptxt and "Progression de l'année" in ptxt and "faite" in ptxt and "Bamako" in ptxt: cov["programme"] += 1
             log.append(f"onglet Programme (voyage, semaine S1, progression, état par enfant) : {'OK' if cov['programme'] else 'ÉCHEC'}")
             await pg.click("[data-t='reglages']"); await pg.wait_for_timeout(300)
+            # mise à jour à la demande : le serveur local sert la même version → « dernière version »
+            await pg.click("#maj"); await pg.wait_for_function("() => /dernière version|échoué|connexion/.test(document.querySelector('#majmsg').textContent)", timeout=15000)
+            mtxt = await pg.inner_text("#majmsg")
+            if "dernière version" in mtxt: cov["mise-a-jour"] += 1
+            log.append(f"mise à jour à la demande (Enfants et compte) : {'OK' if cov['mise-a-jour'] else 'ÉCHEC'} « {mtxt} »")
             jtxt = await pg.inner_text("#pane")
             if "essai du journal" in jtxt and "1 erreur notée" in jtxt: cov["journal"] += 1
             log.append(f"journal d'erreurs visible dans Réglages : {'OK' if cov['journal'] else 'ÉCHEC'}")

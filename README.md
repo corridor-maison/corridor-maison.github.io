@@ -80,7 +80,9 @@ Le site est publié par GitHub Pages à l'adresse **https://corridor-maison.gith
 6. Voix de Maman : Espace parent › Voix de Maman (avec ses mots à elle ; « bonjour » et « fin » se font une fois par enfant).
 7. Bloquer la tablette sur l'application : Paramètres › Sécurité › Épinglage d'écran.
 
-Les mises à jour arrivent seules : à la prochaine ouverture avec internet, la tablette prend la nouvelle version, sans perdre le suivi.
+Les mises à jour arrivent seules : à la prochaine ouverture avec internet, la tablette prend la nouvelle version, sans perdre le suivi. Pour vérifier tout de suite : **Paramètres** (en haut à droite de l'accueil) › Enfants et compte › Rechercher une mise à jour.
+
+Tous les réglages passent par le bouton **Paramètres**, en haut à droite de l'accueil, protégé par le code parent : suivi, programme, voix de Maman, voix et affichage, rapport, enfants (ajouter, modifier, exporter, supprimer) et compte (école, code parent, sauvegarde, mise à jour, mémoire, journal). Pour quitter, le bouton retour ou accueil d'Android, comme toute application.
 
 À l'ouverture, l'écran est clair avec Kono dès le premier instant, avant même que le moteur soit chargé : jamais d'écran blanc. L'application du Play Store (enveloppe Android) montre le même Kono sur le même sable comme icône et comme écran de lancement.
 
