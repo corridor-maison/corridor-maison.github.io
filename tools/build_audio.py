@@ -99,6 +99,24 @@ def collect():
         for lv in L.get("paper", {}).get("levels", []):
             for it in lv["items"]:
                 for e in (it.get("errors") or {}).values(): add("kono", err_text(e), L["title"] + " (fiche)")
+    # Phrases que le moteur assemble mais qui sont prévisibles (titres, jours, escales, rappel du niveau) : produites d'avance,
+    # pour que l'enfant n'entende qu'une voix. Même gabarit que app.js (screenChild, escOpen, recapOf) ; le prénom et les nombres
+    # tirés au hasard restent dits par la tablette.
+    for l in idx["lessons"]:
+        L = json.loads((APP / "lessons" / f'{l["id"]}.json').read_text(encoding="utf-8")); title = l["title"]
+        for t in (f"{title}.", f'{ph["recapToday"]} « {title} ».', f'{ph["recapLast"]} « {title} ».', f'{ph["recapResume"]} « {title} ».'):
+            add("kono", t, "moteur (assemblée)")
+        if L.get("day") and ph.get("ticketLocked"):
+            add("kono", ph["ticketLocked"].replace("{jour}", L["day"]).replace("{titre}", title), "moteur (assemblée)")
+    for pid, E in (idx.get("escales") or {}).items():
+        for i, e in enumerate(E):
+            if i == len(E) - 1:
+                if ph.get("escaleEnd"): add("kono", ph["escaleEnd"].replace("{nom}", e["name"]), "moteur (escale)")
+                continue
+            nxt = E[i + 1]["name"]; n = sum(1 for l in idx["lessons"] if l["parcours"] == pid and l.get("escale") == e["n"])
+            add("kono", f'De {e["name"]} à {nxt}.', "moteur (escale)")
+            if n and ph.get("escaleLeg"):
+                for k in range(n + 1): add("kono", ph["escaleLeg"].replace("{de}", e["name"]).replace("{a}", nxt).replace("{n}", str(n)).replace("{faites}", str(k)), "moteur (escale)")
     seen, uniq = set(), []
     for role, s, o in items:
         k = key_of(s)

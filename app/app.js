@@ -5,7 +5,7 @@
    Format des séances : CONTRAT_LECONS.md. */
 'use strict';
 (() => {
-const VERSION = '0.4.3';
+const VERSION = '0.4.4';
 const APPNAME = 'Corridor à la maison';
 const FAST = /^#(.*&)?test(&|$)/.test(location.hash);
 /* Lien d'inscription (QR code d'une fiche, message WhatsApp de l'école) : #code=XXX-XXX-XXX. La partie après # ne part jamais
@@ -238,7 +238,7 @@ function ttsOne(text) {
   });
 }
 async function speakOne(text) {
-  if (FAST) (window.__spoken || (window.__spoken = [])).push(text);   /* test : relevé de tout ce qui est dit */
+  if (FAST) { (window.__spoken || (window.__spoken = [])).push(text); try { const a = JSON.parse(sessionStorage.getItem('kono-dit') || '[]'); a.push(text); sessionStorage.setItem('kono-dit', JSON.stringify(a)); } catch (e) {} }   /* test : relevé de tout ce qui est dit ; kono-dit survit aux rechargements de l'onglet */
   const f = AUDIO.files[keyOf(text)];
   if (f && !FAST) { const ok = await playFile('audio/' + f, true); if (ok) return; }
   await ttsOne(text);
@@ -949,7 +949,7 @@ async function startLesson(id, rs) {
   $('#qa-leave').onclick = () => { stopSpeech(); save(); endWake(); P = null; screenChild(child, { quiet: true }); };
   $('#next').onclick = () => { if (P.nextHandler) return P.nextHandler(); sfx('next'); P.i++; runStep(); };
   $('#repeat').onclick = () => { if (P && P.repeat) { sfx('tap'); P.repeat(); } };
-  if (rs) { bubble(PH.resumeHere); await speak(PH.resumeHere); if (!P) return; }
+  if (rs) { bubble(fill(PH.resumeHere)); await speak(fill(PH.resumeHere)); if (!P) return; }   /* fill : l'accord {e} (on disait « arrêté{e} ») */
   runStep();
 }
 function endWake() { try { if (wake) wake.release(); } catch (e) {} wake = null; }
@@ -1696,7 +1696,8 @@ async function screenParent(tab) {
     });
   }
   if (tab === 'kono') {
-    pane.innerHTML = `<div class="card stack"><h3>Affichage et sons</h3>
+    pane.innerHTML = `<div class="card stack"><h3>La voix de Kono</h3><p class="small" style="margin:0">${Object.keys(AUDIO.files).length ? `Kono et le conteur parlent avec une <b>voix générée par intelligence artificielle</b> (OpenAI), produite une fois pour toutes et gardée sur la tablette : ${Object.keys(AUDIO.files).length} phrases. Les phrases qui changent d'un enfant à l'autre (prénom, nombres tirés au hasard) sont dites par la voix de la tablette.` : 'Kono parle avec la voix de la tablette.'}</p></div>
+    <div class="card stack"><h3>Affichage et sons</h3>
       <label class="toggle"><input type="checkbox" id="st-sub" ${S.settings.subtitles ? 'checked' : ''}> Afficher les sous-titres sous Kono</label>
       <p class="small muted" style="margin:0">Par défaut, ils sont cachés : l'enfant écoute au lieu de lire ce qu'on lui dit, et regarde le dessin. Ils s'affichent d'office si la tablette n'a pas de voix française.</p>
       <label class="toggle"><input type="checkbox" id="st-snd" ${S.settings.sounds ? 'checked' : ''}> Petits sons quand l'enfant pose, valide ou trouve</label></div>
