@@ -5,9 +5,12 @@
    Format des séances : CONTRAT_LECONS.md. */
 'use strict';
 (() => {
-const VERSION = '0.4.1';
+const VERSION = '0.4.2';
 const APPNAME = 'Corridor à la maison';
-const FAST = location.hash === '#test';
+const FAST = /^#(.*&)?test(&|$)/.test(location.hash);
+/* Lien d'inscription (QR code d'une fiche, message WhatsApp de l'école) : #code=XXX-XXX-XXX. La partie après # ne part jamais
+   au serveur ; on la lit une fois puis on l'efface de l'adresse, pour qu'elle ne reste ni affichée ni dans un favori. */
+const LINK_CODE = (() => { const m = location.hash.match(/(?:^#|&)code=([^&]*)/); if (!m) return ''; try { history.replaceState(null, '', location.pathname + location.search + (FAST ? '#test' : '')); } catch (e) {} try { return decodeURIComponent(m[1]); } catch (e) { return m[1]; } })();
 const app = document.getElementById('app');
 const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const sleep = ms => new Promise(r => setTimeout(r, FAST ? 5 : ms));
@@ -574,12 +577,13 @@ async function checkCode(raw) {
   const e = (ECOLE.codes || []).find(c => c.h === h && !c.revoque);
   return e ? { id: e.id, classe: e.classe || '', h, date: today() } : null;
 }
-function screenEcole(next, msg) {
+function screenEcole(next, msg, prefill) {
   setChild(null); stopSpeech(); screen('ecole');
   app.innerHTML = `<div class="page stack">
   <div class="brand">${KONO}<div><h1>${APPNAME}</h1><p class="muted">${esc(msg || `${ECOLE.ecole || 'L\'école'} vous a remis un code d'inscription.`)}</p></div></div>
   <div class="card stack"><h3>Code d'inscription</h3><input type="text" id="code" autocomplete="off" aria-label="Code d'inscription" autocapitalize="characters" spellcheck="false" placeholder="ex. K7F-29Q-H43" style="font-family:var(--display);font-size:1.5rem;letter-spacing:.12em;text-transform:uppercase"><p class="small muted">Délivré par l'école, une fois par famille. Sans ce code, l'application ne s'ouvre pas. Il reste sur la tablette, rien n'est envoyé.</p></div>
   <div class="row"><button class="btn big" id="go" style="--c:var(--river)">Vérifier</button><span id="err" class="small" style="color:var(--try)"></span></div></div>`;
+  if (prefill) { $('#code').value = prefill; $('#err').textContent = 'Code inconnu. Vérifiez-le avec l\'école.'; }
   $('#go').onclick = async () => {
     const ok = await checkCode($('#code').value);
     if (!ok) { $('#err').textContent = 'Code inconnu. Vérifiez-le avec l\'école.'; return; }
@@ -1912,6 +1916,13 @@ async function boot() {
   applySettings();
   const home = () => { if (!S.setup) screenSetup(); else if (!S.profiles.length) screenProfile(null); else screenHome(); };
   if (accessRequired()) {
+    /* Arrivée par un lien d'inscription : le code est vérifié tout de suite, sans rien taper. Une tablette déjà inscrite avec un code valide l'ignore ;
+       une installation ancienne (régularisée) ou un code retiré prennent le nouveau code. */
+    if (LINK_CODE && (!S.ecole || S.ecole.grandfathered || (S.ecole.h && !codeStillValid(S.ecole.h)))) {
+      const ok = await checkCode(LINK_CODE);
+      if (ok) { S.ecole = ok; save(); }
+      else if ((!S.ecole && !S.profiles.length) || (S.ecole && S.ecole.h)) return screenEcole(home, 'Le code du lien n\'est pas reconnu.', LINK_CODE);
+    }
     if (!S.ecole) {
       if (S.profiles.length) { S.ecole = { grandfathered: true, date: today() }; save(); }   /* installée avant le contrôle : l'école régularise avec un code */
       else return screenEcole(home);
