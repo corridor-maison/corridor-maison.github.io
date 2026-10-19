@@ -1,12 +1,15 @@
 /* Hors ligne : l'application, les images et les leçons sont gardées sur la tablette.
    Les leçons, les phrases et le moteur sont d'abord demandés au réseau (pour recevoir la semaine suivante et les mises à jour),
    puis pris dans le cache s'il n'y a pas de connexion. */
-const CACHE = 'kono-0.4.5';
+const CACHE = 'kono-0.4.6';
 const CORE = ['./', 'index.html', 'styles.css', 'app.js', 'manifest.webmanifest',
   'fonts/andika-400.woff2', 'fonts/andika-700.woff2', 'fonts/nunito-800.woff2',
   'icons/icon-192.png', 'icons/icon-512.png', 'icons/icon-maskable-192.png', 'icons/icon-maskable-512.png', 'parcours.json', 'ecole.json', 'lessons/index.json', 'phrases.json', 'audio/manifest.json',
   'progression/ce1.json', 'progression/gs.json',
-  'img/ananas.svg', 'img/ballon.svg', 'img/baobab.svg', 'img/bateau.svg', 'img/bol.svg', 'img/calebasse.svg', 'img/chat.svg', 'img/domino.svg', 'img/jeton.svg', 'img/lapin.svg', 'img/mangue.svg', 'img/panier.svg', 'img/poisson.svg', 'img/sac.svg', 'img/soleil.svg', 'img/velo.svg'];
+  'img/ananas.svg', 'img/ballon.svg', 'img/baobab.svg', 'img/bateau.svg', 'img/bol.svg', 'img/calebasse.svg', 'img/chat.svg', 'img/domino.svg', 'img/jeton.svg', 'img/lapin.svg', 'img/mangue.svg', 'img/panier.svg', 'img/poisson.svg', 'img/sac.svg', 'img/soleil.svg', 'img/velo.svg',
+  'img/ananas.webp', 'img/ballon.webp', 'img/baobab.webp', 'img/bateau.webp', 'img/bol.webp', 'img/calebasse.webp', 'img/chat.webp', 'img/lapin.webp', 'img/mangue.webp', 'img/panier.webp', 'img/poisson.webp', 'img/sac.webp', 'img/soleil.webp', 'img/velo.webp',
+  'img/scenes/marche.webp', 'img/scenes/vent.webp', 'img/scenes/pecheur.webp', 'img/scenes/merci.webp',
+  'img/escales/bamako.webp', 'img/escales/segou.webp', 'img/escales/mopti.webp', 'img/escales/tombouctou.webp', 'img/escales/gao.webp'];
 
 /* À la toute première ouverture, la page n'est pas encore contrôlée par ce service worker : ses propres requêtes
    ne passent pas par le cache. On garde donc dès l'installation toutes les séances listées dans l'index ;
