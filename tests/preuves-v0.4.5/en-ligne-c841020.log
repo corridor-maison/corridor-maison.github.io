@@ -1,0 +1,24 @@
+[1] OK  / répond 200, titre « Corridor à la maison »
+     preuve : HTTP 200 · <title>Corridor à la maison</title> · etag "6ad4eb98-50c" · last-modified Sun, 18 Oct 2026 15:54:00 GMT
+[2] OK  /app.js contient const VERSION = '0.4.5'
+     preuve : HTTP 200 · const VERSION = '0.4.5' · sha256 a923449c55c5a0b122138a3eebd8f572eaf3266bb6aab18497f4cef6971836dd
+[3] OK  /sw.js contient kono-0.4.5
+     preuve : HTTP 200 · CACHE = 'kono-0.4.5' · sha256 481d810cf5d78db54287085786d6222e9988c011cd408520e37e3763899b8728
+[4] OK  /lessons/index.json : schema 2, version S1-2026-10-11, parcours ce1 et gs, 8 séances avec parcours
+     preuve : HTTP 200 · schema 2 · version S1-2026-10-11 · parcours ['ce1', 'gs'] · escales ['gs', 'ce1'] · bleu-s0-dizaine=ce1, ce1-s1-echange=ce1, ce1-s1-centaine=ce1, ce1-s1-marche=ce1, orange-s0-amis10=gs, gs-s1-cache=gs, gs-s1-collection=gs, gs-s1-syllabes=gs
+[5] OK  les 8 fichiers de séance répondent 200
+     preuve : bleu-s0-dizaine: HTTP 200 · ce1-s1-echange: HTTP 200 · ce1-s1-centaine: HTTP 200 · ce1-s1-marche: HTTP 200 · orange-s0-amis10: HTTP 200 · gs-s1-cache: HTTP 200 · gs-s1-collection: HTTP 200 · gs-s1-syllabes: HTTP 200
+[6] OK  /progression/*.json, /parcours.json et /ecole.json répondent 200 ; ecole.json : accès par code, empreintes seules
+     preuve : progression/ce1.json: HTTP 200 · progression/gs.json: HTTP 200 · parcours.json: HTTP 200 · ecole.json: HTTP 200 · acces code · 41 empreintes · aucun code en clair : True
+[7] OK  les 16 images img/*.svg listées dans sw.js répondent 200
+     preuve : 16 images · ananas.svg:200 · ballon.svg:200 · baobab.svg:200 · bateau.svg:200 · bol.svg:200 · calebasse.svg:200 · chat.svg:200 · domino.svg:200 · jeton.svg:200 · lapin.svg:200 · mangue.svg:200 · panier.svg:200 · poisson.svg:200 · sac.svg:200 · soleil.svg:200 · velo.svg:200
+[8] OK  /manifest.webmanifest : « Corridor à la maison » et « Corridor »
+     preuve : HTTP 200 · name « Corridor à la maison » · short_name « Corridor »
+[8] OK  manifeste : 4 icônes (any et maskable, 192 et 512) servies ; index.html : fond sable et écran d'attente avant les styles
+     preuve : icons/icon-192.png: HTTP 200 · icons/icon-512.png: HTTP 200 · icons/icon-maskable-192.png: HTTP 200 · icons/icon-maskable-512.png: HTTP 200 · boot en ligne : True
+     détail :
+[9] OK  empreinte de chaque fichier servi = celle du commit c841020 (1272 fichiers)
+     preuve : 1272 identiques, 0 différents
+
+CONTRÔLES 1 À 9 : TOUS OK
+exit 0
