@@ -150,11 +150,12 @@ Jetons de texte : `{prenom}` (prénom de l'enfant), `{e}` (accord au féminin). 
 - `python3 tests/offline.py` : une seule ouverture avec réseau, puis coupure réelle (serveur arrêté) ; l'accueil et une séance doivent s'ouvrir.
 - `python3 tests/migration.py` : un état de la v0.2 (`tests/etat-v0.2.json`) devient deux profils sans perte ; écrit la comparaison avant/après.
 - Les tests demandent Playwright (Chromium) et Pillow (`tests/ecrans.py` lit les icônes).
+- Si le port 8765 est pris par une autre application : lancer le serveur sur un autre port et `KONO_PORT=<port> python3 tests/e2e.py` ; `tests/offline.py` choisit seul un port libre.
 - Sous Windows, lancer Python avec `-X utf8`.
 
 ## Limites connues (v0.3.5)
 
-- Les images des histoires et des objets sont des dessins simples, en attendant le kit de l'illustrateur : quatre scènes d'histoire (`marche`, `vent`, `pecheur`, `merci`, SVG au format 240 × 160) et seize images d'objets carrées, à déposer dans `app/img/` ; le moteur les prend telles quelles.
+- Illustrations (v0.4.6) : 14 objets de l'imagier (`app/img/<nom>.webp`), les 4 scènes de l'histoire de Bintou (`app/img/scenes/`) et un décor par escale (`app/img/escales/`), générés par IA (OpenAI) dans un même style d'album, relus par la session (géographie, cohérence des personnages) et choisis par le fondateur. Le domino et le jeton restent en dessin exact (l'enfant y compte des points) ; les fiches papier gardent les SVG.
 - Pas de reconnaissance vocale : la lecture à voix haute est enregistrée, un adulte l'écoute et la mesure.
 - Le suivi est propre à chaque tablette : sauvegarde dans un fichier, export d'un profil vers une autre tablette, rapport déposé à l'école en fichier. Pas de remontée automatique vers un dépôt central : c'est une décision de politique de données à prendre avec l'école.
 - Kono et le conteur parlent avec une voix générée par IA (OpenAI, voix « marin », choisie par le fondateur après un essai à l'aveugle le 18 octobre 2026), produite une fois par `tools/build_audio.py` (`KONO_ENGINE=openai`) et mentionnée aux parents (Paramètres › Voix et affichage). Les phrases qui contiennent le prénom ou un nombre tiré au hasard ne peuvent pas être produites d'avance : la synthèse de la tablette les dit. `tests/e2e.py` mesure cette part (ligne « VOIX »).
