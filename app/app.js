@@ -5,7 +5,7 @@
    Format des séances : CONTRAT_LECONS.md. */
 'use strict';
 (() => {
-const VERSION = '0.4.5';
+const VERSION = '0.4.6';
 const APPNAME = 'Corridor à la maison';
 const HASH0 = location.hash;   /* lu une fois : le lien d'inscription et le retour de Google l'effacent ensuite de l'adresse */
 const FAST = /^#(.*&)?test(&|$)/.test(HASH0);
@@ -310,7 +310,10 @@ const KONO = `<svg class="kono" viewBox="0 0 200 212" aria-hidden="true">
 function mood(m) { const g = document.querySelector('.guide .kono'); if (!g) return; g.classList.remove('mood-happy', 'mood-oops', 'mood-think', 'mood-listen'); if (m) { void g.getBoundingClientRect(); g.classList.add('mood-' + m); } }
 
 /* ============================ dessins ============================ */
-const ICON = (n, cls = '') => `<img class="ic ${cls}" src="img/${esc(n)}.svg" alt="${esc(wordOf(n))}" draggable="false">`;
+/* Illustrations (v0.4.6, générées par IA puis relues) : les objets de l'imagier en WebP ; le domino et le jeton gardent leur dessin exact,
+   car l'enfant y compte des points. Les fiches papier gardent les SVG (tools/build_print.py). */
+const PHOTO = new Set(['ananas', 'ballon', 'baobab', 'bateau', 'bol', 'calebasse', 'chat', 'lapin', 'mangue', 'panier', 'poisson', 'sac', 'soleil', 'velo']);
+const ICON = (n, cls = '') => `<img class="ic ${cls}" src="img/${esc(n)}.${PHOTO.has(n) ? 'webp' : 'svg'}" alt="${esc(wordOf(n))}" draggable="false">`;
 const UI = {
   gear: '<svg viewBox="0 0 48 48" aria-hidden="true"><path d="M24 4 l4 5 6-2 1 6 6 2-2 6 5 3-5 3 2 6-6 2-1 6-6-2-4 5-4-5-6 2-1-6-6-2 2-6-5-3 5-3-2-6 6-2 1-6 6 2z" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linejoin="round"/><circle cx="24" cy="24" r="7" fill="none" stroke="currentColor" stroke-width="4"/></svg>',
   lock: '<svg viewBox="0 0 48 48" aria-hidden="true"><rect x="10" y="21" width="28" height="21" rx="5" fill="currentColor"/><path d="M16 21 V15 a8 8 0 0 1 16 0 V21" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round"/></svg>',
@@ -404,7 +407,8 @@ const SCENES = {
   pecheur: `<rect x="0" y="0" width="240" height="160" fill="#fbf3e2"/><rect x="0" y="80" width="240" height="80" fill="#7fb4cf"/><path d="M0 92 q20 -6 40 0 t40 0 t40 0 t40 0 t40 0 t40 0" fill="none" stroke="#dcebf3" stroke-width="3"/><path d="M40 118 Q100 140 170 118 L162 128 Q100 148 48 128 Z" fill="#5a3a22"/>${person(100, 120, 1.1, '#3d7fa3', '', '<path d="M10 -30 L34 10" stroke="#8a5a3c" stroke-width="4"/>')}${basket(200, 104, -10)}`,
   merci: `<rect x="0" y="0" width="240" height="160" fill="#fbf3e2"/><rect x="0" y="120" width="240" height="40" fill="#e8d6b5"/>${person(80, 124, 1, '#7a4ea3', '', '<path d="M10 -32 L30 -40" stroke="#6b4226" stroke-width="5" stroke-linecap="round"/>')}${mango(120, 83, 9)}${person(160, 124, 1.2, '#3d7fa3', '', '<path d="M-10 -32 L-32 -40" stroke="#6b4226" stroke-width="5" stroke-linecap="round"/>')}<path d="M112 50 q8 -10 16 0 q8 -10 16 0 q0 12 -16 22 q-16 -10 -16 -22z" fill="#d7263d" transform="translate(-8 -8)"/>`,
 };
-const sceneSVG = (k, label) => `<svg viewBox="0 0 240 160" role="img" aria-label="${esc(label || 'image de l\'histoire')}">${SCENES[k] || ''}</svg>`;
+const SCENE_IMG = new Set(['marche', 'vent', 'pecheur', 'merci']);   /* scènes illustrées (WebP 3:2) ; les autres restent en dessin */
+const sceneSVG = (k, label) => SCENE_IMG.has(k) ? `<img class="scene-img" src="img/scenes/${k}.webp" alt="${esc(label || 'image de l\'histoire')}" draggable="false">` : `<svg viewBox="0 0 240 160" role="img" aria-label="${esc(label || 'image de l\'histoire')}">${SCENES[k] || ''}</svg>`;
 function vScenes(v) {
   return `<div class="scenes">${v.scenes.map((k, i) => `<figure class="scene">${sceneSVG(k, 'image ' + (i + 1) + " de l'histoire")}<figcaption>${i + 1}</figcaption></figure>`).join('')}</div>`;
 }
@@ -820,6 +824,7 @@ function ticketState(p, id, list) {
   return nx && nx.id === id ? 'due' : 'locked';
 }
 /* Les séances d'une escale : celles de l'index qui portent son numéro, dans l'ordre de lecture. */
+const ESCALE_IMG = new Set(['bamako', 'segou', 'mopti', 'tombouctou', 'gao']);   /* décor de chaque escale (WebP 3:2) */
 function escaleLessons(pid, n) { return INDEX.filter(l => l.parcours === pid && l.escale === n); }
 const revisionId = () => 'revision-' + today();
 /* La séance à reprendre d'un profil, si elle existe encore et n'est pas finie. */
@@ -907,7 +912,9 @@ function screenChild(p, opts = {}) {
     const title = nextE ? `De ${e.name} à ${nextE.name}` : `${e.name}, l'arrivée`;
     const sub = nextE ? `${e.sessions} séance${e.sessions > 1 ? 's' : ''} prévue${e.sessions > 1 ? 's' : ''} · ${Ls.length} publiée${Ls.length > 1 ? 's' : ''} · ${done} faite${done > 1 ? 's' : ''}` : 'La fin du voyage sur le fleuve.';
     const rows = Ls.map(l => { const st = ticketState(p, l.id, list), L = LESSONS[l.id] || {}; return `<li class="esc-row ${st}"><span class="t-ic">${domainIcon(L)}</span><span class="esc-txt"><b>${esc(DAY[L.day] || '')} · ${esc(l.week)}</b>${esc(l.title)}</span><span class="esc-st" aria-label="${st === 'done' ? 'faite' : st === 'due' ? 'séance du jour' : 'à venir'}">${st === 'done' ? UI.check : st === 'due' ? UI.play : UI.lock}</span></li>`; }).join('');
-    $('#escale').innerHTML = `<div class="qa-card esc-card" role="dialog" aria-label="${esc(title)}"><h2>${esc(title)}</h2><p class="muted">${esc(sub)}</p>${rows ? `<ul class="esc-list">${rows}</ul>` : nextE ? `<p class="muted">${esc(PH.escaleSoon || 'Les séances arrivent bientôt.')}</p>` : ''}<button class="btn big ghost" id="esc-close" aria-label="Fermer">${UI.close}</button></div>`;
+    const slug = e.name.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z]/g, '');
+    const pic = ESCALE_IMG.has(slug) ? `<img class="esc-img" src="img/escales/${slug}.webp" alt="${esc(e.name)}" draggable="false">` : '';
+    $('#escale').innerHTML = `<div class="qa-card esc-card" role="dialog" aria-label="${esc(title)}">${pic}<h2>${esc(title)}</h2><p class="muted">${esc(sub)}</p>${rows ? `<ul class="esc-list">${rows}</ul>` : nextE ? `<p class="muted">${esc(PH.escaleSoon || 'Les séances arrivent bientôt.')}</p>` : ''}<button class="btn big ghost" id="esc-close" aria-label="Fermer">${UI.close}</button></div>`;
     $('#escale').hidden = false; $('#esc-close').onclick = () => { $('#escale').hidden = true; stopSpeech(); };
     const say = !nextE ? (PH.escaleEnd || "{nom}, c'est l'arrivée du voyage !").replace('{nom}', e.name) : !Ls.length ? `${title}. ${PH.escaleSoon || 'Les séances arrivent bientôt.'}` : (PH.escaleLeg || 'De {de} à {a} : {n} séances. Tu en as fait {faites}.').replace('{de}', e.name).replace('{a}', nextE.name).replace('{n}', Ls.length).replace('{faites}', done);
     speak(say);

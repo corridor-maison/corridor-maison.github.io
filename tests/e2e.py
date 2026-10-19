@@ -6,6 +6,7 @@ puis des dizaines, sauts avec arrêt obligatoire, remise en ordre de l'histoire,
 
 Prérequis : pip install playwright && playwright install chromium
 Lancer :    python3 -m http.server 8765 --directory app &   puis   python3 tests/e2e.py [1280x800]
+            (autre port : KONO_PORT=8785 python3 tests/e2e.py, avec le serveur sur ce port)
 Captures et rapport : dossier $SHOTS (défaut /tmp/corridor-tests/).
 """
 import asyncio, json, sys, os, pathlib, collections
@@ -15,7 +16,7 @@ ROOT = pathlib.Path(__file__).resolve().parent.parent
 SHOTS = os.environ.get("SHOTS", "/tmp/corridor-tests/"); os.makedirs(SHOTS, exist_ok=True)
 VW, VH = (int(x) for x in (sys.argv[1] if len(sys.argv) > 1 else "1280x800").split("x"))
 SH = f"{SHOTS}e2e-{VW}x{VH}-"
-URL = "http://localhost:8765/#test"
+URL = f"http://localhost:{os.environ.get('KONO_PORT', '8765')}/#test"   # KONO_PORT : si le 8765 est pris par une autre application
 PIN = "1234"
 PROFILES = [("ce1", "Ali", "2019-03-15", False), ("gs", "Awa", "2021-02-10", True)]
 REQUIRED = ["tenframe:add", "tenframe:total", "blocks:fermeture-unites", "blocks:fermeture-dizaines", "jumps:via", "order", "erreur-animee", "reprise", "rappel", "acces", "profil-export", "journal", "navigation", "rapport-fichier", "maitrise", "reglages-affichage", "verrou", "escale", "programme", "mise-a-jour"]
