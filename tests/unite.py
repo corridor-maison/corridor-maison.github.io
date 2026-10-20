@@ -102,7 +102,7 @@ async def main():
             check("fromStore : état vide → réglages par défaut (sons oui, main gauche non)", r["a"] == [2, False, 0, False, True], str(r["a"]))
             check("fromStore : schéma 2 → réglages complétés, suivi complété (review, resume)", r["b"] == [True, "1234", False, False, False, 0, None], str(r["b"]))
             check("fromV02 : case bleu avec suivi → profil Ali (ce1, legacy bleu), case orange vide ignorée, migration demandée", r["c"] == [1, "ce1", "bleu", "Ali", 1, True, "9999"], str(r["c"]))
-            r = await U("const l = [{ id: 'aaaa' }]; const ids = new Set(); for (let i = 0; i < 200; i++) ids.add(U.newId(l)); return [ids.size, [...ids].every(x => /^[a-z0-9]{4}$/.test(x) && x !== 'aaaa')];")
+            r = await U("const l = [{ id: 'aaaa' }]; const ids = new Set(); for (let i = 0; i < 200; i++) { const id = U.newId(l); ids.add(id); l.push({ id }); } return [ids.size, [...ids].every(x => /^[a-z0-9]{4}$/.test(x) && x !== 'aaaa')];   /* comme dans l'application : chaque nouvel identifiant rejoint la liste des profils */")
             check("newId : 4 caractères, jamais un identifiant déjà pris, 200 tirages distincts", r[0] == 200 and r[1], str(r))
             # --- rappel du niveau
             r = await U(prof + " const PH = U.PH(); const fresh = { parcours: 'gs', progress: U.kid() }; return [U.recapOf(fresh, null, { title: 'Les amis de 10' }, false), U.recapOf(p, null, null, true), U.recapOf(p, { title: 'La calebasse magique' }, null, false), PH.recapFirst, PH.recapRevision, PH.recapResumeAsk, PH.recapGood, PH.recapAgain];")
