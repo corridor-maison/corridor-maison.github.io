@@ -80,9 +80,12 @@ const DB = (() => {
   let p = null;
   const open = () => p || (p = new Promise((res, rej) => {
     if (!('indexedDB' in window)) return rej(new Error('pas de stockage'));
-    const r = indexedDB.open('kono', 1);
+    /* Sur certains iPhone (navigateur intégré de Gmail, Safari après une mise à jour), l'ouverture ne répond jamais :
+       au bout de 3 s on continue sans (l'application démarre), et la prochaine demande réessaie. */
+    const t = setTimeout(() => { p = null; rej(new Error('stockage muet')); }, 3000);
+    let r; try { r = indexedDB.open('kono', 1); } catch (e) { clearTimeout(t); p = null; return rej(e); }
     r.onupgradeneeded = () => { const d = r.result; d.createObjectStore('clips'); d.createObjectStore('recs', { keyPath: 'id', autoIncrement: true }); };
-    r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error);
+    r.onsuccess = () => { clearTimeout(t); res(r.result); }; r.onerror = () => { clearTimeout(t); p = null; rej(r.error); };
   }));
   const run = async (store, mode, fn) => { const d = await open(); return new Promise((res, rej) => { const t = d.transaction(store, mode); const q = fn(t.objectStore(store)); t.oncomplete = () => res(q ? q.result : undefined); t.onerror = () => rej(t.error); }); };
   const safe = f => async (...a) => { try { return await f(...a); } catch (e) { return undefined; } };
