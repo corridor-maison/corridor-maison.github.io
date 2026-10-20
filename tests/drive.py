@@ -84,10 +84,10 @@ async def main():
             await pin(); await pg.wait_for_function("() => /Sauvegardé sur Google Drive|échoué/.test((document.querySelector('#gd-msg') || {}).textContent || '')", timeout=20000)
             msg = await pg.inner_text("#gd-msg"); f = DRIVE["files"].get("f1", {})
             check("après le code parent, la sauvegarde part dans appDataFolder avec le jeton", "Sauvegardé sur Google Drive" in msg and f.get("name") == "corridor-sauvegarde.json" and f.get("parents") == ["appDataFolder"] and any(pp.get("name") == "Awa" for pp in f.get("data", {}).get("store", {}).get("profiles", [])), msg)
-            await pg.click("#gd-save"); await pg.wait_for_function("() => /Sauvegardé sur Google Drive/.test(document.querySelector('#gd-msg').textContent)", timeout=20000)
+            await pg.click("#gd-save"); await pg.wait_for_function("() => /Sauvegardé sur Google Drive/.test((document.querySelector('#gd-msg') || {}).textContent || '')", timeout=20000)
             check("2e sauvegarde : le même fichier est mis à jour (PATCH), sans nouvelle connexion", any(c.startswith("PATCH /upload/drive/v3/files/f1") for c in DRIVE["calls"]) and len(DRIVE["auth"]) == 1, str(DRIVE["calls"][-3:]))
             await pg.evaluate("() => { window.__kono.S.profiles[0].name = 'Zed'; }")
-            await pg.click("#gd-load"); await pg.wait_for_function("() => /restaurée depuis Google Drive|échoué|Aucune/.test(document.querySelector('#gd-msg').textContent)", timeout=20000)
+            await pg.click("#gd-load"); await pg.wait_for_function("() => /restaurée depuis Google Drive|échoué|Aucune/.test((document.querySelector('#gd-msg') || {}).textContent || '')", timeout=20000)
             nm = await pg.evaluate("() => window.__kono.S.profiles.map(p => p.name)"); msg = await pg.inner_text("#gd-msg")
             check("Restaurer depuis Google Drive : le suivi sauvegardé revient (prénom Awa)", nm == ["Awa"] and "restaurée depuis Google Drive" in msg, f"{nm} · {msg}")
             # retour de Google avec un state inconnu : ignoré

@@ -5,7 +5,7 @@
    Format des séances : CONTRAT_LECONS.md. */
 'use strict';
 (() => {
-const VERSION = '0.4.6';
+const VERSION = '0.4.7';
 const APPNAME = 'Corridor à la maison';
 const HASH0 = location.hash;   /* lu une fois : le lien d'inscription et le retour de Google l'effacent ensuite de l'adresse */
 const FAST = /^#(.*&)?test(&|$)/.test(HASH0);
@@ -103,9 +103,13 @@ let LESSONS = {}, INDEX = [], ESCALES = {}, PARCOURS = [], PH = {}, AUDIO = { fi
 async function getJSON(u) { const r = await fetch(u, { cache: 'no-cache' }); if (!r.ok) throw new Error(u); return r.json(); }
 const parcoursOf = id => PARCOURS.find(p => p.id === id) || null;
 const escalesOf = pid => ESCALES[pid] || [];
+/* Chargement en parallèle (v0.4.7) : avant, neuf allers-retours se suivaient avant l'écran du code d'inscription
+   (plus de 4 s sur une bonne connexion, beaucoup plus sur un téléphone en 3G) ; maintenant deux vagues. */
 async function loadAll() {
-  PARCOURS = (await getJSON('parcours.json')).parcours || [];
-  const idx = await getJSON('lessons/index.json');
+  const soft = (u, d) => getJSON(u).catch(() => d);
+  const [parcours, idx, ph, audio, ecole] = await Promise.all([getJSON('parcours.json'), getJSON('lessons/index.json'), getJSON('phrases.json'),
+    soft('audio/manifest.json', { files: {} }), soft('ecole.json', { acces: 'libre', codes: [] })]);
+  PARCOURS = parcours.parcours || [];
   if (idx.schema === undefined) {
     /* Index de la v0.2 (clé child) : accepté le temps d'une mise à jour, jamais au-delà. */
     const LEG = { bleu: 'ce1', orange: 'gs' };
@@ -114,14 +118,13 @@ async function loadAll() {
   } else if (idx.schema !== 2) throw new Error('schema ' + idx.schema);
   INDEX = idx.lessons.slice().sort((a, b) => a.order - b.order);
   ESCALES = idx.escales || {};
-  await Promise.all(INDEX.map(async l => { LESSONS[l.id] = await getJSON(`lessons/${l.id}.json`); }));
-  PH = await getJSON('phrases.json');
-  CLIPS = PH.clips || [];
-  try { AUDIO = await getJSON('audio/manifest.json'); if (!AUDIO.files) AUDIO.files = {}; } catch (e) { AUDIO = { files: {} }; }
-  /* La progression de chaque parcours (codes de compétences), quand elle est publiée. */
-  for (const p of PARCOURS) { try { PROG[p.id] = await getJSON(`progression/${p.id}.json`); } catch (e) { PROG[p.id] = { skills: [], drillKinds: {} }; } }
+  PH = ph; CLIPS = PH.clips || [];
+  AUDIO = audio && audio.files ? audio : { files: {} };
   /* L'école : mode d'accès et empreintes des codes d'inscription (jamais les codes eux-mêmes). */
-  try { ECOLE = await getJSON('ecole.json'); if (!Array.isArray(ECOLE.codes)) ECOLE.codes = []; } catch (e) { ECOLE = { acces: 'libre', codes: [] }; }
+  ECOLE = ecole || { acces: 'libre', codes: [] }; if (!Array.isArray(ECOLE.codes)) ECOLE.codes = [];
+  /* Séances et progression de chaque parcours (codes de compétences), quand elle est publiée : seconde vague, en parallèle. */
+  await Promise.all([...INDEX.map(async l => { LESSONS[l.id] = await getJSON(`lessons/${l.id}.json`); }),
+    ...PARCOURS.map(async p => { PROG[p.id] = await soft(`progression/${p.id}.json`, { skills: [], drillKinds: {} }); })]);
 }
 const skillLabel = (pid, code) => { const s = ((PROG[pid] || {}).skills || []).find(x => x.code === code); return s ? s.label : code; };
 
@@ -2040,7 +2043,10 @@ async function boot() {
     }
   }
 }
-if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
+/* Le service worker s'installe APRÈS le premier écran (v0.4.7) : à la première ouverture, il télécharge environ 2 Mo (images, polices,
+   séances) qui ne doivent pas ralentir l'arrivée de l'écran du code d'inscription sur un téléphone en 3G. */
+function registerSW() {
+  if (!('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost'))) return;
   try { navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' }).catch(() => {}); } catch (e) {}
   /* les voix se téléchargent en arrière-plan dès la première ouverture (sw.js, message « voix ») */
   try { navigator.serviceWorker.ready.then(r => { if (r.active) r.active.postMessage('voix'); }).catch(() => {}); } catch (e) {}
@@ -2048,5 +2054,5 @@ if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.
 document.addEventListener('visibilitychange', () => { if (document.hidden) stopSpeech(); });
 window.__kono = { keyOf, sentences, S, P: () => P, AUDIO: () => AUDIO, report, reportData, makeRevision, LESSONS: () => LESSONS, profileOf, startLesson, logError, normCode, ECOLE: () => ECOLE, domainIcon,
   unit: { normCode, keyOf, sentences, fill, ageOf, opts3, genItem, verdict, isRight, masteryOf, skillStats, journey, fromStore, fromV02, newId, recapOf, kid, blank, retrievalPool, ticketState, escaleLessons, applySettings, calm, PH: () => PH, PROG: () => PROG } };   /* pour les tests */
-boot();
+boot().catch(e => logError('démarrage : ' + (e && e.message))).finally(() => setTimeout(registerSW, 300));
 })();
